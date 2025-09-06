@@ -5,7 +5,7 @@
 
 import { db } from '@/lib/firebase';
 import { collection, getDocs, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { eventLogger } from '@/lib/logger';
+import { utilityLogger } from '@/lib/logger';
 
 export interface CleanupResult {
   success: boolean;
@@ -26,7 +26,7 @@ export async function cleanVisitTimes(): Promise<CleanupResult> {
   };
 
   try {
-    eventLogger.info('🔄 Iniciando limpieza de horas en fechas de visitas...');
+    utilityLogger.info('Iniciando limpieza de horas en fechas de visitas');
     
     // Obtener todas las visitas
     const visitsRef = collection(db, 'visits');
@@ -35,12 +35,12 @@ export async function cleanVisitTimes(): Promise<CleanupResult> {
     result.totalCount = snapshot.size;
     
     if (snapshot.empty) {
-      eventLogger.info('📭 No se encontraron visitas en la base de datos.');
+      utilityLogger.info('No se encontraron visitas en la base de datos');
       result.success = true;
       return result;
     }
     
-    eventLogger.info(`📊 Encontradas ${snapshot.size} visitas para procesar.`);
+    utilityLogger.info(`Encontradas ${snapshot.size} visitas para procesar`);
     
     const updatePromises: Promise<void>[] = [];
     
@@ -73,12 +73,12 @@ export async function cleanVisitTimes(): Promise<CleanupResult> {
               updatedAt: serverTimestamp()
             });
             
-            eventLogger.info(`✅ Actualizada visita: ${data.name || 'Sin nombre'} - ${scheduledDate.toDateString()} -> ${cleanDate.toDateString()}`);
+            utilityLogger.info(`Actualizada visita: ${data.name || 'Sin nombre'} - ${scheduledDate.toDateString()} -> ${cleanDate.toDateString()}`);
             result.processedCount++;
             
           } catch (error) {
             const errorMsg = `Error actualizando visita ${docSnap.id}: ${error}`;
-            eventLogger.error(`❌ ${errorMsg}`);
+            utilityLogger.error(errorMsg);
             result.errors.push(errorMsg);
           }
         })();
@@ -93,14 +93,14 @@ export async function cleanVisitTimes(): Promise<CleanupResult> {
     result.success = result.errors.length === 0;
     
     if (result.success) {
-      eventLogger.info(`🎉 ¡Limpieza completada exitosamente! ${result.processedCount} visitas actualizadas.`);
+      utilityLogger.info(`Limpieza completada exitosamente! ${result.processedCount} visitas actualizadas`);
     } else {
-      eventLogger.warn(`⚠️ Limpieza completada con errores. ${result.processedCount} visitas actualizadas, ${result.errors.length} errores.`);
+      utilityLogger.warn(`Limpieza completada con errores. ${result.processedCount} visitas actualizadas, ${result.errors.length} errores`);
     }
     
   } catch (error) {
     const errorMsg = `Error durante la limpieza: ${error}`;
-    eventLogger.error(`❌ ${errorMsg}`);
+    utilityLogger.error(errorMsg);
     result.errors.push(errorMsg);
     result.success = false;
   }
@@ -115,6 +115,6 @@ export async function cleanVisitTimes(): Promise<CleanupResult> {
 export function exposeCleanupFunction() {
   if (typeof window !== 'undefined') {
     (window as any).cleanVisitTimes = cleanVisitTimes;
-    eventLogger.info('🔧 Función cleanVisitTimes() disponible en window. Ejecuta: await window.cleanVisitTimes()');
+    utilityLogger.debug('Función cleanVisitTimes() disponible en window. Ejecuta: await window.cleanVisitTimes()');
   }
 }

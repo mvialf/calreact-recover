@@ -147,5 +147,8 @@ export const paymentLogger = new Logger('PAYMENT');
 export const clientLogger = new Logger('CLIENT');
 export const eventLogger = new Logger('EVENT');
 export const authLogger = new Logger('AUTH');
+export const utilityLogger = new Logger('UTILITY');
+export const formLogger = new Logger('FORM');
+export const uiLogger = new Logger('UI');
 
 export default logger;
