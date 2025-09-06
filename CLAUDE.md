@@ -23,10 +23,17 @@ Este archivo proporciona orientación a Claude Code (claude.ai/code) cuando trab
 - `npm run typecheck` - Ejecutar verificación de tipos TypeScript
 
 ### Pruebas
-- `npm test` - Ejecutar pruebas en modo observación
-- `npm run test:ci` - Ejecutar pruebas en modo CI (sin observación)
+- `npm test` - Ejecutar pruebas unitarias en modo observación
+- `npm run test:ci` - Ejecutar pruebas unitarias en modo CI (sin observación)
 - `npm run test:coverage` - Ejecutar pruebas con reporte de cobertura
-- `npm run test:all` - Ejecutar todas las pruebas
+- `npm run test:all` - Ejecutar todas las pruebas unitarias
+
+### Pruebas E2E con Playwright
+- `npm run test:e2e` - Ejecutar tests E2E completos
+- `npm run test:e2e:ui` - Ejecutar tests con interfaz visual
+- `npm run test:e2e:debug` - Ejecutar tests en modo debug
+- `npm run test:e2e:headed` - Ejecutar tests con navegador visible
+- `npm run playwright:install` - Instalar navegadores de Playwright
 
 ## Arquitectura del Proyecto
 
@@ -39,7 +46,7 @@ Cobralon-FB es una aplicación Next.js construida con Firebase para servicios ba
 - **Backend**: Firebase (Firestore, Authentication)
 - **Gestión de Estado**: Zustand
 - **Formularios**: React Hook Form con validación Zod
-- **Pruebas**: Jest, React Testing Library, Cypress
+- **Pruebas**: Jest, React Testing Library, Playwright E2E
 - **Mapas**: Integración Google Maps API
 
 ## Dependency Stack
@@ -228,6 +235,14 @@ import { createEvent } from '@/services/eventService'; // NO EXISTE
 - **Test-As-You-Go:** Crear tests durante implementación
 - **Comportamiento del usuario:** Verificar desde perspectiva del usuario
 - **Selección de elementos:** Priorizar `getByRole`, `getByText`
+
+### Testing E2E con Playwright
+- **Smoke Tests:** Verificación básica de funcionalidad principal
+- **Configuración:** `/playwright.config.ts` optimizada para Next.js 15 + Firebase
+- **Puerto:** Configurado para puerto 3002 (Turbopack)
+- **Autenticación:** Fixtures en `/e2e/fixtures/` para persistencia de sesión
+- **Estructura:** Tests en `/e2e/tests/` con helpers en `/e2e/helpers/`
+- **Comandos:** Ver sección "Pruebas E2E con Playwright" arriba
 
 ### Flujo de Desarrollo Obligatorio
 

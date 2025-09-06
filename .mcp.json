@@ -18,15 +18,6 @@
 				"experimental:mcp"
 			],
 			"env": {}
-		},
-		"shadcn-ui": {
-			"type": "stdio",
-			"command": "npx",
-			"args": [
-				"@jpisnice/shadcn-ui-mcp-server",
-				"--github-api-key",
-				"${GITHUB_API_KEY}"
-			]
 		}
 	}
 }

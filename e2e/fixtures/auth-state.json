@@ -1,0 +1,14 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:3002",
+      "localStorage": [
+        {
+          "name": "firebase:authUser:YOUR_FIREBASE_CONFIG_API_KEY:[DEFAULT]",
+          "value": "{\"uid\":\"test-user-id\",\"email\":\"admin@test.com\",\"emailVerified\":true,\"displayName\":\"Test Admin\",\"isAnonymous\":false,\"providerData\":[{\"uid\":\"admin@test.com\",\"displayName\":\"Test Admin\",\"email\":\"admin@test.com\",\"providerId\":\"password\"}],\"stsTokenManager\":{\"refreshToken\":\"TEST_REFRESH_TOKEN\",\"accessToken\":\"TEST_ACCESS_TOKEN\",\"expirationTime\":9999999999999},\"createdAt\":\"2024-01-01T00:00:00.000Z\",\"lastLoginAt\":\"2024-01-01T00:00:00.000Z\",\"apiKey\":\"YOUR_FIREBASE_CONFIG_API_KEY\",\"appName\":\"[DEFAULT]\"}"
+        }
+      ]
+    }
+  ]
+}
