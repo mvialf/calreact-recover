@@ -18,6 +18,9 @@ import { getProjectEvents } from './projectEventService';
 // Utils imports
 import { generateEventDisplayName } from '@/utils/eventValidation';
 
+// Logger import
+import { eventLogger } from '@/lib/logger';
+
 /**
  * Convierte un ProjectEventType a EventType para compatibilidad con el calendario
  */
@@ -103,7 +106,7 @@ async function enrichEventsWithProjectNumber(
           }
         } catch (error) {
           // Si falla la obtención del proyecto, continuar sin projectNumber
-          console.warn(`No se pudo obtener projectNumber para evento ${event.id}:`, error);
+          eventLogger.warn(`No se pudo obtener projectNumber para evento ${event.id}`, error);
         }
       }
       

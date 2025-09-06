@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Country } from 'react-phone-number-input';
+import { Logger } from '@/lib/logger';
 
 type AppConfig = {
   defaultCountry: Country;
@@ -17,6 +18,9 @@ const defaultConfig: AppConfig = {
 
 const AppConfigContext = createContext<AppConfigContextType | undefined>(undefined);
 
+// Logger para configuración de la aplicación
+const configLogger = new Logger('APP_CONFIG');
+
 export function AppConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<AppConfig>(defaultConfig);
   const [loading, setLoading] = useState(true);
@@ -29,7 +33,7 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
         setConfig(JSON.parse(savedConfig));
       }
     } catch (error) {
-      console.error('Error al cargar la configuración:', error);
+      configLogger.error('Error al cargar la configuración', error);
     } finally {
       setLoading(false);
     }

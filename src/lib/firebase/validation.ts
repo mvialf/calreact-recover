@@ -3,6 +3,10 @@ import {
   FIREBASE_REQUIRED_FIELDS,
   type RequiredFirebaseField 
 } from '@/constants/firebase';
+import { Logger } from '../logger';
+
+// Logger para validación de Firebase
+const validationLogger = new Logger('FIREBASE_VALIDATION');
 
 /**
  * Valida configuración de Firebase en tiempo de ejecución
@@ -23,10 +27,11 @@ export const validateFirebaseConfig = (): {
 
   const errorMessage = `Error: Configuración de Firebase incompleta. Faltan: ${missingFields.join(', ')}`;
   
+  // Usar logger profesional manteniendo el formato condicional para servidor
   if (typeof window !== 'undefined') {
-    console.error(errorMessage);
+    validationLogger.error(errorMessage);
   } else {
-    console.error('\x1b[31m%s\x1b[0m', errorMessage);
+    validationLogger.error(`\x1b[31m${errorMessage}\x1b[0m`);
   }
 
   return { 

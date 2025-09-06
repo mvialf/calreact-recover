@@ -8,6 +8,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/use-toast';
+import { Logger } from '@/lib/logger';
 
 export interface UseDataSyncOptions {
   // Claves de query que deben invalidarse cuando los datos cambien
@@ -62,6 +63,9 @@ export const useDataSync = ({
 }: UseDataSyncOptions): UseDataSyncReturn => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  
+  // Logger para sincronización de datos
+  const syncLogger = new Logger('DATA_SYNC');
   
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
@@ -135,7 +139,7 @@ export const useDataSync = ({
 
     intervalRef.current = setInterval(() => {
       syncNow().catch(error => {
-        console.error('Auto-sync error:', error);
+        syncLogger.error('Auto-sync error', error);
       });
     }, syncInterval);
   }, [syncNow, syncInterval]);
