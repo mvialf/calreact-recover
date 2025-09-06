@@ -1,0 +1,107 @@
+# Cobralon-FB: Reglas de Desarrollo para Windsurf IDE
+
+## Configuración del Proyecto
+- Este es un proyecto Next.js 15 con TypeScript, React 18 y Firebase
+- Framework UI: Tailwind CSS + Shadcn/ui
+- Estado: Zustand para estado global
+- Testing: Jest + React Testing Library
+- Backend: Firebase Firestore
+- Idioma exclusivo: **Español** para todo código, comentarios y documentación
+
+## Comandos de Desarrollo Principales
+- `npm run dev` - Servidor desarrollo con Turbopack (puerto 3002)
+- `npm run build` - Build de producción
+- `npm run lint` - ESLint
+- `npm run typecheck` - Verificación TypeScript
+- `npm test` - Pruebas en modo observación
+
+## Arquitectura Obligatoria Post-Auditoría 2025
+
+### Estructura de Archivos (ESTRICTA)
+```
+src/
+├── app/           # Next.js App Router
+├── components/    # Componentes React reutilizables
+├── services/      # Servicios Firebase (con inyección dependencias)
+├── utils/         # Funciones puras, helpers
+├── lib/           # Lógica negocio central
+├── hooks/         # Custom hooks React
+├── constants/     # TODOS los valores estáticos centralizados
+└── types/         # Definiciones TypeScript
+```
+
+### Servicios Firebase (Patrón Obligatorio)
+- Todas las funciones de servicio DEBEN aceptar instancia Firestore como primer parámetro
+- Usar utilidades centralizadas de `src/utils/firestore-helpers.ts`
+- Implementar conversión timestamps con `timestampToDate()`
+- Usar `convertFirestoreDocuments()` para conversiones masivas
+
+```typescript
+// CORRECTO: Patrón post-auditoría
+export const getProjects = async (
+  firestore: Firestore, 
+  clientId?: string
+): Promise<ProjectType[]> => {
+  return convertFirestoreDocuments(docs, convertProjectDocument);
+};
+```
+
+## Reglas de Código TypeScript/React
+
+### Componentes React
+```typescript
+// OBLIGATORIO: Declarar como constantes con tipado explícito
+type MiComponenteProps = {
+  title: string;
+};
+
+export const MiComponente: React.FC<MiComponenteProps> = ({ title }) => {
+  // Early returns SIEMPRE
+  if (!title) return null;
+  
+  // Manejadores con prefijo 'handle'
+  const handleClick = () => { /* */ };
+  
+  return <div>{title}</div>;
+};
+```
+
+### Constantes Centralizadas
+- **PROHIBIDO**: Valores "mágicos" en componentes
+- **OBLIGATORIO**: Usar `src/constants/` para todos los valores estáticos
+- Archivos específicos: `project.ts`, `payment.ts`, `firebase.ts`, `defaults.ts`
+
+### Estilos Tailwind
+- **FUENTE ÚNICA**: Solo valores de `tailwind.config.js`
+- **PROHIBIDO**: Hardcodear estilos o usar `style` attribute
+- **OBLIGATORIO**: Usar `clsx` o `tailwind-merge` para clases condicionales
+
+### Accesibilidad (a11y)
+- HTML semántico obligatorio
+- Atributos `aria-*`, `role`, `tabIndex` en elementos interactivos
+- Accesible por teclado y lectores de pantalla
+
+## Principios DRY/SOLID
+- **MÁXIMA PRIORIDAD**: Reutilizar componentes, hooks y utilidades existentes
+- **PROHIBIDO**: Duplicación de código
+- **OBLIGATORIO**: Verificar componentes existentes antes de crear nuevos
+- Una responsabilidad por función/componente
+
+## Testing y Calidad
+- Verificar comportamiento desde perspectiva del usuario
+- Usar `getByRole`, `getByText` para selección de elementos
+- Archivos `.test.tsx` junto al código
+- Manejo de errores con try/catch y `useToast()`
+
+## Firebase y Backend
+- Configuración vía variables de entorno
+- Listeners tiempo real para datos Firestore
+- Validación tipos TypeScript en operaciones Firebase
+- Usar utilidades `firestore-helpers.ts` para transformaciones
+
+## Reglas Específicas de Windsurf
+- Siempre consultar CLAUDE.md antes de implementar
+- Seguir patrones post-auditoría 2025
+- No crear archivos innecesarios
+- Preferir editar archivos existentes
+- Validar con `npm run lint` y `npm run typecheck` antes de finalizar

@@ -1,0 +1,140 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ocultar controles de incremento/decremento en inputs de tipo número */
+@layer base {
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number'] {
+    -webkit-appearance: none;
+    margin: 0;
+    -moz-appearance: textfield !important;
+  }
+}
+
+body {
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+@layer base {
+  :root {
+    --background: 220, 13%, 91%; /* bg-grey-200 (Fondo principal Light) */
+    --foreground: 240 10% 3.9%; /* text-gray-900 (Texto principal Light) */
+
+    --card: 0 0% 100%; /* bg-white */
+    --card-foreground: 240 10% 3.9%; /* text-gray-900 */
+
+    --popover: 0 0% 100%; /* bg-white */
+    --popover-foreground: 240 10% 3.9%; /* text-gray-900 */
+
+    --primary: 221.2 83.2% 53.3%; /* bg-blue-500 (Primario Light) */
+    --primary-foreground: 0 0% 100%; /* text-white */
+
+    --secondary: 240 5.9% 90%; /* bg-gray-100 (Fondo secundario Light) */
+    --secondary-foreground: 240 5.1% 31.8%; /* text-gray-700 */
+
+    --muted: 240 5.9% 90%; /* bg-gray-100 */
+    --muted-foreground: 240 4.8% 46.1%; /* text-gray-500 (Texto secundario Light) */
+
+    --accent: 262.1 83.3% 57.8%; /* bg-purple-600 (Secundario/Acento Light) */
+    --accent-foreground: 0 0% 100%; /* text-white */
+
+    --destructive: 0 84.2% 60.2%; /* bg-red-500 (Error Light) */
+    --destructive-foreground: 0 0% 100%; /* text-white */
+
+    --border: 240 5.9% 87.5%; /* Derived from gray-100/gray-200 */
+    --input: 240 5.9% 87.5%; /* Derived from gray-100/gray-200 */
+    --ring: 221.2 83.2% 53.3%; /* Primary blu e for focus rings */
+
+    --radius: 0.5rem;
+
+    /* Custom colors */
+    --yellow: 55 97% 88%; /* bg-yellow-100 */
+    --yellow-foreground: 28 73% 26%; /* text-yellow-900 */
+    --Sky: 201 94% 86%; /* bg-Sky-200 */
+    --Sky-foreground: 204 80% 16%; /* text-Sky-950 */
+    --orange: 25 95% 53%; /* bg-orange-500 */
+    --orange-foreground: 0 0% 98%; /* text-white */
+    --brown: 142 69% 58%; /* bg-orange-950 */
+    --brown-foreground: 0 0% 98%; /* text-white */
+    --complete: 142 71% 45%; /* bg-green-400 */
+    --complete-foreground: 0 0% 98%; /* text-white */
+    --purple: 262.1 83.3% 57.8%; /* bg-purple-600 (Secundario/Acento Light) */
+    --purple-foreground: 0 0% 100%; /* text-white */
+
+    /* Chart colors (can be adjusted if charts are used, keeping for consistency) */
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+
+    /* Sidebar specific colors - Light Mode */
+    --sidebar-background: 214, 9%, 14%;
+    --sidebar-foreground: 220, 13.5%, 93.5%;
+    --sidebar-primary: 221.2 83.2% 50.3%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 262.1 83.3% 54.8%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 240 5.9% 90%;
+    --sidebar-ring: 221.2 83.2% 53.3%;
+  }
+
+  .dark {
+    --background: 240 6% 10%; /* dark:bg-gray-800 (Fondo principal Dark) */
+    --foreground: 0 0% 98%; /* dark:text-white (Texto principal Dark) */
+
+    --card: 240 5.1% 19%; /* dark:bg-gray-700 (Fondo secundario Dark) */
+    --card-foreground: 0 0% 98%; /* dark:text-white */
+
+    --popover: 240 6% 10%; /* dark:bg-gray-800 */
+    --popover-foreground: 0 0% 98%; /* dark:text-white */
+
+    --primary: 217.2 91.2% 59.8%; /* dark:bg-blue-400 (Primario Dark) */
+    --primary-foreground: 0 0% 98%; /* dark:text-white (CAMBIADO) */
+
+    --secondary: 220, 10%, 20%; /* dark:bg-gray-800 */
+    --secondary-foreground: 0 0% 98%; /* dark:text-white */
+
+    --muted: 240 5.1% 19%; /* dark:bg-gray-700 */
+    --muted-foreground: 240 3.7% 65.9%; /* dark:text-gray-400 (Texto secundario Dark) */
+
+    --accent: 259.1 91.1% 65.3%; /* dark:bg-purple-400 (Secundario/Acento Dark) */
+    --accent-foreground: 0 0% 98%; /* dark:text-white */
+
+    --destructive: 0 92.9% 65.1%; /* dark:bg-red-400 (Error Dark) */
+    --destructive-foreground: 0 0% 98%; /* dark:text-white */
+
+    --border: 240 4.4% 26.1%;
+    --input: 240 4.4% 26.1%;
+    --ring: 217.2 91.2% 59.8%;
+
+    /* Chart colors for dark theme */
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+
+    /* Sidebar specific colors for dark theme */
+    --sidebar-background: 214, 9%, 14%;
+    --sidebar-foreground: 220, 13.5%, 93.5%;
+    --sidebar-primary: 221.2 83.2% 50.3%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 262.1 83.3% 54.8%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 240 5.9% 90%;
+    --sidebar-ring: 221.2 83.2% 53.3%;
+
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

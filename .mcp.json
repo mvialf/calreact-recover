@@ -1,0 +1,32 @@
+{
+	"mcpServers": {
+		"serena": {
+			"type": "stdio",
+			"command": "bash",
+			"args": [
+				"-c",
+				"cd /home/mau/serena && /home/mau/.local/bin/uv run serena start-mcp-server --project /home/mau/Programas/calreact"
+			],
+			"env": {}
+		},
+		"firebase": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"-y",
+				"firebase-tools@latest",
+				"experimental:mcp"
+			],
+			"env": {}
+		},
+		"shadcn-ui": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"@jpisnice/shadcn-ui-mcp-server",
+				"--github-api-key",
+				"${GITHUB_API_KEY}"
+			]
+		}
+	}
+}
