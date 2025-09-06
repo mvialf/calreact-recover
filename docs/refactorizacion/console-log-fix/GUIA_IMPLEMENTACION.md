@@ -697,10 +697,37 @@ rg "console\.(log|error|warn|info|debug)" src/ -c | sort -t: -k2 -nr | head -5
 - [ ] Manual testing de flujos principales
 - [ ] Performance benchmarks similares
 
-### Documentation Update
-- [ ] CLAUDE.md actualizado (quitar "48 console.logs activos")  
-- [ ] README actualizado si es necesario
-- [ ] Code review guidelines actualizadas
+### 📚 Documentation Update (OBLIGATORIO PRE-COMMIT)
+
+#### Para CADA FASE:
+- [ ] **PROGRESO_MIGRACION.md** actualizado con:
+  - [ ] Conteo actual de console.logs: `find src -name "*.ts*" | xargs grep -c "console\." | paste -sd+ | bc`
+  - [ ] Lista de archivos migrados en esta fase
+  - [ ] Loggers específicos utilizados
+  - [ ] Timestamp de actualización
+
+- [ ] **CHECKLIST_VALIDACION.md** actualizado con:
+  - [ ] Estado de cada validación (✅/❌)
+  - [ ] Resultados de npm run typecheck
+  - [ ] Resultados de npm run lint
+  - [ ] Resultados de tests
+
+- [ ] **ANALISIS_INICIAL.md** actualizado con:
+  - [ ] Tabla de archivos migrados marcados como ✅
+  - [ ] Nuevo total de console.logs restantes
+  - [ ] Porcentaje de progreso
+
+#### Para FASE FINAL únicamente:
+- [ ] **ESTADO_FINAL.md** creado con:
+  - [ ] Resumen ejecutivo del proyecto
+  - [ ] Métricas finales (0 console.logs)
+  - [ ] Sistema de loggers implementado
+  - [ ] Guía de uso para desarrolladores
+
+- [ ] **CLAUDE.md** (raíz) actualizado con:
+  - [ ] Estado "✅ COMPLETADO" si aplica
+  - [ ] Referencia a documentación final
+  - [ ] Commit hash de finalización
 
 ### Team Handoff
 - [ ] Documentación completa creada

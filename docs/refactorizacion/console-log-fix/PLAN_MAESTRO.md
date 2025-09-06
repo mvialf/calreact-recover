@@ -185,6 +185,38 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 4. ✅ Confirmar logging funciona correctamente
 5. ✅ Performance no degraded
 
+### 📝 Actualización de Documentación (CRÍTICO)
+
+**ANTES de hacer commit de cada fase:**
+
+1. **Actualizar PROGRESO_MIGRACION.md**
+   - Métricas actuales de console.logs restantes
+   - Archivos migrados exitosamente  
+   - Loggers utilizados en cada archivo
+   - Estado de validaciones
+
+2. **Actualizar CHECKLIST_VALIDACION.md**
+   - Marcar tareas completadas
+   - Agregar resultados de validaciones
+   - Documentar cualquier issue encontrado
+
+3. **Actualizar ANALISIS_INICIAL.md**
+   - Cambiar estado de archivos migrados
+   - Actualizar conteo de console.logs
+   - Reflejar progreso real
+
+4. **Actualizar CLAUDE.md** (archivo raíz)
+   - Actualizar sección "PROGRESO MIGRACIÓN CONSOLE.LOGS"
+   - Reflejar estado actual exacto
+   - Incluir commit hash de la fase
+
+5. **Crear/Actualizar ESTADO_FINAL.md** (solo en FASE final)
+   - Resumen ejecutivo completo
+   - Métricas finales
+   - Lecciones aprendidas
+
+**⚠️ REGLA CRÍTICA**: NUNCA hacer commit sin actualizar la documentación primero. Este es un paso BLOQUEANTE en el proceso.
+
 ## KPIs y Criterios de Éxito
 
 ### 📈 Métricas Cuantitativas
