@@ -2,6 +2,12 @@
 
 Este archivo proporciona orientación a Claude Code (claude.ai/code) cuando trabaja con código en este repositorio.
 
+**IGNORA LOS SIGUIENTES ARCHIVOS**
+- gemini.md
+- docs/WINDSURF_RULES.md
+
+
+
 **ESTADO ACTUAL:** Aplicación Next.js con Firebase optimizada mediante refactorizaciones arquitecturales (Enero 2025). Arquitectura de eventos específicos por dominio implementada y componentes migrados a patrones modulares.
 
 **ISSUES CONOCIDOS:** 48 console.logs activos en 16 archivos que requieren limpieza.
