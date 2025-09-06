@@ -12,6 +12,7 @@ import { addClient } from '@/services/clientService';
 import { useToast } from '@/components/ui/use-toast';
 import { ModalLayout } from '@/components/modals/modalLayout';
 import type { ProjectType, ProjectStatus } from '@/types/project';
+import { projectLogger } from '@/lib/logger';
 
 export function NewProjectDialog() {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -51,7 +52,7 @@ export function NewProjectDialog() {
     try {
       await addClientMutation.mutateAsync(client);
     } catch (error) {
-      console.error('Error al agregar cliente:', error);
+      projectLogger.error('Error al agregar cliente', error);
       throw error;
     }
   };
@@ -121,7 +122,7 @@ export function NewProjectDialog() {
       // Crear el proyecto
       await createProjectMutation.mutateAsync(projectData);
     } catch (error) {
-      console.error('Error al crear el proyecto:', error);
+      projectLogger.error('Error al crear el proyecto', error);
     }
   };
 

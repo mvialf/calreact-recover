@@ -6,6 +6,7 @@ import { addVisit } from '@/services/visitService';
 import { toast } from '@/components/ui/use-toast';
 import { VisitForm, type VisitFormValues } from '@/components/forms/VisitForm';
 import { VisitStatus } from '@/types/visit';
+import { visitLogger } from '@/lib/logger';
 
 export default function NewVisitPage() {
   const router = useRouter();
@@ -38,7 +39,7 @@ export default function NewVisitPage() {
       // Redirigir a la lista de visitas
       router.push('/visits');
     } catch (error) {
-      console.error('Error al guardar la visita:', error);
+      visitLogger.error('Error al guardar la visita', error);
       toast({
         title: 'Error',
         description: 'No se pudo guardar la visita. Por favor, inténtalo de nuevo.',

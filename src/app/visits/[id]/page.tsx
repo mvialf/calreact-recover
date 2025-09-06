@@ -9,6 +9,7 @@ import { ArrowLeft, Calendar, Clock, MapPin, Phone, User, FileText, Pencil } fro
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Link from 'next/link';
+import { visitLogger } from '@/lib/logger';
 
 type VisitStatus = 'Pendiente' | 'Confirmada' | 'Cancelada' | 'Realizada';
 
@@ -44,7 +45,7 @@ export default function VisitDetailsPage() {
         // const visitData = await getVisitById(visitId);
         // setVisit(visitData);
       } catch (err) {
-        console.error('Error al cargar la visita:', err);
+        visitLogger.error('Error al cargar la visita', err);
         setError('No se pudo cargar la información de la visita');
       } finally {
         setIsLoading(false);

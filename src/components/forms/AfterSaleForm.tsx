@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { formLogger } from '@/lib/logger';
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -190,7 +191,7 @@ export function AfterSaleForm({
       }
     },
     onError: (error) => {
-      console.error("Error al crear la postventa:", error);
+      formLogger.error("Error al crear la postventa", error);
       toast({
         title: "Error",
         description: "No se pudo crear la postventa. Intente nuevamente.",
@@ -208,7 +209,7 @@ export function AfterSaleForm({
         await createMutation.mutateAsync(data);
       }
     } catch (error) {
-      console.error("Error al enviar el formulario:", error);
+      formLogger.error("Error al enviar el formulario", error);
     }
   };
 

@@ -150,5 +150,8 @@ export const authLogger = new Logger('AUTH');
 export const utilityLogger = new Logger('UTILITY');
 export const formLogger = new Logger('FORM');
 export const uiLogger = new Logger('UI');
+export const visitLogger = new Logger('VISIT');
+export const settingsLogger = new Logger('SETTINGS');
+export const afterSalesLogger = new Logger('AFTERSALES');
 
 export default logger;

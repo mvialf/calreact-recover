@@ -17,6 +17,7 @@ import {
   Home,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { utilityLogger } from '@/lib/logger';
 import { ThemeProvider } from 'next-themes';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -127,7 +128,7 @@ export default function RootLayout({
       >
         <GlobalErrorBoundary
           onError={(error, errorInfo, errorId) => {
-            console.error(`🚨 Error global capturado (${errorId}):`, error, errorInfo);
+            utilityLogger.error(`Error global capturado (${errorId})`, { error, errorInfo });
             
             // Aquí podrías enviar el error a un servicio de logging como Sentry
             // if (process.env.NODE_ENV === 'production') {

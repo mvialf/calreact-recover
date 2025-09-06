@@ -10,6 +10,7 @@ import { VisitForm, type VisitFormValues } from '@/components/forms/VisitForm';
 import { addVisit, type VisitStatus } from '@/services/visitService';
 import { useToast } from '@/components/ui/use-toast';
 import { ModalLayout } from '@/components/modals/modalLayout';
+import { visitLogger } from '@/lib/logger';
 
 export function NewVisitDialog() {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -57,7 +58,7 @@ export function NewVisitDialog() {
       router.refresh(); // Refrescar la página para mostrar la nueva visita
     },
     onError: (error: Error) => {
-      console.error('Error al crear la visita:', error);
+      visitLogger.error('Error al crear la visita', error);
       toast({
         title: 'Error al Crear Visita',
         description: error.message || 'No se pudo crear la visita.',
@@ -71,7 +72,7 @@ export function NewVisitDialog() {
     try {
       await createVisitMutation.mutateAsync(formData);
     } catch (error) {
-      console.error('Error al crear la visita:', error);
+      visitLogger.error('Error al crear la visita', error);
     }
   };
 

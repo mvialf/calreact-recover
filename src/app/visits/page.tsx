@@ -28,6 +28,7 @@ import { es } from 'date-fns/locale';
 import { Visit, getVisits, deleteVisit, VisitStatus } from '@/services/visitService';
 import { NewVisitDialog, EditVisitDialog } from '@/components/modals/visits';
 import { PageTableLayout, type TableColumn } from '@/components/layout/PageTableLayout';
+import { visitLogger } from '@/lib/logger';
 
 const getStatusVariant = (status: VisitStatus) => {
   switch (status) {
@@ -69,7 +70,7 @@ export default function VisitsPage() {
         setVisits(visitsData);
         setError(null);
       } catch (err) {
-        console.error('Error al cargar visitas:', err);
+        visitLogger.error('Error al cargar visitas', err);
         setError('No se pudieron cargar las visitas. Por favor, inténtalo de nuevo.');
         toast({
           title: 'Error',
@@ -125,7 +126,7 @@ export default function VisitsPage() {
         description: 'La visita ha sido eliminada correctamente.',
       });
     } catch (error) {
-      console.error('Error al eliminar la visita:', error);
+      visitLogger.error('Error al eliminar la visita', error);
       toast({
         title: 'Error',
         description: 'No se pudo eliminar la visita. Por favor, inténtalo de nuevo.',

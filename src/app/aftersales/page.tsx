@@ -11,6 +11,7 @@ import { ProjectClientDisplay } from '@/components/client-display';
 
 // Importación del servicio afterSalesService con soporte para instancia de Firestore
 import { getAfterSalesForProject, deleteAfterSales } from '@/services/afterSalesService';
+import { afterSalesLogger } from '@/lib/logger';
 
 // Componentes de UI
 import { Button } from '@/components/ui/button';
@@ -85,7 +86,7 @@ const getAllAfterSales = async () => {
     // Combinar todos los resultados en un único array
     return allAfterSalesArrays.flat();
   } catch (error) {
-    console.error("Error al obtener casos de posventa:", error);
+    afterSalesLogger.error("Error al obtener casos de postventa", error);
     throw error;
   }
 };
@@ -130,7 +131,7 @@ export default function AfterSalesPage() {
     },
     onError: (error) => {
       toast({ title: 'Error al eliminar', description: 'No se pudo eliminar el registro.', variant: 'destructive' });
-      console.error('Error deleting after-sale:', error);
+      afterSalesLogger.error('Error deleting after-sale', error);
     },
     onSettled: () => {
       setDeleteAlertOpen(false);

@@ -16,6 +16,7 @@ import {
 
 // Importación del nuevo componente reutilizable
 import DashboardProjectItem from '@/components/dashboard/dashboard-project-item';
+import { utilityLogger } from '@/lib/logger';
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -291,7 +292,7 @@ export default function DashboardPage() {
         // NOTA: La lógica de recentPayments se eliminó porque el componente ahora es ProjectsToCollectList
         // Si se necesita una lista de pagos recientes en otro lugar, se debería añadir un nuevo estado y lógica para ello.
       } catch (error) {
-        console.error("Error al cargar datos del dashboard:", error);
+        utilityLogger.error("Error al cargar datos del dashboard", error);
         setData(prev => ({ ...prev, isLoading: false }));
       }
     }

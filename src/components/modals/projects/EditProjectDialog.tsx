@@ -10,6 +10,7 @@ import { updateProject } from '@/services/projectService';
 import type { ProjectType, ProjectStatus } from '@/types/project';
 import { DialogErrorBoundary } from '@/components/error-boundary/DialogErrorBoundary';
 import { DEFAULT_TAX_RATE } from '@/constants/defaults';
+import { projectLogger } from '@/lib/logger';
 
 interface EditProjectDialogProps {
   project: ProjectType;
@@ -39,7 +40,7 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
         };
         return await updateProject(project.id, projectData);
       } catch (error) {
-        console.error('Error en mutationFn:', error);
+        projectLogger.error('Error en mutationFn', error);
         throw error;
       }
     },
@@ -53,7 +54,7 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
         });
         setIsOpen(false);
       } catch (error) {
-        console.error('Error en onSuccess:', error);
+        projectLogger.error('Error en onSuccess', error);
       }
     },
     onError: (error) => {

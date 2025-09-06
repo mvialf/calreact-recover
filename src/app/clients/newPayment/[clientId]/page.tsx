@@ -20,6 +20,7 @@ import { addPayment, getPaymentsForProject } from '@/services/paymentService';
 import { ProjectType } from '@/types/project';
 import { PaymentMethod, Payment } from '@/types/payment';
 import { getAllPayments } from '@/services/paymentService';
+import { clientLogger } from '@/lib/logger';
 
 // Función para formatear montos a peso chileno
 const formatCurrency = (amount: number | undefined | null) => {
@@ -148,7 +149,7 @@ export default function NewClientPaymentPage() {
         setIsLoadingPayments(false);
 
       } catch (error) {
-        console.error("Error al cargar datos del cliente:", error);
+        clientLogger.error("Error al cargar datos del cliente", error);
         toast({
           title: "Error",
           description: "No se pudieron cargar los datos. Por favor, intente de nuevo.",
@@ -266,7 +267,7 @@ export default function NewClientPaymentPage() {
       // Redirigir a la página de clientes
       router.push('/clients');
     } catch (error) {
-      console.error('Error al registrar el pago:', error);
+      clientLogger.error('Error al registrar el pago', error);
       toast({
         title: "Error",
         description: "No se pudo registrar el pago. Por favor, intente de nuevo.",

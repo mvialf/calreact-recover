@@ -10,6 +10,7 @@ import { AfterSaleForm, type AfterSaleFormValues } from '@/components/forms/Afte
 import { addAfterSales } from '@/services/afterSalesService';
 import { useToast } from '@/components/ui/use-toast';
 import { ModalLayout } from '@/components/modals/modalLayout';
+import { afterSalesLogger } from '@/lib/logger';
 
 export function NewAfterSaleDialog() {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -52,7 +53,7 @@ export function NewAfterSaleDialog() {
       router.refresh(); // Refrescar la página para mostrar la nueva postventa
     },
     onError: (error: Error) => {
-      console.error('Error al crear la postventa:', error);
+      afterSalesLogger.error('Error al crear la postventa', error);
       toast({
         title: 'Error al Crear Postventa',
         description: error.message || 'No se pudo crear la postventa.',
@@ -66,7 +67,7 @@ export function NewAfterSaleDialog() {
     try {
       await createAfterSaleMutation.mutateAsync(formData);
     } catch (error) {
-      console.error('Error al crear la postventa:', error);
+      afterSalesLogger.error('Error al crear la postventa', error);
     }
   };
 

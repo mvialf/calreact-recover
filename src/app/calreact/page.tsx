@@ -25,6 +25,7 @@ import { updateProjectEvent } from '@/services/projectEventService';
 import { useToast } from '@/components/ui/use-toast';
 import { normalizeSearchText } from '@/utils/search-utils';
 import { startOfDay, endOfDay, isSameDay, parseISO } from '@/lib/calendar-utils';
+import { eventLogger } from '@/lib/logger';
 
 import {
   DndContext,
@@ -163,7 +164,7 @@ export default function CalReactAppPage() {
             variant: "destructive" 
           });
         } else {
-          console.warn("🔧 Firebase no configurado - funcionando en modo demo");
+          eventLogger.warn("Firebase no configurado - funcionando en modo demo");
         }
         
         setEvents([]); // Limpia eventos en caso de error  
@@ -237,7 +238,7 @@ export default function CalReactAppPage() {
     // Obtener el evento directamente de los datos del elemento arrastrado
     const draggedEventData = active.data.current?.event;
     if (!draggedEventData) {
-      console.error("No se encontraron datos del evento arrastrado");
+      eventLogger.error("No se encontraron datos del evento arrastrado", { activeId: active.id });
       return;
     }
 
@@ -256,7 +257,7 @@ export default function CalReactAppPage() {
       const droppedOnDate = over.data.current.date as Date;
       
       if (!(droppedOnDate instanceof Date) || isNaN(droppedOnDate.getTime())) {
-        console.error("Fecha de destino inválida:", droppedOnDate);
+        eventLogger.error("Fecha de destino inválida", { droppedOnDate });
         return;
       }
       
@@ -272,7 +273,7 @@ export default function CalReactAppPage() {
       
       // Verificar que las fechas resultantes sean válidas
       if (isNaN(newStartDate.getTime()) || isNaN(newEndDate.getTime())) {
-        console.error("Fechas resultantes inválidas:", { newStartDate, newEndDate });
+        eventLogger.error("Fechas resultantes inválidas", { newStartDate, newEndDate });
         return;
       }
       
@@ -306,7 +307,7 @@ export default function CalReactAppPage() {
           });
         }
       } catch (error) {
-        console.error("Error al actualizar evento (drag and drop):", error);
+        eventLogger.error("Error al actualizar evento (drag and drop)", error);
         toast({ 
           title: "Error al Actualizar", 
           description: "No se pudo cambiar la fecha del evento.", 

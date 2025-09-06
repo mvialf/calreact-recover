@@ -28,6 +28,7 @@ import { POSSIBLE_PAYMENT_METHODS, POSSIBLE_PAYMENT_TYPES } from '@/types/paymen
 import type { ProjectStatus } from '@/types/project';
 import { Loader2, HelpCircle } from 'lucide-react';
 import { FileDndInput } from '@/components/ui/file-dnd-input';
+import { settingsLogger } from '@/lib/logger';
 import { CopyableCodeBlock } from '@/components/ui/copyable-code-block';
 import { GeneralSettings } from '@/components/settings/GeneralSettings';
 
@@ -143,7 +144,7 @@ export default function SettingsPage() {
       const validClientItems = rawClientsToImport.filter(item => {
         if (typeof item !== 'object' || item === null || Object.keys(item).length === 0) {
             const msg = `Item de cliente omitido: no es un objeto válido o está vacío. Item: ${JSON.stringify(item)}`;
-            console.warn(msg);
+            settingsLogger.warn(msg);
             errorMessages.push(msg); 
             errorCount++;
             return false;
@@ -177,12 +178,12 @@ export default function SettingsPage() {
           if (typeof item.createdAt === 'string' || item.createdAt instanceof Date) {
             const dateTest = new Date(item.createdAt);
             if (isNaN(dateTest.getTime())) {
-              console.warn(`Fecha 'createdAt' inválida para cliente ${item.name || item.id}, se usará valor por defecto del servidor. Valor recibido:`, item.createdAt);
+              settingsLogger.warn(`Fecha 'createdAt' inválida para cliente ${item.name || item.id}, se usará valor por defecto del servidor`, { clientName: item.name || item.id, receivedValue: item.createdAt });
             } else {
               clientPayload.createdAt = dateTest;
             }
           } else {
-            console.warn(`Formato 'createdAt' inesperado para cliente ${item.name || item.id}, se usará valor por defecto del servidor. Valor recibido:`, item.createdAt);
+            settingsLogger.warn(`Formato 'createdAt' inesperado para cliente ${item.name || item.id}, se usará valor por defecto del servidor`, { clientName: item.name || item.id, receivedValue: item.createdAt });
           }
         }
         try {
@@ -201,7 +202,7 @@ export default function SettingsPage() {
           errorCount++;
           const errorMessage = result.reason?.message || 'Error desconocido durante la importación del cliente.';
           errorMessages.push(errorMessage);
-          console.error("Error en la importación de cliente:", result.reason);
+          settingsLogger.error("Error en la importación de cliente", result.reason);
         }
       });
 
@@ -218,7 +219,7 @@ export default function SettingsPage() {
       });
 
     } catch (error: any) {
-      console.error("Error durante la importación de clientes:", error);
+      settingsLogger.error("Error durante la importación de clientes", error);
       toast({
         title: "Error de Importación General",
         description: `No se pudo importar clientes: ${error.message}`,
@@ -251,7 +252,7 @@ export default function SettingsPage() {
       const validProjectItems = projectsToImportJSON.filter(item => {
         if (typeof item !== 'object' || item === null || Object.keys(item).length === 0) {
           const msg = `Item de proyecto omitido: no es un objeto válido o está vacío. Item: ${JSON.stringify(item)}`;
-          console.warn(msg);
+          settingsLogger.warn(msg);
           errorMessages.push(msg);
           errorCount++;
           return false;
@@ -291,11 +292,11 @@ export default function SettingsPage() {
           try {
               projectCreatedAt = new Date(currentProjTyped.createdAt as string);
               if (isNaN(projectCreatedAt.getTime())) {
-                  console.warn(`Proyecto '${currentProjTyped.projectNumber || 'Desconocido'}': Fecha de creación inválida, se usará timestamp del servidor. Valor:`, currentProjTyped.createdAt);
+                  settingsLogger.warn(`Proyecto '${currentProjTyped.projectNumber || 'Desconocido'}': Fecha de creación inválida, se usará timestamp del servidor`, { projectNumber: currentProjTyped.projectNumber, receivedValue: currentProjTyped.createdAt });
                   projectCreatedAt = undefined;
               }
           } catch(e) {
-              console.warn(`Proyecto '${currentProjTyped.projectNumber || 'Desconocido'}': Error al parsear fecha de creación, se usará timestamp del servidor. Valor:`, currentProjTyped.createdAt);
+              settingsLogger.warn(`Proyecto '${currentProjTyped.projectNumber || 'Desconocido'}': Error al parsear fecha de creación, se usará timestamp del servidor`, { projectNumber: currentProjTyped.projectNumber, receivedValue: currentProjTyped.createdAt });
               projectCreatedAt = undefined;
           }
         }
@@ -341,7 +342,7 @@ export default function SettingsPage() {
           errorCount++;
           const errorMessage = result.reason?.message || 'Error desconocido durante la importación del proyecto.';
           errorMessages.push(errorMessage);
-          console.error("Error en la importación de proyecto:", result.reason);
+          settingsLogger.error("Error en la importación de proyecto", result.reason);
         }
       });
 
@@ -358,7 +359,7 @@ export default function SettingsPage() {
       });
 
     } catch (error: any)      {
-      console.error("Error general durante la importación de proyectos:", error);
+      settingsLogger.error("Error general durante la importación de proyectos", error);
       toast({
         title: "Error de Importación General",
         description: `No se pudo importar proyectos: ${error.message}`,
@@ -391,7 +392,7 @@ export default function SettingsPage() {
       const validPaymentItems = paymentsToImportJSON.filter(item => {
         if (typeof item !== 'object' || item === null || Object.keys(item).length === 0) {
           const msg = `Item de pago omitido: no es un objeto válido o está vacío. Item: ${JSON.stringify(item)}`;
-          console.warn(msg);
+          settingsLogger.warn(msg);
           errorMessages.push(msg);
           errorCount++;
           return false;
@@ -477,7 +478,7 @@ export default function SettingsPage() {
           errorCount++;
           const errorMessage = result.reason?.message || 'Error desconocido durante la importación del pago.';
           errorMessages.push(errorMessage);
-          console.error("Error en la importación de pago:", result.reason);
+          settingsLogger.error("Error en la importación de pago", result.reason);
         }
       });
 
@@ -494,7 +495,7 @@ export default function SettingsPage() {
       });
 
     } catch (error: any) {
-      console.error("Error general durante la importación de pagos:", error);
+      settingsLogger.error("Error general durante la importación de pagos", error);
       toast({
         title: "Error de Importación General",
         description: `No se pudo importar pagos: ${error.message}`,
