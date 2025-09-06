@@ -47,6 +47,22 @@ export const TEST_PROJECTS = {
 } as const;
 
 /**
+ * Datos de usuarios para testing  
+ */
+export const TEST_USERS = {
+  admin: {
+    email: 'admin@cobralon.com',
+    password: 'admin123',
+    name: 'Admin Test'
+  },
+  user: {
+    email: 'user@cobralon.com', 
+    password: 'user123',
+    name: 'Usuario Test'
+  }
+} as const;
+
+/**
  * Datos de clientes para testing
  */
 export const TEST_CLIENTS = {
