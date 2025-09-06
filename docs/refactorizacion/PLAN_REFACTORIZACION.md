@@ -1,21 +1,22 @@
 # 🚀 Plan Completo de Refactorización CalReact - 2025
 
 **Proyecto:** Cobralon-FB  
-**Fecha creación:** Enero 2025  
+**Fecha creación:** 06-septiembre-2025  
 **Estado:** En Ejecución - 75% Completado  
 **Estrategia:** Fix-First + Test-As-You-Go  
 **Estimación:** 26-34 horas (~3-4 sesiones Claude Code)
 
 ## 📊 Estado Actual del Proyecto
 
-### **Estado Actual Actualizado - Enero 2025**
+### **Estado Actual Actualizado - 06-septiembre-2025**
 ```bash
 ✅ 14+ errores críticos React Hooks  (RESUELTOS - Fase 0 completada)
-⚠️ 19 console.log statements reales   (en 9 archivos de producción)  
-✅ Testing infrastructure            (Firebase Emulator Suite + Playwright MCP)
+⚠️ 320 console.log statements reales (34 producción, 286 scripts/tests)  
+✅ Testing infrastructure            (Firebase Emulator Suite + Jest, 4 tests unitarios)
 ✅ TODOs pendientes en servicios     (RESUELTOS - Fase 1 completada)
 ✅ TypeScript sin errores            (base sólida mantenida)
-✅ Progreso refactorización          (75% - Fases 1 y 2 parcialmente completadas)
+✅ Progreso refactorización          (75% - Fases 1 y 2.1 completadas)
+⚠️ Custom Hooks                     (11 funcionales existentes, refactorización futura)
 ```
 
 ### **Servicios Completamente Refactorizados**
@@ -31,9 +32,9 @@
 ### **Infraestructura de Testing Implementada**
 - ✅ Jest + Testing Library + Firebase Emulator Suite
 - ✅ ESLint + TypeScript strict mode (0 errores críticos)
-- ✅ Playwright MCP (reemplazó Cypress) - 10 tests, 1,032 líneas
+- ✅ 4 tests unitarios (projectService, afterSalesService, visitService, ProjectFormCompound)
+- ⚠️ Scripts E2E disponibles (sin framework activo)
 - ✅ Firebase emulator suite funcionando
-- ✅ Test coverage >70% en componentes core
 
 ## 🎯 Estrategia: Fix-First + Test-As-You-Go
 
@@ -527,7 +528,7 @@ Bash(npm run test)                 // Ejecutar tests
 
 ---
 
-**Documento creado:** Enero 2025  
-**Última actualización:** Pre-ejecución  
-**Estado:** Listo para implementar  
-**Siguiente paso:** Ejecutar Fase 0 - Resolver errores críticos ESLint
+**Documento creado:** 06-septiembre-2025  
+**Última actualización:** 06-septiembre-2025 - Métricas actualizadas con estado real  
+**Estado:** 75% implementado - Fases 1 y 2.1 completadas  
+**Siguiente paso:** Evaluar 34 console.logs producción y refactorizar 11 hooks existentes

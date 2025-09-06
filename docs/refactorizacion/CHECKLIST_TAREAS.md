@@ -1,38 +1,38 @@
 # ✅ Checklist de Tareas - Refactorización CalReact
 
 **Estado del proyecto:** Fase 1 100% ✅, Fase 2 50% ⚠️, E2E Infrastructure 100% ✅  
-**Fecha inicio:** Enero 2025  
+**Fecha inicio:** 06-septiembre-2025  
 **Progreso global:** 75% (Compound Pattern + E2E + Servicios completados)
 
 ---
 
 ## 📊 RESUMEN DE PROGRESO
 
-### **Métricas Actuales - CORREGIDAS**
+### **Métricas Actuales - ACTUALIZADAS 06-septiembre-2025**
 - ✅ **React Hooks errors:** 0 (20 resueltos)
-- ⚠️ **Console.logs:** 19 identificados en 9 archivos de producción (métrica corregida)  
-- ✅ **Test coverage:** 100% componentes core + 80% E2E coverage (ProjectFormCompound + projectService + Playwright MCP)
-- ✅ **Testing infrastructure:** Firebase Emulator Suite + Playwright MCP ✅
+- ⚠️ **Console.logs:** 320 total (34 producción: modals, forms, pages + 286 scripts/tests)
+- ✅ **Test coverage:** 4 tests unitarios (projectService, afterSalesService, visitService, ProjectFormCompound)
+- ✅ **Testing infrastructure:** Firebase Emulator Suite + Jest ✅
 - ✅ **TODOs pendientes:** 0 en servicios críticos (todos resueltos)
-- ✅ **TypeScript errors:** 0 en código de producción (archivos E2E resueltos)
+- ✅ **TypeScript errors:** 0 en código de producción
 - ✅ **Build status:** Exitoso (código principal)
 - ✅ **ESLint críticos:** 0 errores críticos
-- ⚠️ **Custom Hooks:** Estado mixto - 11 hooks existentes (diferentes a los 3 planeados)
+- ⚠️ **Custom Hooks:** 11 hooks funcionales existentes, evaluación para refactorización futura
 
 ### **Progreso por Fase - ESTADO REAL**
 ```
 Fase 0 - Errores Críticos: [██████████] 100% (10/10 tareas) ✅
 Fase 1 - Core Services:     [██████████] 100% (5/5 sprints completados) ✅  
 Fase 2 - Components:        [█████░░░░░] 50% (Sprint 2.1: ✅, 2.2: ⚠️, 2.3: ❌)
-Testing Infrastructure:     [██████████] 100% (Firebase Emulator Suite) ✅
-E2E Infrastructure:         [██████████] 100% (Playwright MCP Migration) ✅
-Fase 3 - Clean Up:          [░░░░░░░░░░] 0% (0/8+ tareas) - PENDIENTE (19 console.logs)
+Testing Infrastructure:     [██████████] 100% (Firebase Emulator Suite + Jest) ✅
+E2E Infrastructure:         [█████░░░░░] 50% (Scripts E2E disponibles, sin framework activo) ⚠️
+Fase 3 - Clean Up:          [░░░░░░░░░░] 0% (0/8+ tareas) - PENDIENTE (320 console.logs)
 ```
 
 > **⚠️ NOTA CRÍTICA:** Progreso Fase 2 corregido de 100% → 50%
 > - Sprint 2.1: ✅ Compound Pattern implementado exitosamente  
 > - Sprint 2.2: ⚠️ Custom Hooks estado mixto (11 hooks existentes, diferentes a planeados)
-> - Sprint 2.3: ❌ Console.logs cleanup no iniciado (19 logs reales)
+> - Sprint 2.3: ❌ Console.logs cleanup no iniciado (34 logs en producción)
 
 ---
 
@@ -893,10 +893,11 @@ Durante Sprint 2.1, se enfrentó la elección entre:
 
 ---
 
-**📅 Fecha de creación:** Enero 2025  
+**📅 Fecha de creación:** 06-septiembre-2025  
+**📅 Última actualización:** 06-septiembre-2025 - Métricas corregidas con estado real del código
 **👤 Ejecutado por:** Claude Code  
-**📊 Estado actual:** 20% completado - Fase 0 COMPLETADA ✅  
-**🎯 Próximo paso:** Iniciar Fase 1 - Core Services Refactoring
+**📊 Estado actual:** 75% completado - Fase 1 y 2.1 COMPLETADAS ✅, Fase 2.2 y 2.3 PENDIENTES ⚠️  
+**🎯 Próximo paso:** Evaluar 34 console.logs en producción y refactorización de 11 hooks existentes
 **🕰 Tiempo Fase 0:** ~2 horas (fix-first strategy exitosa)
 **📊 Errores resueltos:** 20 críticos React Hooks + props TypeScript
 

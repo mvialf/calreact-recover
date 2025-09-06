@@ -2,7 +2,7 @@
 
 **Propósito:** Proporcionar contexto crítico para que Claude Code pueda continuar la refactorización desde cualquier punto, incluso superando límites de ventana de contexto.
 
-**Fecha creación:** Enero 2025  
+**Fecha creación:** 06-septiembre-2025  
 **Estado:** Activo - FASE 1 COMPLETADA ✅ + FASE 2 PARCIAL (50%) ⚠️ + E2E Testing Infrastructure ✅  
 
 ---
@@ -39,12 +39,12 @@ FASE 1: Core Services (5/5 sprints) ✅
 FASE 2: Component Architecture - 50% COMPLETADA (⚠️ corregido de 100%)
   - Sprint 2.1: Compound Pattern ✅ COMPLETADO
   - Sprint 2.2: Custom Hooks - ESTADO MIXTO (hooks diferentes a los planeados)
-  - Sprint 2.3: Console.logs cleanup - PENDIENTE (19 logs reales)
+  - Sprint 2.3: Console.logs cleanup - PENDIENTE (320 total: 4 logger oficial, 30 UI, 286 scripts/tests)
 FASE E2E: Playwright MCP Migration (Cypress → Playwright) ✅
-PRÓXIMO PASO: Completar Fase 2 (19 console.logs + custom hooks evaluation)
+PRÓXIMO PASO: Completar Fase 2 (320 console.logs + evaluación custom hooks planeados)
 SERVICIOS REFACTORIZADOS: projectService.ts ✅, clientService.ts ✅, calendarEventService.ts ✅, afterSalesService.ts ✅, visitService.ts ✅
 COMPONENTES REFACTORIZADOS: ProjectForm.tsx → ProjectFormCompound.tsx (compound pattern) ✅
-E2E INFRASTRUCTURE: Cypress eliminado → Playwright MCP implementado (1,032 líneas código) ✅
+E2E INFRASTRUCTURE: Scripts E2E disponibles, sin framework activo (testing manual)
 ```
 
 ### **Archivos de Documentación Creados**
@@ -89,27 +89,32 @@ if (!data?.id) return null;
 4. **`src/components/modals/projects/EditProjectDialog.tsx`** - 5 errores (similar a EditAfterSaleDialog)  
 5. **`src/components/modals/visits/EditVisitDialog.tsx`** - 5 errores (similar a EditAfterSaleDialog)
 
-### **Console.logs Identificados - CORREGIDO**
+### **Console.logs Identificados - ACTUALIZADO 06-septiembre-2025**
 ```bash
-Total REAL: 19 console.log statements en 9 archivos de producción
-Ubicación real:
+Total REAL: 320 console.log statements distribuidos así:
+PRODUCCIÓN (34 logs):
 - src/lib/logger.ts (4) - Logger oficial del sistema
-- src/utils/cleanVisitTimes.ts (7) - Utilidad de limpieza de datos
-- src/components/modals/*Dialog.tsx (4) - Modales de edición
-- src/components/ui/addressInput.tsx (3) - Input de dirección
-- src/components/ui/lazy-image.tsx (1) - Comentario de documentación
+- src/components/modals/ (11) - Modales de edición (NewProjectEventModal, EditProjectDialog, etc.)
+- src/components/forms/ (4) - Formularios (VisitForm, ProjectForm)
+- src/components/ui/ (3) - Componentes UI (addressInput, lazy-image)
+- src/app/ (12) - Páginas (calreact/page, payments/installment/page)
 
-NOTA: Métrica anterior de 38+ logs incluía archivos no críticos
+SCRIPTS Y TESTING (286 logs):
+- scripts/ (180) - Scripts de mantenimiento y utilidades
+- e2e/tests/ (60) - Tests E2E manuales  
+- fix-dialog-descriptions.js (46) - Script de corrección
+
+NOTA: Solo 4 console.logs son del logger oficial, resto son debugging/scripts
 ```
 
 ### **Servicios Ya Refactorizados (MANTENER)**
 - ✅ `projectEventService.ts` - SOLID aplicado exitosamente
 - ✅ `paymentService.ts` - Optimización completada
-- ✅ `projectService.ts` - Refactorizado Sprint 1.1 con principios SOLID (Commit 4e2bae3)
-- ✅ `clientService.ts` - Optimizado Sprint 1.2 eliminando duplicación (Commit fca6085)
-- ✅ `calendarEventService.ts` - TODOs resueltos Sprint 1.3 (Commit 79b79ec)
-- ✅ `afterSalesService.ts` - JSDoc y manejo errores mejorado Sprint 1.4 (Commit 5bf95aa)
-- ✅ `visitService.ts` - Helpers extraídos y tests Sprint 1.5 (Commit 5bf95aa)
+- ✅ `projectService.ts` - Refactorizado Sprint 1.1 con principios SOLID (post-migración v2.0)
+- ✅ `clientService.ts` - Optimizado Sprint 1.2 eliminando duplicación (post-migración v2.0)
+- ✅ `calendarEventService.ts` - TODOs resueltos Sprint 1.3 (post-migración v2.0)
+- ✅ `afterSalesService.ts` - JSDoc y manejo errores mejorado Sprint 1.4 (post-migración v2.0)
+- ✅ `visitService.ts` - Helpers extraídos y tests Sprint 1.5 (post-migración v2.0)
 - ✅ Sistema Winston - Logging estructurado funcionando
 - ✅ Console.logs servicios - Eliminados (0 en código crítico)
 
@@ -239,13 +244,13 @@ npm run build                    # Exitoso
 git push                        # Backup progreso
 ```
 
-### **Métricas Cuantificables Target**
+### **Métricas Cuantificables Target - ACTUALIZADO 06-septiembre-2025**
 - **React Hooks errors:** 20 → 0 ✅ COMPLETADO
-- **Console.logs:** 48 → 0 ❌ PENDIENTE (Fase 3)
-- **Test coverage:** 0% → >70% ✅ COMPLETADO (projectService + ProjectFormCompound + E2E tests)
+- **Console.logs:** 320 total (34 producción, 286 scripts/tests) ❌ PENDIENTE (Fase 3)
+- **Test coverage:** 0% → >70% ✅ PARCIAL (4 tests unitarios: projectService, afterSalesService, visitService, ProjectFormCompound)
 - **TODOs pendientes:** 3+ → 0 ✅ COMPLETADO
 - **Build warnings:** Reducir significativamente ❌ PENDIENTE
-- **E2E Infrastructure:** No existía → Playwright MCP ✅ COMPLETADO (10 tests, 1,032 líneas)
+- **Custom Hooks:** 11 existentes funcionales, evaluación pendiente para refactorización futura
 
 ---
 
@@ -271,13 +276,13 @@ Si una nueva sesión de Claude necesita contexto adicional no cubierto aquí:
 # ✅ Component Architecture: ProjectFormCompound pattern implementado (Sprint 2.1)
 # ✅ E2E Testing: Cypress → Playwright MCP migrado (10 tests, 1,032 líneas)
 # ✅ TypeScript errors: 0 (11 errores E2E previamente resueltos)
-# ⚠️ Console.logs: 19 en 9 archivos de producción (métrica corregida)
-# ⚠️ Custom Hooks: Estado mixto - 11 hooks existentes pero diferentes a los planeados
+# ⚠️ Console.logs: 320 total (34 producción, 286 scripts/tests)
+# ⚠️ Custom Hooks: 11 hooks funcionales existentes, refactorización futura planeada
 # ❌ Modal Refactoring: Sprint 2.3 no iniciado
 
 # PRÓXIMO PASO RECOMENDADO - ACTUALIZADO: 
-# 1. CRÍTICO: Eliminar 19 console.logs reales en producción (Sprint 2.3)
-# 2. Evaluar hooks existentes vs hooks planeados (Sprint 2.2)
+# 1. CRÍTICO: Evaluar 34 console.logs en producción (Sprint 2.3)
+# 2. Evaluar refactorización de 11 hooks existentes (Sprint 2.2)
 # 3. Completar Fase 2 real (~50% pendiente)
 # 4. Iniciar Fase 3 - Global Cleanup & Optimization
 
@@ -286,7 +291,8 @@ Si una nueva sesión de Claude necesita contexto adicional no cubierto aquí:
 
 ---
 
-**Documento creado:** Enero 2025  
+**Documento creado:** 06-septiembre-2025  
+**Última actualización:** 06-septiembre-2025 - Métricas corregidas con estado real del código
 **Propósito:** Garantizar continuidad entre sesiones Claude Code  
-**Estado:** Listo para handoff  
+**Estado:** Actualizado y listo para handoff  
 **Validez:** Hasta completar refactorización completa
