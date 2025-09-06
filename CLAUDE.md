@@ -10,7 +10,7 @@ Este archivo proporciona orientación a Claude Code (claude.ai/code) cuando trab
 
 **ESTADO ACTUAL:** Aplicación Next.js con Firebase optimizada mediante refactorizaciones arquitecturales (Enero 2025). Arquitectura de eventos específicos por dominio implementada y componentes migrados a patrones modulares.
 
-**ISSUES CONOCIDOS:** 48 console.logs activos en 16 archivos que requieren limpieza.
+**PROGRESO MIGRACIÓN CONSOLE.LOGS:** FASE 1 completada ✅ - 5/90 console.logs migrados a Logger profesional. 85 console.logs restantes en proceso de migración. Ver `/docs/refactorizacion/console-log-fix/PROGRESO_MIGRACION.md` para detalles.
 
 ## Comandos de Desarrollo
 
