@@ -11,6 +11,7 @@ import type { ProjectType } from '@/types/project';
 import { format as formatDate } from '@/lib/calendar-utils';
 import { es } from 'date-fns/locale';
 import { snapdom } from '@zumer/snapdom';
+import { paymentLogger } from '@/lib/logger';
 
 
 // Helper para formatear moneda (Pesos chilenos)
@@ -43,7 +44,7 @@ export default function AccountStatementDialog({
           const projectPayments = await getPaymentsForProject(project.id);
           setPayments(projectPayments);
         } catch (error) {
-          console.error('Error al cargar los pagos:', error);
+          paymentLogger.error('Error al cargar los pagos', error);
         }
       }
     };
@@ -98,7 +99,7 @@ export default function AccountStatementDialog({
 
       alert('Imagen copiada al portapapeles con éxito');
     } catch (error) {
-      console.error('Error al copiar la imagen:', error);
+      paymentLogger.error('Error al copiar la imagen', error);
 
       // Plan B: copiar como texto si falla la imagen
       const textToCopy = `

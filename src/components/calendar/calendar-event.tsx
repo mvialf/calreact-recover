@@ -9,6 +9,7 @@ import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { cn } from '@/lib/utils';
 import type React from 'react';
 import { ProjectClientDisplay } from '@/components/client-display';
+import { eventLogger } from '@/lib/logger';
 
 interface CalendarEventProps {
   event: EventType;
@@ -28,7 +29,7 @@ const useValidatedEvent = (event: EventType) => {
       
       // Validar que las fechas sean válidas
       if (!isValid(startDate) || !isValid(endDate)) {
-        console.error('Fechas de evento inválidas:', { startDate, endDate });
+        eventLogger.error('Fechas de evento inválidas', { startDate, endDate });
         return null;
       }
       
@@ -38,7 +39,7 @@ const useValidatedEvent = (event: EventType) => {
         endDate
       };
     } catch (error) {
-      console.error('Error al procesar fechas del evento:', error);
+      eventLogger.error('Error al procesar fechas del evento', error);
       return null;
     }
   }, [event]);
@@ -101,7 +102,7 @@ export function CalendarEvent({
     try {
       return !isSameDay(event.startDate, event.endDate);
     } catch (error) {
-      console.error('Error al verificar si es evento de varios días:', error);
+      eventLogger.error('Error al verificar si es evento de varios días', error);
       return false;
     }
   }, [event]);
@@ -110,7 +111,7 @@ export function CalendarEvent({
   
   // Si el evento no es válido, no renderizar nada
   if (!event) {
-    console.warn('Evento inválido, no se renderizará:', originalEvent);
+    eventLogger.warn('Evento inválido, no se renderizará', { originalEvent });
     return null;
   }
   

@@ -30,6 +30,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { EventType } from '@/types/event';
 import { useToast } from '@/components/ui/use-toast';
+import { eventLogger } from '@/lib/logger';
 import { Trash2, Save, Loader2, RefreshCw } from 'lucide-react';
 import { startOfDay, endOfDay, format } from '@/lib/calendar-utils';
 import { getReferencesByType, type ReferenceItem } from '@/services/eventReferenceService';
@@ -88,7 +89,7 @@ export function EventModal({
         });
       }
     } catch (error) {
-      console.error(`Error al cargar referencias de ${selectedType}:`, error);
+      eventLogger.error(`Error al cargar referencias de ${selectedType}`, error);
       toast({
         title: "Error",
         description: `No se pudieron cargar los ${selectedType.toLowerCase()}s disponibles.`,

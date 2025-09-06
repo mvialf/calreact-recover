@@ -3,6 +3,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { errorBoundaryLogger } from '@/lib/logger';
 
 interface DialogErrorBoundaryState {
   hasError: boolean;
@@ -33,7 +34,7 @@ export class DialogErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('DialogErrorBoundary capturó un error:', error, errorInfo);
+    errorBoundaryLogger.error('DialogErrorBoundary capturó un error', { error, errorInfo });
     
     // Llamar al callback de error si se proporciona
     if (this.props.onError) {
@@ -98,7 +99,7 @@ export class DialogErrorBoundary extends React.Component<
 // Hook para usar con componentes funcionales
 export const useErrorHandler = () => {
   const handleError = React.useCallback((error: Error, errorInfo?: React.ErrorInfo) => {
-    console.error('Error capturado por useErrorHandler:', error, errorInfo);
+    errorBoundaryLogger.error('Error capturado por useErrorHandler', { error, errorInfo });
     
     // Aquí podrías enviar el error a un servicio de logging
     // como Sentry, LogRocket, etc.

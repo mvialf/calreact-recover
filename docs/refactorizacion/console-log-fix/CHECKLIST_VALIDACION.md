@@ -107,123 +107,137 @@ Este documento proporciona checklists completos para validar cada etapa de la mi
 
 ---
 
-## 🔥 FASE 2: Páginas Críticas
+## 🔥 FASE 2: Páginas Críticas ✅ COMPLETADA
 
 ### Pre-Fase 2
-- [ ] Fase 1 completamente validada
-- [ ] Páginas target identificadas:
-  - [ ] `src/app/settings/page.tsx` (13 logs - CRÍTICO)
-  - [ ] `src/app/calreact/page.tsx` (5 logs)
-  - [ ] `src/app/clients/newPayment/[clientId]/page.tsx` (2 logs)
-  - [ ] `src/app/visits/page.tsx` (2 logs)
+- [x] Fase 1 completamente validada
+- [x] Páginas target identificadas:
+  - [x] `src/app/settings/page.tsx` (13 logs - CRÍTICO)
+  - [x] `src/app/calreact/page.tsx` (5 logs)
+  - [x] `src/app/clients/newPayment/[clientId]/page.tsx` (2 logs)
+  - [x] `src/app/visits/page.tsx` (2 logs)
 
 ### Migración Fase 2
 
 #### settings/page.tsx (PRIORIDAD MÁXIMA)
-- [ ] **Pre-migración**
-  - [ ] Backup creado
-  - [ ] 13 console.logs confirmados
-  - [ ] Página funcional antes de migración
-  - [ ] Tests relacionados identificados
+- [x] **Pre-migración**
+  - [x] Backup creado
+  - [x] 13 console.logs confirmados
+  - [x] Página funcional antes de migración
+  - [x] Tests relacionados identificados
 
-- [ ] **Migración**
-  - [ ] Logger import agregado (`Logger('SETTINGS')`)
-  - [ ] Console.error → settingsLogger.error
-  - [ ] Console.log → settingsLogger.debug
-  - [ ] Console.warn → settingsLogger.warn
-  - [ ] Console.info → settingsLogger.info
-  - [ ] Todos los 13 logs migrados
+- [x] **Migración**
+  - [x] Logger import agregado (`settingsLogger`)
+  - [x] Console.error → settingsLogger.error
+  - [x] Console.log → settingsLogger.debug
+  - [x] Console.warn → settingsLogger.warn
+  - [x] Console.info → settingsLogger.info
+  - [x] Todos los 13 logs migrados
 
-- [ ] **Post-migración**
-  - [ ] `rg "console\." src/app/settings/page.tsx` = 0 matches
-  - [ ] Página carga correctamente
-  - [ ] Todas las funcionalidades operan
-  - [ ] Error handling mantiene comportamiento
-  - [ ] No errores en consola del navegador
+- [x] **Post-migración**
+  - [x] `rg "console\." src/app/settings/page.tsx` = 0 matches
+  - [x] Página carga correctamente
+  - [x] Todas las funcionalidades operan
+  - [x] Error handling mantiene comportamiento
+  - [x] No errores en consola del navegador
 
 #### calreact/page.tsx
-- [ ] **Migración**
-  - [ ] Backup creado
-  - [ ] 5 console.logs migrados
-  - [ ] Logger import agregado (`Logger('MAIN_APP')`)
-  - [ ] Sin console.logs restantes
+- [x] **Migración**
+  - [x] Backup creado
+  - [x] 5 console.logs migrados
+  - [x] Logger import agregado (`eventLogger`)
+  - [x] Sin console.logs restantes
 
-- [ ] **Validación**
-  - [ ] Página principal carga
-  - [ ] Navegación funciona
-  - [ ] Error handling operativo
+- [x] **Validación**
+  - [x] Página principal carga
+  - [x] Navegación funciona
+  - [x] Error handling operativo
 
 #### clients/newPayment/[clientId]/page.tsx
-- [ ] **Migración**
-  - [ ] Backup creado
-  - [ ] 2 console.logs migrados
-  - [ ] paymentLogger usado (ya existe)
-  - [ ] Sin console.logs restantes
+- [x] **Migración**
+  - [x] Backup creado
+  - [x] 2 console.logs migrados
+  - [x] clientLogger usado
+  - [x] Sin console.logs restantes
 
-- [ ] **Validación**
-  - [ ] Página de nuevos pagos funciona
-  - [ ] Formulario de pago operativo
-  - [ ] Navegación paramétrica correcta
+- [x] **Validación**
+  - [x] Página de nuevos pagos funciona
+  - [x] Formulario de pago operativo
+  - [x] Navegación paramétrica correcta
 
 #### visits/page.tsx
-- [ ] **Migración**
-  - [ ] Backup creado
-  - [ ] 2 console.logs migrados
-  - [ ] Logger import agregado (`Logger('VISITS')`)
-  - [ ] Sin console.logs restantes
+- [x] **Migración**
+  - [x] Backup creado
+  - [x] 2 console.logs migrados
+  - [x] Logger import agregado (`visitLogger`)
+  - [x] Sin console.logs restantes
 
-- [ ] **Validación**
-  - [ ] Lista de visitas carga
-  - [ ] Funcionalidades de visitas operan
-  - [ ] Navegación funciona
+- [x] **Validación**
+  - [x] Lista de visitas carga
+  - [x] Funcionalidades de visitas operan
+  - [x] Navegación funciona
 
 ### Post-Fase 2 Validación Global
-- [ ] **Console.logs Verificación**
-  - [ ] 22 console.logs migrados en total (Fase 2)
-  - [ ] Todas las páginas sin console.logs restantes
+- [x] **Console.logs Verificación**
+  - [x] 22 console.logs migrados en total (Fase 2)
+  - [x] Todas las páginas sin console.logs restantes
 
-- [ ] **Funcionalidad End-to-End**
-  - [ ] Usuario puede navegar a settings
-  - [ ] Usuario puede crear nuevo pago
-  - [ ] Usuario puede ver lista de visitas
-  - [ ] Página principal carga correctamente
+- [x] **Funcionalidad End-to-End**
+  - [x] Usuario puede navegar a settings
+  - [x] Usuario puede crear nuevo pago
+  - [x] Usuario puede ver lista de visitas
+  - [x] Página principal carga correctamente
 
-- [ ] **Performance y UX**
-  - [ ] Tiempo de carga similar pre/post migración
-  - [ ] No errores JavaScript en DevTools
-  - [ ] Logger no impacta performance perceptible
+- [x] **Performance y UX**
+  - [x] Tiempo de carga similar pre/post migración
+  - [x] No errores JavaScript en DevTools
+  - [x] Logger no impacta performance perceptible
 
-**Criterio de Avance**: 100% funcionalidad mantenida + 0 console.logs.
+**✅ Criterio de Avance CUMPLIDO**: 100% funcionalidad mantenida + 0 console.logs.
 
 ---
 
-## 🎨 FASE 3: Componentes UI Críticos
+## 🎨 FASE 3: Componentes UI Críticos ⚠️ PARCIALMENTE COMPLETADA
 
 ### Pre-Fase 3
-- [ ] Fases 1 y 2 completamente validadas
-- [ ] Componentes target identificados:
-  - [ ] `EditVisitDialog.tsx` (10 logs)
-  - [ ] `EditProjectDialog.tsx` (9 logs)
-  - [ ] `addressInput.tsx` (9 logs)
-  - [ ] `calendar-event.tsx` (4 logs)
-  - [ ] `account-statement-dialog.tsx` (2 logs)
-  - [ ] `DialogErrorBoundary.tsx` (2 logs)
+- [x] Fases 1 y 2 completamente validadas
+- [x] Componentes target identificados:
+  - [ ] `EditVisitDialog.tsx` (10 logs) - ⏳ PENDIENTE
+  - [ ] `EditProjectDialog.tsx` (7 logs) - ⏳ PENDIENTE  
+  - [ ] `addressInput.tsx` (9 logs) - ⏳ PENDIENTE
+  - [ ] `calendar-event.tsx` (4 logs) - ⏳ PENDIENTE
+  - [ ] `account-statement-dialog.tsx` (2 logs) - ⏳ PENDIENTE
+  - [ ] `DialogErrorBoundary.tsx` (2 logs) - ⏳ PENDIENTE
+
+### ✅ COMPLETADO EN FASE 3 (Commit df55711 - 6 Sep 2025)
+- [x] **Páginas adicionales migradas**: 
+  - [x] `src/app/aftersales/page.tsx` (2 → 0)
+  - [x] `src/app/visits/new/page.tsx` (1 → 0)
+  - [x] `src/app/visits/[id]/page.tsx` (1 → 0)
+  - [x] `src/app/dashboard/page.tsx` (1 → 0)
+  - [x] `src/app/layout.tsx` (1 → 0)
+- [x] **Formularios y modales migrados**:
+  - [x] `src/components/forms/AfterSaleForm.tsx` (2 → 0)
+  - [x] `src/components/modals/projects/NewProjectDialog.tsx` (2 → 0)
+  - [x] `src/components/modals/visits/NewVisitDialog.tsx` (2 → 0) 
+  - [x] `src/components/modals/afterSales/NewAfterSaleDialog.tsx` (2 → 0)
+- [x] **Nuevos loggers agregados**: visitLogger, settingsLogger, afterSalesLogger
 
 ### Migración por Componente
 
-#### EditVisitDialog.tsx (CRÍTICO)
+#### EditVisitDialog.tsx (CRÍTICO) - ⏳ PENDIENTE
 - [ ] **Pre-migración**
-  - [ ] Backup creado
-  - [ ] 10 console.logs confirmados
-  - [ ] Modal funcional antes de migración
-  - [ ] Form validation operativa
+  - [ ] Backup crear
+  - [x] 10 console.error confirmados (estado actual)
+  - [x] Modal funcional (verificado)
+  - [x] Form validation operativa
 
-- [ ] **Migración**
-  - [ ] Logger import agregado (`Logger('VISIT_MODAL')`)
-  - [ ] Form debug logs → visitModalLogger.debug
-  - [ ] Error handling → visitModalLogger.error
-  - [ ] Validation logs → visitModalLogger.warn
-  - [ ] Todos los 10 logs migrados
+- [ ] **Migración PENDIENTE**
+  - [ ] Logger import agregar (`visitLogger` disponible)
+  - [ ] Form debug logs → visitLogger.debug
+  - [ ] Error handling → visitLogger.error
+  - [ ] Validation logs → visitLogger.warn
+  - [ ] Todos los 10 logs migrar
 
 - [ ] **Validación**
   - [ ] Modal abre correctamente
@@ -232,16 +246,17 @@ Este documento proporciona checklists completos para validar cada etapa de la mi
   - [ ] Modal cierra correctamente
   - [ ] No errores en consola
 
-#### EditProjectDialog.tsx
-- [ ] **Migración**
-  - [ ] 9 console.logs migrados
-  - [ ] projectLogger usado (ya existe)
+#### EditProjectDialog.tsx - ⏳ PENDIENTE
+- [ ] **Migración PENDIENTE**
+  - [x] 7 console.error confirmados (estado actual)
+  - [x] projectLogger disponible
+  - [ ] Console.logs migrar
   - [ ] Sin console.logs restantes
 
-- [ ] **Validación**
-  - [ ] Modal de edición de proyecto funciona
-  - [ ] Form data persiste correctamente
-  - [ ] Validaciones operativas
+- [ ] **Validación PENDIENTE**
+  - [x] Modal de edición de proyecto funciona
+  - [x] Form data persiste correctamente
+  - [x] Validaciones operativas
 
 #### addressInput.tsx (Google Maps)
 - [ ] **Pre-migración**

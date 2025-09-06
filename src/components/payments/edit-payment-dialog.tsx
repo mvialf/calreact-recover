@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CalendarIcon } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { paymentLogger } from '@/lib/logger';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -168,7 +169,7 @@ export function EditPaymentDialog({ open, onOpenChange, payment }: EditPaymentDi
     try {
       await updatePaymentMutation.mutateAsync(data);
     } catch (error) {
-      console.error('Error al actualizar el pago:', error);
+      paymentLogger.error('Error al actualizar el pago', error);
     }
   };
 

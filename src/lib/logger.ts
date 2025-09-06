@@ -153,5 +153,6 @@ export const uiLogger = new Logger('UI');
 export const visitLogger = new Logger('VISIT');
 export const settingsLogger = new Logger('SETTINGS');
 export const afterSalesLogger = new Logger('AFTERSALES');
+export const errorBoundaryLogger = new Logger('ERROR_BOUNDARY');
 
 export default logger;

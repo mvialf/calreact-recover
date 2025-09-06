@@ -58,7 +58,7 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
       }
     },
     onError: (error) => {
-      console.error('Error en mutación updateProject:', error);
+      projectLogger.error('Error en mutación updateProject', error);
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
       toast({ 
         title: 'Error al actualizar proyecto', 
@@ -72,7 +72,7 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
     try {
       mutate(data);
     } catch (error) {
-      console.error('Error en handleSubmit:', error);
+      projectLogger.error('Error en handleSubmit', error);
       toast({ 
         title: 'Error', 
         description: 'Error inesperado al procesar el formulario',
@@ -139,7 +139,7 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
         uninstallTypes: Array.isArray(project.uninstallTypes) ? project.uninstallTypes : [],
       };
     } catch (error) {
-      console.error('Error al mapear datos iniciales:', error);
+      projectLogger.error('Error al mapear datos iniciales', error);
       // Retornar datos por defecto seguros
       return {
         clientId: '',
@@ -168,7 +168,7 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
     try {
       setIsOpen(false);
     } catch (error) {
-      console.error('Error al cerrar modal:', error);
+      projectLogger.error('Error al cerrar modal', error);
     }
   }, []);
 
@@ -176,7 +176,7 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
     try {
       setIsOpen(true);
     } catch (error) {
-      console.error('Error al abrir modal:', error);
+      projectLogger.error('Error al abrir modal', error);
     }
   }, []);
 
@@ -184,14 +184,14 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
   
   // Validación defensiva del proyecto
   if (!project || !project.id) {
-    console.error('EditProjectDialog: proyecto inválido o sin ID', project);
+    projectLogger.error('EditProjectDialog: proyecto inválido o sin ID', { project });
     return null;
   }
 
   return (
     <DialogErrorBoundary
       onError={(error, errorInfo) => {
-        console.error('Error en EditProjectDialog:', error, errorInfo);
+        projectLogger.error('Error en EditProjectDialog', { error, errorInfo });
         toast({
           title: 'Error inesperado',
           description: 'Ha ocurrido un error al cargar el diálogo. Por favor, recarga la página.',

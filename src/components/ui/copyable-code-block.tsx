@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Check, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { uiLogger } from '@/lib/logger';
 
 interface CopyableCodeBlockProps {
   codeString: string;
@@ -23,7 +24,7 @@ export const CopyableCodeBlock: React.FC<CopyableCodeBlockProps> = ({ codeString
       toast({ title: '¡Copiado!', description: 'El esquema JSON ha sido copiado al portapapeles.' });
       setTimeout(() => setCopied(false), 2000); // Reset icon after 2 seconds
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      uiLogger.error('Failed to copy text', err);
       toast({ title: 'Error al Copiar', description: 'No se pudo copiar el esquema.', variant: 'destructive' });
     }
   };

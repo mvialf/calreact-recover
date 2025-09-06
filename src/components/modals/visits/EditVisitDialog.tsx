@@ -10,6 +10,7 @@ import { updateVisit } from '@/services/visitService';
 import type { Visit, VisitStatus } from '@/types/visit';
 import { DEFAULT_VISIT_STATUS } from '@/types/visit';
 import { DialogErrorBoundary } from '@/components/error-boundary/DialogErrorBoundary';
+import { visitLogger } from '@/lib/logger';
 
 interface EditVisitDialogProps {
   visit: Visit;
@@ -46,7 +47,7 @@ export function EditVisitDialog({ visit, children, onSuccess }: EditVisitDialogP
         await updateVisit(visit.id, updateData);
         return updateData;
       } catch (error) {
-        console.error('Error en mutationFn:', error);
+        visitLogger.error('Error en mutationFn', error);
         throw error;
       }
     },
@@ -66,11 +67,11 @@ export function EditVisitDialog({ visit, children, onSuccess }: EditVisitDialogP
         setIsOpen(false);
         onSuccess?.();
       } catch (error) {
-        console.error('Error en onSuccess:', error);
+        visitLogger.error('Error en onSuccess', error);
       }
     },
     onError: (error) => {
-      console.error('Error en mutación updateVisit:', error);
+      visitLogger.error('Error en mutación updateVisit', error);
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
       toast({ 
         title: 'Error al actualizar visita', 
@@ -84,7 +85,7 @@ export function EditVisitDialog({ visit, children, onSuccess }: EditVisitDialogP
     try {
       mutate(data);
     } catch (error) {
-      console.error('Error en handleSubmit:', error);
+      visitLogger.error('Error en handleSubmit', error);
       toast({ 
         title: 'Error', 
         description: 'Error inesperado al procesar el formulario',
@@ -179,7 +180,7 @@ export function EditVisitDialog({ visit, children, onSuccess }: EditVisitDialogP
         },
       };
     } catch (error) {
-      console.error('Error al mapear datos iniciales:', error);
+      visitLogger.error('Error al mapear datos iniciales', error);
       // Retornar datos por defecto seguros
       return {
         name: '',
@@ -211,7 +212,7 @@ export function EditVisitDialog({ visit, children, onSuccess }: EditVisitDialogP
     try {
       setIsOpen(false);
     } catch (error) {
-      console.error('Error al cerrar modal:', error);
+      visitLogger.error('Error al cerrar modal', error);
     }
   }, []);
 
@@ -219,7 +220,7 @@ export function EditVisitDialog({ visit, children, onSuccess }: EditVisitDialogP
     try {
       setIsOpen(true);
     } catch (error) {
-      console.error('Error al abrir modal:', error);
+      visitLogger.error('Error al abrir modal', error);
     }
   }, []);
 
@@ -227,21 +228,21 @@ export function EditVisitDialog({ visit, children, onSuccess }: EditVisitDialogP
   
   // Validación defensiva de la visita
   if (!visit) {
-    console.error('EditVisitDialog: visita es undefined o null');
+    visitLogger.error('EditVisitDialog: visita es undefined o null');
     return null;
   }
   
   // Asegurarse de que la visita tenga un ID
   const visitWithId = visit as Visit & { id: string };
   if (!visitWithId.id) {
-    console.error('EditVisitDialog: la visita no tiene un ID válido', visit);
+    visitLogger.error('EditVisitDialog: la visita no tiene un ID válido', { visit });
     return null;
   }
 
   return (
     <DialogErrorBoundary
       onError={(error, errorInfo) => {
-        console.error('Error en EditVisitDialog:', error, errorInfo);
+        visitLogger.error('Error en EditVisitDialog', { error, errorInfo });
         toast({
           title: 'Error inesperado',
           description: 'Ha ocurrido un error al cargar el diálogo. Por favor, recarga la página.',

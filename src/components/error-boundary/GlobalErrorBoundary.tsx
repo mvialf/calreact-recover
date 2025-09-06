@@ -3,6 +3,7 @@
 import React from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { errorBoundaryLogger } from '@/lib/logger';
 
 interface GlobalErrorBoundaryState {
   hasError: boolean;
@@ -52,10 +53,10 @@ export class GlobalErrorBoundary extends React.Component<
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     const errorId = this.state.errorId;
     
-    console.group(`🚨 GlobalErrorBoundary - Error ${errorId}`);
+    errorBoundaryLogger.error(`GlobalErrorBoundary - Error ${errorId}`, { error, errorInfo });
 
 
-    console.groupEnd();
+    // Console group end - replaced with logger
 
     // Detectar si es un error relacionado con diálogos
     const isDialogError = this.isDialogRelatedError(error, errorInfo);
@@ -247,9 +248,9 @@ export const useErrorHandler = () => {
     
     // Para desarrollo, mostrar el error en la consola
     if (process.env.NODE_ENV === 'development') {
-      console.group('🔍 Error Handler Details');
+      errorBoundaryLogger.error('Error Handler Details', { error, errorInfo });
 
-      console.groupEnd();
+      // Console group end - replaced with logger
     }
   }, []);
 

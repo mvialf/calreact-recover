@@ -27,6 +27,7 @@ import {
 
 // Importar tipos necesarios
 import type { FormattedAddress } from "@/types/project"
+import { uiLogger } from '@/lib/logger';
 
 // ✅ SOLUCIÓN: Mover libraries fuera del componente para evitar recargas
 const GOOGLE_MAPS_LIBRARIES: ('places')[] = ['places'];
@@ -154,7 +155,7 @@ export function AddressInput({
           document.createElement('div')
         );
       } catch (error) {
-        console.warn('Error al inicializar servicios de Google Maps:', error);
+        uiLogger.warn('Error al inicializar servicios de Google Maps', error);
       }
     }
   }, [isLoaded]);
@@ -178,7 +179,7 @@ export function AddressInput({
           if (status === window.google?.maps?.places?.PlacesServiceStatus?.OK && predictions) {
             resolve(predictions);
           } else {
-            console.warn('Error en búsqueda de direcciones:', status);
+            uiLogger.warn('Error en búsqueda de direcciones', { status });
             resolve([]);
           }
         });
@@ -186,7 +187,7 @@ export function AddressInput({
 
       setSuggestions(results);
     } catch (error) {
-      console.error('Error al buscar direcciones:', error);
+      uiLogger.error('Error al buscar direcciones', error);
       setSuggestions([]);
     }
   }, []);
@@ -195,7 +196,7 @@ export function AddressInput({
   const handlePlaceSelect = React.useCallback(
     async (placeId: string) => {
       if (!window.google || !window.google.maps || !window.google.maps.places || !placeId) {
-        console.error("Google Maps API no está disponible o placeId inválido");
+        uiLogger.error('Google Maps API no está disponible o placeId inválido');
         return;
       }
 
@@ -212,7 +213,7 @@ export function AddressInput({
             setIsLoading(false);
             
             if (status !== window.google.maps.places.PlacesServiceStatus.OK || !place) {
-              console.error("Error al obtener detalles del lugar:", status);
+              uiLogger.error('Error al obtener detalles del lugar', { status });
               return;
             }
 
@@ -251,12 +252,12 @@ export function AddressInput({
               onSelect?.(formattedAddress);
               onPlaceSelected?.(formattedAddress);
             } catch (addressError) {
-              console.error("Error al procesar la dirección:", addressError);
+              uiLogger.error('Error al procesar la dirección', addressError);
             }
           }
         );
       } catch (error) {
-        console.error("Error al obtener detalles del lugar:", error);
+        uiLogger.error('Error al obtener detalles del lugar', error);
         setIsLoading(false);
       }
     },
@@ -341,7 +342,7 @@ export function AddressInput({
         window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
       }
     } catch (err) {
-      console.error('Error al compartir:', err);
+      uiLogger.error('Error al compartir', err);
     }
   }, [generateShareableLink, selectedAddress]);
 
@@ -410,7 +411,7 @@ export function AddressInput({
 
   // ✅ SOLUCIÓN: Manejo de errores DESPUÉS de todos los hooks
   if (loadError) {
-    console.error('Error al cargar Google Maps:', loadError);
+    uiLogger.error('Error al cargar Google Maps', loadError);
     return (
       <div className={cn("w-full", className)}>
         <Input
