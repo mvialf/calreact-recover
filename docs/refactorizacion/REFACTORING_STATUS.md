@@ -61,9 +61,10 @@
 - Winston como sistema profesional de logging
 
 ### ✅ **Fase E2E: Testing Infrastructure** (Enero 2025)
-- **Migración exitosa** de Cypress a Playwright MCP
+- **Playwright MCP implementado** para testing E2E
 - **Firebase Emulator Suite** implementado
-- **Tests críticos** funcionando (projectService: 9/9 pasando)
+- **Tests E2E funcionando** (3 suites: auth, projects, smoke)
+- **Tests unitarios críticos** funcionando (projectService: 9/9 pasando)
 - Patrón "Test-As-You-Go" establecido
 
 ## 🎖️ Logros Técnicos Específicos

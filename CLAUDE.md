@@ -121,7 +121,7 @@ const form = useForm<SchemaType>({
 #### Testing Suite
 - **Jest**: `30.0.3` - Framework testing principal
 - **React Testing Library**: `14.3.1` - Testing componentes
-- **Cypress**: `14.5.0` - E2E testing
+- **Playwright**: `1.55.0` - E2E testing con MCP integration
 - **@testing-library/user-event**: `14.6.1` - Simulación interacciones
 
 **🧪 Comandos Testing:**

@@ -212,10 +212,15 @@ describe('projectService', () => {
 });
 ```
 
-### 🎭 **Playwright E2E (Migrado de Cypress)**
+### 🎭 **Playwright E2E con MCP Integration**
 ```typescript
-// Tests E2E con herramientas MCP
-import { mcp__playwright__browser_navigate, mcp__playwright__browser_click } from 'mcp-tools';
+// Tests E2E con herramientas MCP para Claude Code
+// Configuración: playwright.config.ts optimizado para Next.js 15 + Turbopack
+
+// 3 suites de tests implementadas:
+// - auth.e2e.ts (7 tests de autenticación)  
+// - projects.e2e.ts (tests CRUD de proyectos)
+// - smoke.spec.ts (tests básicos de funcionalidad)
 
 export class ProjectE2ETests {
   async testProjectCreation() {
@@ -224,7 +229,7 @@ export class ProjectE2ETests {
       element: 'New Project Button',
       ref: '[data-testid="new-project-btn"]' 
     });
-    // Tests más estables que con Cypress
+    // Integración nativa con MCP para Claude Code
   }
 }
 ```
@@ -379,7 +384,10 @@ npm run build          # Production build (exitoso)
 
 # Testing completo
 npm test               # Jest unitarios con emulators
-npm run test:e2e       # Playwright E2E  
+npm run test:e2e       # Playwright E2E tests
+npm run test:e2e:ui    # Playwright con interfaz visual
+npm run test:e2e:debug # Playwright en modo debug  
+npm run test:e2e:headed # Playwright con navegador visible
 firebase emulators:start  # Para testing manual
 ```
 
