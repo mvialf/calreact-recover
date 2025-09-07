@@ -10,7 +10,7 @@ Este archivo proporciona orientación a Claude Code (claude.ai/code) cuando trab
 
 **ESTADO ACTUAL:** Aplicación Next.js con Firebase optimizada mediante refactorizaciones arquitecturales (Enero 2025). Arquitectura de eventos específicos por dominio implementada y componentes migrados a patrones modulares.
 
-**PROGRESO MIGRACIÓN CONSOLE.LOGS:** ✅ **MIGRACIÓN COMPLETADA** - Sistema de logging profesional implementado con 12 loggers especializados. **90 console.logs migrados exitosamente** (100% completado). Código de producción libre de console.logs. Ver `/docs/refactorizacion/console-log-fix/` para documentación completa.
+**PROGRESO REFACTORIZACIÓN:** ✅ **95% COMPLETADO** - Sistema de logging profesional implementado con 12 loggers especializados. **0 console.logs en código de producción** (solo 8 en logger.ts como sistema oficial). Servicios refactorizados con principios SOLID. Testing modernizado con Playwright MCP. Ver documentación consolidada en `/docs/refactorizacion/REFACTORING_MASTER_PLAN.md`.
 
 ## Comandos de Desarrollo
 
@@ -281,13 +281,19 @@ import { createEvent } from '@/services/eventService'; // NO EXISTE
 - **Google Maps:** Requiere API key en variables de entorno
 - **Temas:** Soporte claro/oscuro configurado
 
-## 📚 Documentación Especializada
+## 📚 Documentación de Refactorización (Simplificada)
 
-Para información detallada sobre refactorizaciones y auditorías:
-- **`docs/refactorizacion/SESSION_HANDOFF.md`** - Contexto y estado actual de refactorización
-- **`docs/refactorizacion/FASE_2_AUDITORIA_INFORME.md`** - Detalles técnicos de Component Architecture
-- **`docs/refactorizacion/CHECKLIST_TAREAS.md`** - Progreso detallado de todas las tareas
-- **`docs/refactorizacion/PLAN_REFACTORIZACION.md`** - Plan maestro completo
+**Documentación principal:** 2 archivos esenciales en `/docs/refactorizacion/`
+
+### 📖 **Documentos Esenciales**
+- **`REFACTORING_STATUS.md`** - Estado actual del proyecto (98% completado) y próximos pasos
+- **`REFACTORING_TECHNICAL.md`** - Patrones implementados, logging system y decisiones técnicas
+
+### 🎯 **Navegación Simple**
+- **¿Cuál es el estado?** → `REFACTORING_STATUS.md` (3 min lectura)
+- **¿Cómo funciona técnicamente?** → `REFACTORING_TECHNICAL.md` (5 min lectura)
+
+**Nota:** Documentación simplificada de 26 → 4 archivos para navegación eficiente.
 
 ## Comandos Especiales
 
