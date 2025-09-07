@@ -165,6 +165,41 @@ export function useGooglePlaces(options: UseGooglePlacesOptions = {}): UseGoogle
     return GoogleMapsUtils.debounce(searchPlacesInternal, config.debounceMs);
   }, [searchPlacesInternal, config]);
 
+  // Función auxiliar para procesar detalles del lugar
+  const processPlaceDetails = useCallback((place: GoogleMapsPlace, placeId: string) => {
+    try {
+      const addressComponents = extractAddressComponents(place);
+
+      const formattedAddress: FormattedAddress = {
+        textoCompleto: place.formatted_address || "",
+        coordenadas: {
+          latitude: place.geometry?.location?.lat() || 0,
+          longitude: place.geometry?.location?.lng() || 0,
+        },
+        placeId: place.place_id || placeId,
+        componentes: {
+          calle: addressComponents?.route || '',
+          numero: addressComponents?.streetNumber || '',
+          comuna: addressComponents?.locality || '',
+          ciudad: addressComponents?.locality || '',
+          region: addressComponents?.administrativeArea || '',
+          pais: addressComponents?.country || 'Chile',
+          codigoPostal: addressComponents?.postalCode || '',
+        },
+        detalle: place.formatted_address || '',
+        comune: addressComponents?.locality || '',
+      };
+
+      onPlaceSelect?.(formattedAddress);
+      uiLogger.info('Lugar procesado y seleccionado', { 
+        placeId, 
+        address: formattedAddress.textoCompleto 
+      });
+    } catch (error) {
+      uiLogger.error('Error al procesar detalles del lugar', error);
+    }
+  }, [onPlaceSelect]);
+
   // Función para seleccionar un lugar
   const selectPlace = useCallback(async (placeId: string) => {
     if (!config || !GoogleMapsUtils.isGoogleMapsAvailable() || !placeId) {
@@ -209,42 +244,7 @@ export function useGooglePlaces(options: UseGooglePlacesOptions = {}): UseGoogle
       uiLogger.error('Error al obtener detalles del lugar', error);
       setIsLoading(false);
     }
-  }, [config, onPlaceSelect, processPlaceDetails]);
-
-  // Función auxiliar para procesar detalles del lugar
-  const processPlaceDetails = useCallback((place: GoogleMapsPlace, placeId: string) => {
-    try {
-      const addressComponents = extractAddressComponents(place);
-
-      const formattedAddress: FormattedAddress = {
-        textoCompleto: place.formatted_address || "",
-        coordenadas: {
-          latitude: place.geometry?.location?.lat() || 0,
-          longitude: place.geometry?.location?.lng() || 0,
-        },
-        placeId: place.place_id || placeId,
-        componentes: {
-          calle: addressComponents?.route || '',
-          numero: addressComponents?.streetNumber || '',
-          comuna: addressComponents?.locality || '',
-          ciudad: addressComponents?.locality || '',
-          region: addressComponents?.administrativeArea || '',
-          pais: addressComponents?.country || 'Chile',
-          codigoPostal: addressComponents?.postalCode || '',
-        },
-        detalle: place.formatted_address || '',
-        comune: addressComponents?.locality || '',
-      };
-
-      onPlaceSelect?.(formattedAddress);
-      uiLogger.info('Lugar procesado y seleccionado', { 
-        placeId, 
-        address: formattedAddress.textoCompleto 
-      });
-    } catch (error) {
-      uiLogger.error('Error al procesar detalles del lugar', error);
-    }
-  }, [onPlaceSelect]);
+  }, [config, processPlaceDetails]);
 
   // Función para limpiar sugerencias
   const clearSuggestions = useCallback(() => {

@@ -223,6 +223,47 @@ export function AddressInput({
     }
   }, [config]);
 
+  // Función auxiliar para procesar detalles del lugar
+  const processPlaceDetails = React.useCallback((place: GoogleMapsPlace, placeId: string) => {
+    try {
+      // Extraer componentes de la dirección con validación
+      const addressComponents = extractAddressComponents(place);
+
+      // Formatear la dirección completa según el tipo FormattedAddress
+      const formattedAddress: FormattedAddress = {
+        textoCompleto: place.formatted_address || "",
+        coordenadas: {
+          latitude: place.geometry?.location?.lat() || 0,
+          longitude: place.geometry?.location?.lng() || 0,
+        },
+        placeId: place.place_id || placeId,
+        componentes: {
+          calle: addressComponents?.route || '',
+          numero: addressComponents?.streetNumber || '',
+          comuna: addressComponents?.locality || '',
+          ciudad: addressComponents?.locality || '',
+          region: addressComponents?.administrativeArea || '',
+          pais: addressComponents?.country || 'Chile',
+          codigoPostal: addressComponents?.postalCode || '',
+        },
+        detalle: place.formatted_address || '',
+        comune: addressComponents?.locality || '', // Campo directo para acceso rápido
+      };
+
+      // Actualizar el estado
+      setSelectedAddress(formattedAddress);
+      setInputValue(formattedAddress.textoCompleto);
+      setSuggestions([]);
+      setIsOpen(false);
+
+      // Llamar a los callbacks
+      onSelect?.(formattedAddress);
+      onPlaceSelected?.(formattedAddress);
+    } catch (addressError) {
+      uiLogger.error('Error al procesar la dirección', addressError);
+    }
+  }, [onSelect, onPlaceSelected]);
+
   // ✅ MIGRACIÓN: Manejo optimizado de selección de lugar con caché
   const handlePlaceSelect = React.useCallback(
     async (placeId: string) => {
@@ -267,49 +308,8 @@ export function AddressInput({
         setIsLoading(false);
       }
     },
-    [config, onSelect, onPlaceSelected, processPlaceDetails]
+    [config, processPlaceDetails]
   );
-
-  // Función auxiliar para procesar detalles del lugar
-  const processPlaceDetails = React.useCallback((place: GoogleMapsPlace, placeId: string) => {
-    try {
-      // Extraer componentes de la dirección con validación
-      const addressComponents = extractAddressComponents(place);
-
-      // Formatear la dirección completa según el tipo FormattedAddress
-      const formattedAddress: FormattedAddress = {
-        textoCompleto: place.formatted_address || "",
-        coordenadas: {
-          latitude: place.geometry?.location?.lat() || 0,
-          longitude: place.geometry?.location?.lng() || 0,
-        },
-        placeId: place.place_id || placeId,
-        componentes: {
-          calle: addressComponents?.route || '',
-          numero: addressComponents?.streetNumber || '',
-          comuna: addressComponents?.locality || '',
-          ciudad: addressComponents?.locality || '',
-          region: addressComponents?.administrativeArea || '',
-          pais: addressComponents?.country || 'Chile',
-          codigoPostal: addressComponents?.postalCode || '',
-        },
-        detalle: place.formatted_address || '',
-        comune: addressComponents?.locality || '', // Campo directo para acceso rápido
-      };
-
-      // Actualizar el estado
-      setSelectedAddress(formattedAddress);
-      setInputValue(formattedAddress.textoCompleto);
-      setSuggestions([]);
-      setIsOpen(false);
-
-      // Llamar a los callbacks
-      onSelect?.(formattedAddress);
-      onPlaceSelected?.(formattedAddress);
-    } catch (addressError) {
-      uiLogger.error('Error al procesar la dirección', addressError);
-    }
-  }, [onSelect, onPlaceSelected]);
 
   const handleClear = React.useCallback(() => {
     setSelectedAddress(null);
@@ -488,7 +488,7 @@ export function AddressInput({
   // Renderizar el componente de búsqueda de direcciones
   if (selectedAddress) {
     return (
-      <div className={cn("w-full bg-background border rounded-md p-3 relative group", className)}>
+      <div className={cn("w-full bg-background border rounded-md p-3 relative group", className)} data-testid="selected-address">
         <div className="space-y-1">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -551,6 +551,7 @@ export function AddressInput({
                             placeholder="Ej: Depto 405, Block C"
                             className="h-8 text-sm"
                             onClick={(e) => e.stopPropagation()}
+                            data-testid="additional-info-input"
                           />
                           <Button 
                             type="submit" 
