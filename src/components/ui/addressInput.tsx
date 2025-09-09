@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useCallback } from "react"
-import { Loader2, MapPin, MapPinOff, X, MoreVertical, Building, Copy, Map, Share2 } from "lucide-react"
+import React from "react"
+import { Loader2, MapPin, X, MoreVertical, Building, Copy, Map, Share2, MapPinOff } from "lucide-react" // TODO: Implementar estados de error geolocalización con MapPinOff
 import { useLoadScript } from "@react-google-maps/api"
 import { extractAddressComponents } from "@/utils/address-utils"
 import { cn } from "@/lib/utils"
@@ -34,10 +34,12 @@ import {
   getGoogleMapsConfig, 
   GoogleMapsUtils, 
   googleMapsCache,
-  sessionTokenManager,
   type GoogleMapsPrediction,
   type GoogleMapsPlace 
-} from '@/lib/google-maps-config';
+} from '@/lib/google-maps-config'; // sessionTokenManager removido - manejado por PlacesServiceAdapter
+
+// Importar nuevo adaptador
+import { PlacesServiceAdapter } from '@/lib/places/PlacesServiceAdapter';
 
 // Extender la interfaz global de Window para incluir google
 declare global {
@@ -97,6 +99,7 @@ export function AddressInput({
   const [suggestions, setSuggestions] = React.useState<GoogleMapsPrediction[]>([]);
   const [selectedAddress, setSelectedAddress] = React.useState<FormattedAddress | null>(value || null);
   const [additionalInfo, setAdditionalInfo] = React.useState(value?.informacionAdicional || "");
+  const [apiStatus, setApiStatus] = React.useState<'loading' | 'ready' | 'error'>('loading');
 
   // Obtener configuración optimizada
   const config = React.useMemo(() => {
@@ -158,27 +161,43 @@ export function AddressInput({
     // No hacer nada si value es undefined (carga inicial)
   }, [value]);
 
-  // Estado para las sugerencias de direcciones
-  const autocompleteService = React.useRef<google.maps.places.AutocompleteService | null>(null);
-  const placesService = React.useRef<google.maps.places.PlacesService | null>(null);
+  // ✅ MIGRACIÓN: Reemplazar refs de servicios con adapter
+  const placesAdapterRef = React.useRef<PlacesServiceAdapter | null>(null);
 
-  // ✅ SOLUCIÓN: Inicializar servicios con validaciones defensivas
+  // ✅ MIGRACIÓN: Inicializar nuevo adaptador
   React.useEffect(() => {
-    if (isLoaded && window.google && window.google.maps && window.google.maps.places) {
-      try {
-        autocompleteService.current = new window.google.maps.places.AutocompleteService();
-        placesService.current = new window.google.maps.places.PlacesService(
-          document.createElement('div')
-        );
-      } catch (error) {
-        uiLogger.warn('Error al inicializar servicios de Google Maps', error);
+    const initializePlacesAPI = async () => {
+      if (!isLoaded || !window.google?.maps) {
+        return;
       }
-    }
+      
+      try {
+        setApiStatus('loading');
+        
+        const adapter = new PlacesServiceAdapter({
+          componentRestrictions: { country: 'es' },
+          types: ['establishment'],
+          sessionToken: true
+        });
+        
+        await adapter.initialize();
+        placesAdapterRef.current = adapter;
+        setApiStatus('ready');
+        
+        uiLogger.info(`Places API inicializada: ${adapter.getAPIVersion()}`);
+        
+      } catch (error) {
+        setApiStatus('error');
+        uiLogger.error('Error al inicializar Places API:', error);
+      }
+    };
+    
+    initializePlacesAPI();
   }, [isLoaded]);
 
-  // ✅ MIGRACIÓN: Buscar sugerencias con caché y optimizaciones
+  // ✅ MIGRACIÓN: Buscar sugerencias con nuevo adaptador
   const searchAddresses = React.useCallback(async (query: string) => {
-    if (!config || !autocompleteService.current || !GoogleMapsUtils.isValidQuery(query, config)) {
+    if (!config || !placesAdapterRef.current || apiStatus !== 'ready' || !GoogleMapsUtils.isValidQuery(query, config)) {
       setSuggestions([]);
       return;
     }
@@ -197,31 +216,24 @@ export function AddressInput({
     setIsLoading(true);
 
     try {
-      const request = GoogleMapsUtils.buildAutocompleteRequest(trimmedQuery, config);
+      const predictions = await placesAdapterRef.current.getPlacePredictions(trimmedQuery);
 
-      const results = await new Promise<GoogleMapsPrediction[]>((resolve) => {
-        autocompleteService.current?.getPlacePredictions(request, (predictions, status) => {
-          if (status === window.google?.maps?.places?.PlacesServiceStatus?.OK && predictions) {
-            // Limitar número de sugerencias según configuración
-            const limitedPredictions = GoogleMapsUtils.limitSuggestions(predictions, config);
-            resolve(limitedPredictions);
-          } else {
-            uiLogger.warn('Error en búsqueda de direcciones', { status, query: trimmedQuery });
-            resolve([]);
-          }
-        });
-      });
-
+      // Limitar número de sugerencias según configuración
+      const limitedPredictions = GoogleMapsUtils.limitSuggestions(predictions, config);
+      
       // Guardar en caché
-      googleMapsCache.set(cacheKey, results);
-      setSuggestions(results);
+      googleMapsCache.set(cacheKey, limitedPredictions);
+      setSuggestions(limitedPredictions);
+      
+      uiLogger.debug(`Encontradas ${limitedPredictions.length} sugerencias para: "${trimmedQuery}"`);
+      
     } catch (error) {
-      uiLogger.error('Error al buscar direcciones', error);
       setSuggestions([]);
+      uiLogger.error('Error buscando direcciones:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [config]);
+  }, [config, apiStatus]);
 
   // Función auxiliar para procesar detalles del lugar
   const processPlaceDetails = React.useCallback((place: GoogleMapsPlace, placeId: string) => {
@@ -632,8 +644,18 @@ export function AddressInput({
     );
   }
 
+  // ✅ Mostrar estado de API en desarrollo
+  const showAPIStatus = process.env.NODE_ENV === 'development';
+
   return (
     <div className={cn("w-full", className)}>
+      {/* Status indicator para desarrollo */}
+      {showAPIStatus && (
+        <div className="absolute -top-6 right-0 text-xs opacity-50">
+          API: {apiStatus === 'ready' ? placesAdapterRef.current?.getAPIVersion() : apiStatus}
+        </div>
+      )}
+      
       <Popover 
         open={isOpen} 
         onOpenChange={(open) => {
@@ -663,7 +685,7 @@ export function AddressInput({
                   }
                 }
               }}
-              disabled={disabled || externalLoading || !isLoaded}
+              disabled={disabled || externalLoading || !isLoaded || apiStatus !== 'ready'}
               className={cn("w-full pr-10", inputClassName)}
               autoComplete="off"
             />

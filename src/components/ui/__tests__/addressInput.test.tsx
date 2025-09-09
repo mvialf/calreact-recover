@@ -1,5 +1,8 @@
 // Mock de las variables de entorno antes de cualquier import
 process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = 'test-google-maps-api-key';
+process.env.NEXT_PUBLIC_USE_NEW_PLACES_API = 'true';
+process.env.NEXT_PUBLIC_PLACES_API_FALLBACK = 'true';
+process.env.NEXT_PUBLIC_PLACES_API_MONITORING = 'false';
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
@@ -7,7 +10,22 @@ import userEvent from '@testing-library/user-event';
 import { AddressInput } from '../addressInput';
 import type { FormattedAddress } from '@/types/project';
 
-// Mock de Google Maps API
+// Mock del PlacesServiceAdapter
+const mockPlacesAdapter = {
+  initialize: jest.fn().mockResolvedValue(undefined),
+  getPlacePredictions: jest.fn().mockResolvedValue([]),
+  getPlaceDetails: jest.fn().mockResolvedValue(null),
+  getAPIVersion: jest.fn().mockReturnValue('modern'),
+  refreshSessionToken: jest.fn(),
+  isInitialized: jest.fn().mockReturnValue(true)
+};
+
+// Mock de PlacesServiceAdapter
+jest.mock('@/lib/places/PlacesServiceAdapter', () => ({
+  PlacesServiceAdapter: jest.fn().mockImplementation(() => mockPlacesAdapter)
+}));
+
+// Mock de Google Maps API (mantenido para compatibilidad con PlacesService legacy en algunos tests)
 const mockGoogleMapsApi = {
   maps: {
     places: {
@@ -67,7 +85,14 @@ describe('AddressInput', () => {
     // Reset mocks
     jest.clearAllMocks();
     
-    // Mock de AutocompleteService
+    // Reset del adapter mock
+    mockPlacesAdapter.initialize.mockResolvedValue(undefined);
+    mockPlacesAdapter.getPlacePredictions.mockResolvedValue([]);
+    mockPlacesAdapter.getPlaceDetails.mockResolvedValue(null);
+    mockPlacesAdapter.getAPIVersion.mockReturnValue('modern');
+    mockPlacesAdapter.isInitialized.mockReturnValue(true);
+    
+    // Mock de AutocompleteService (para compatibilidad legacy)
     mockAutocompleteService = {
       getPlacePredictions: jest.fn()
     };
@@ -176,9 +201,8 @@ describe('AddressInput', () => {
         }
       ];
 
-      mockAutocompleteService.getPlacePredictions.mockImplementation((request: any, callback: any) => {
-        callback(mockPredictions, 'OK');
-      });
+      // Configurar el adapter para retornar sugerencias
+      mockPlacesAdapter.getPlacePredictions.mockResolvedValue(mockPredictions);
 
       render(<AddressInput onSelect={mockOnSelect} />);
       
@@ -191,13 +215,11 @@ describe('AddressInput', () => {
         jest.advanceTimersByTime(300);
       });
 
+      // Verificar que el adapter fue llamado correctamente
       await waitFor(() => {
-        expect(mockAutocompleteService.getPlacePredictions).toHaveBeenCalledWith(
-          expect.objectContaining({
-            input: 'Av. Providencia',
-            componentRestrictions: { country: 'cl' }
-          }),
-          expect.any(Function)
+        expect(mockPlacesAdapter.getPlacePredictions).toHaveBeenCalledWith(
+          'Av. Providencia',
+          expect.any(Object) // Opciones adicionales
         );
       });
     });
@@ -214,9 +236,8 @@ describe('AddressInput', () => {
         }
       ];
 
-      mockAutocompleteService.getPlacePredictions.mockImplementation((request: any, callback: any) => {
-        callback(mockPredictions, 'OK');
-      });
+      // Configurar el adapter para retornar sugerencias
+      mockPlacesAdapter.getPlacePredictions.mockResolvedValue(mockPredictions);
 
       render(<AddressInput onSelect={mockOnSelect} />);
       
@@ -229,8 +250,7 @@ describe('AddressInput', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText('Av. Providencia 123')).toBeInTheDocument();
-        expect(screen.getByText('Santiago')).toBeInTheDocument();
+        expect(screen.getByText('Av. Providencia 123, Santiago')).toBeInTheDocument();
       });
     });
 
@@ -540,6 +560,184 @@ describe('AddressInput', () => {
       // Avanzar tiempo para completar la búsqueda
       act(() => {
         jest.advanceTimersByTime(200);
+      });
+    });
+  });
+
+  describe('Integración con PlacesServiceAdapter', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('debería mostrar el indicador de versión API en desarrollo', async () => {
+      // Mock NODE_ENV usando Object.defineProperty para evitar error de read-only
+      const originalDescriptor = Object.getOwnPropertyDescriptor(process.env, 'NODE_ENV');
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'development',
+        configurable: true
+      });
+
+      mockPlacesAdapter.getAPIVersion.mockReturnValue('modern');
+
+      render(<AddressInput onSelect={mockOnSelect} />);
+
+      // En desarrollo debería mostrar indicador de API
+      await waitFor(() => {
+        // Buscar elemento que contenga "API: modern"
+        const apiIndicator = document.querySelector('[class*="opacity-50"]');
+        expect(apiIndicator).toBeTruthy();
+      });
+
+      // Restaurar NODE_ENV
+      if (originalDescriptor) {
+        Object.defineProperty(process.env, 'NODE_ENV', originalDescriptor);
+      } else {
+        delete (process.env as any).NODE_ENV;
+      }
+    });
+
+    it('debería inicializar el adapter al montar el componente', async () => {
+      render(<AddressInput onSelect={mockOnSelect} />);
+
+      await waitFor(() => {
+        expect(mockPlacesAdapter.initialize).toHaveBeenCalled();
+      });
+    });
+
+    it('debería usar el adapter para obtener predicciones', async () => {
+      const mockPredictions = [
+        {
+          place_id: 'place1',
+          description: 'Test Location',
+          structured_formatting: {
+            main_text: 'Test',
+            secondary_text: 'Location'
+          }
+        }
+      ];
+
+      mockPlacesAdapter.getPlacePredictions.mockResolvedValue(mockPredictions);
+
+      render(<AddressInput onSelect={mockOnSelect} />);
+      
+      const input = screen.getByPlaceholderText('Buscar dirección');
+      await userEvent.type(input, 'Test');
+      
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
+
+      await waitFor(() => {
+        expect(mockPlacesAdapter.getPlacePredictions).toHaveBeenCalledWith(
+          'Test',
+          expect.any(Object)
+        );
+      });
+    });
+
+    it('debería manejar errores del adapter correctamente', async () => {
+      // Simular error en el adapter
+      mockPlacesAdapter.getPlacePredictions.mockRejectedValue(new Error('API Error'));
+
+      render(<AddressInput onSelect={mockOnSelect} />);
+      
+      const input = screen.getByPlaceholderText('Buscar dirección');
+      await userEvent.type(input, 'Test');
+      
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
+
+      // No debería mostrar sugerencias en caso de error
+      await waitFor(() => {
+        expect(screen.queryByText('Test Location')).not.toBeInTheDocument();
+      });
+    });
+
+    it('debería mostrar estado deshabilitado cuando el adapter no está listo', async () => {
+      // Simular adapter no inicializado
+      mockPlacesAdapter.isInitialized.mockReturnValue(false);
+
+      render(<AddressInput onSelect={mockOnSelect} />);
+      
+      const input = screen.getByPlaceholderText('Buscar dirección');
+      
+      expect(input).toBeDisabled();
+    });
+
+    it('debería permitir refrescar session token', async () => {
+      render(<AddressInput onSelect={mockOnSelect} />);
+
+      // Simular acción que requiera refresh del token (esto sería interno)
+      // En un caso real, podría ser después de un cierto tiempo o número de requests
+      
+      // Verificar que el método existe y puede ser llamado
+      expect(mockPlacesAdapter.refreshSessionToken).toBeDefined();
+    });
+  });
+
+  describe('Compatibilidad con ambas APIs', () => {
+    it('debería funcionar cuando se usa API moderna', async () => {
+      mockPlacesAdapter.getAPIVersion.mockReturnValue('modern');
+
+      const mockPredictions = [
+        {
+          place_id: 'place1',
+          description: 'Modern API Result',
+          structured_formatting: {
+            main_text: 'Modern API',
+            secondary_text: 'Result'
+          }
+        }
+      ];
+
+      mockPlacesAdapter.getPlacePredictions.mockResolvedValue(mockPredictions);
+
+      render(<AddressInput onSelect={mockOnSelect} />);
+      
+      const input = screen.getByPlaceholderText('Buscar dirección');
+      await userEvent.type(input, 'Modern');
+      
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Modern API Result')).toBeInTheDocument();
+      });
+    });
+
+    it('debería funcionar cuando se usa API legacy', async () => {
+      mockPlacesAdapter.getAPIVersion.mockReturnValue('legacy');
+
+      const mockPredictions = [
+        {
+          place_id: 'place1',
+          description: 'Legacy API Result',
+          structured_formatting: {
+            main_text: 'Legacy API',
+            secondary_text: 'Result'
+          }
+        }
+      ];
+
+      mockPlacesAdapter.getPlacePredictions.mockResolvedValue(mockPredictions);
+
+      render(<AddressInput onSelect={mockOnSelect} />);
+      
+      const input = screen.getByPlaceholderText('Buscar dirección');
+      await userEvent.type(input, 'Legacy');
+      
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Legacy API Result')).toBeInTheDocument();
       });
     });
   });

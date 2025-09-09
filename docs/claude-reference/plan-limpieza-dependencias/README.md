@@ -15,10 +15,10 @@ Reducir el tamaño del bundle, simplificar el stack tecnológico y mantener solo
 
 ### 📊 Estado Actual
 - **Total dependencias instaladas:** 81 paquetes
-- **Reportadas como no utilizadas:** 28 paquetes
-- **Analizadas:** 2/28 (7%)
-- **Aprobadas para eliminación:** 2
-- **Reducción estimada:** ~390KB
+- **Reportadas como no utilizadas:** 32 paquetes
+- **Analizadas:** 6/32 (19%)
+- **Aprobadas para eliminación:** 6
+- **Reducción estimada:** ~610KB
 
 ---
 
@@ -34,34 +34,41 @@ Reducir el tamaño del bundle, simplificar el stack tecnológico y mantener solo
 
 ## 🗂️ Estado de Dependencias
 
-### ✅ Aprobadas para Eliminación (2)
+### ✅ **ELIMINADAS EXITOSAMENTE (6)** - 8 de septiembre de 2025
 
+#### **Dependencias Originales (2):**
 | Dependencia | Tipo | Versión | Tamaño | Análisis | Estado |
 |-------------|------|---------|---------|-----------|--------|
-| [zustand](./analisis/01-zustand.md) | Producción | 5.0.5 | ~2.1KB | ✅ Completado | 🗑️ **ELIMINAR** |
-| [winston](./analisis/02-winston.md) | Producción | 3.17.0 | ~388KB | ✅ Completado | 🗑️ **ELIMINAR** |
+| [zustand](./analisis/01-zustand.md) | Producción | 5.0.5 | ~2.1KB | ✅ Completado | ✅ **ELIMINADO** |
+| [winston](./analisis/02-winston.md) | Producción | 3.17.0 | ~388KB | ✅ Completado | ✅ **ELIMINADO** |
+
+#### **🚀 Nuevas - Post Migración Google Places API (4):**
+| Dependencia | Tipo | Versión | Tamaño | Análisis | Estado |
+|-------------|------|---------|---------|-----------|--------|
+| [react-google-autocomplete](./analisis/03-react-google-autocomplete.md) | Producción | 2.7.5 | ~45KB | ✅ Completado | ✅ **ELIMINADO** |
+| [react-google-places-autocomplete](./analisis/04-react-google-places-autocomplete.md) | Producción | 4.1.0 | ~52KB | ✅ Completado | ✅ **ELIMINADO** |
+| [use-places-autocomplete](./analisis/05-use-places-autocomplete.md) | Producción | 4.0.1 | ~38KB | ✅ Completado | ✅ **ELIMINADO** |
+| [@vis.gl/react-google-maps](./analisis/06-vis-gl-react-google-maps.md) | Producción | 1.5.4 | ~85KB | ✅ Completado | ✅ **ELIMINADO** |
 
 **Razones consolidadas:**
 - **zustand:** React Context API implementado, zustand nunca usado en código
 - **winston:** Logger personalizado 100% implementado, winston 0% usado + ROI negativo
+- **Google Places libs:** Reemplazadas por implementación custom con nueva Google Places API
+- **@vis.gl/react-google-maps:** Duplicado con @react-google-maps/api (que sí se usa)
 
-### 🔍 Pendientes de Análisis (27)
+### 🔍 Pendientes de Análisis (26)
 
-#### Dependencias de Producción (10)
+#### Dependencias de Producción (6)
 | Dependencia | Tipo | Versión | Estado | Prioridad |
 |-------------|------|---------|--------|-----------|
 | country-data | Producción | 0.0.31 | 🔍 **Pendiente** | Alta - No se usa |
 | react-input-mask | Producción | 2.0.4 | 🔍 **Pendiente** | Alta - No se usa |
-| @vis.gl/react-google-maps | Producción | 1.5.4 | 🔍 **Pendiente** | Media - Mapas duplicados |
-| react-google-autocomplete | Producción | 2.7.5 | 🔍 **Pendiente** | Media - Mapas duplicados |
-| react-google-places-autocomplete | Producción | 4.1.0 | 🔍 **Pendiente** | Media - Mapas duplicados |
-| use-places-autocomplete | Producción | 4.0.1 | 🔍 **Pendiente** | Media - Mapas duplicados |
-| @tanstack-query-firebase/react | Producción | 1.0.6 | 🔍 **Pendiente** | Baja - TanStack directo |
+| @tanstack-query-firebase/react | Producción | 1.0.5 | 🔍 **Pendiente** | Baja - TanStack directo |
 | patch-package | Producción | 8.0.0 | 🔍 **Pendiente** | Baja - Sin patches/ |
 | @radix-ui/react-form | Producción | 0.1.7 | 🔍 **Pendiente** | Baja - RHF en uso |
 | @playwright/mcp | Producción | 0.0.36 | 🔍 **Pendiente** | Baja - Playwright directo |
 
-#### DevDependencies (16)
+#### DevDependencies (20)
 | Dependencia | Estado | Nota |
 |-------------|--------|------|
 | @testing-library/user-event | 🔍 **Pendiente** | Testing - posible mantener |
@@ -85,17 +92,28 @@ Reducir el tamaño del bundle, simplificar el stack tecnológico y mantener solo
 
 ## 🚀 Próximos Pasos
 
-### 1. **Dependencia siguiente a analizar:** country-data
+### 1. **✅ PRIMERA FASE COMPLETADA (6 dependencias eliminadas):**
+```bash
+✅ EJECUTADO: npm uninstall zustand winston react-google-autocomplete react-google-places-autocomplete use-places-autocomplete @vis.gl/react-google-maps
+
+# Verificaciones realizadas:
+✅ npm run typecheck - Sin errores
+✅ npm run lint - Sin errores críticos
+✅ npm run build - Build exitoso
+✅ npm run dev - Aplicación funciona correctamente
+✅ Documentación actualizada
+```
+
+### 2. **Dependencia siguiente a analizar:** country-data
 - Verificar si se usa para validación de países en formularios
 - Buscar alternativas más ligeras si es necesario
 - Decisión esperada: Probable eliminación si no se usa
 
-### 2. **Orden de prioridad:**
+### 3. **Orden de prioridad actualizado:**
 1. **Alta prioridad:** country-data, react-input-mask
-2. **Media prioridad:** Librerías de Google Maps duplicadas
-3. **Baja prioridad:** Dependencias de configuración y tipos
+2. **Baja prioridad:** Dependencias de configuración y tipos
 
-### 3. **DevDependencies:** Analizar después de dependencias principales
+### 4. **DevDependencies:** Analizar después de dependencias principales
 
 ---
 
@@ -103,10 +121,10 @@ Reducir el tamaño del bundle, simplificar el stack tecnológico y mantener solo
 
 ```
 Dependencias de producción analizadas:
-[████░░░░░░░░] 17% - 2 de 12 completadas
+[████████████████████░░░░░░░░] 67% - 6 de 9 completadas
 
 Total del plan:
-[██░░░░░░░░░░░░░░░░░░░░░░░░░░] 7% - 2 de 28 completadas
+[██████░░░░░░░░░░░░░░░░░░░░░░] 19% - 6 de 32 completadas
 ```
 
 ---
@@ -125,8 +143,8 @@ grep -r "country" src/ | grep -i "data\|list\|code"
 
 ### Ejecutar eliminaciones aprobadas
 ```bash
-# Eliminar dependencias aprobadas
-npm uninstall zustand winston
+# Eliminar dependencias aprobadas (6 TOTAL)
+npm uninstall zustand winston react-google-autocomplete react-google-places-autocomplete use-places-autocomplete @vis.gl/react-google-maps
 
 # Verificar todo funciona
 npm run typecheck && npm run lint && npm run build
@@ -143,5 +161,5 @@ npm run typecheck && npm run lint && npm run build
 
 ---
 
-**Última actualización:** 7 de septiembre de 2025  
+**Última actualización:** 8 de septiembre de 2025  
 **Próxima actualización:** Tras análisis de country-data

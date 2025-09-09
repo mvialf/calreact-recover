@@ -139,3 +139,15 @@ export interface ProjectEventDocument
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }
+
+// Tipo para resultados de migración por lotes
+export interface MigrationBatchResult {
+  batchId: string;
+  processed: number;
+  successful: number;
+  failed: number;
+  errors: Array<{eventId: string; error: string}>;
+  startTime: Date;
+  endTime: Date;
+  duration: number;
+}

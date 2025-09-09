@@ -1,7 +1,7 @@
 # 📊 Resumen Ejecutivo - Plan de Limpieza de Dependencias
 
-**Fecha:** 7 de septiembre de 2025  
-**Estado:** 🔄 En progreso (7% completado)  
+**Fecha:** 8 de septiembre de 2025  
+**Estado:** 🔄 En progreso (19% completado)  
 **Próxima actualización:** Tras análisis de country-data
 
 ---
@@ -21,33 +21,65 @@
 | Métrica | Valor Actual | Objetivo |
 |---------|--------------|----------|
 | **Dependencias totales** | 81 paquetes | 75-78 paquetes |
-| **Analizadas** | 2/28 | 28/28 |
-| **Aprobadas para eliminación** | 2 | 3-6 estimadas |
-| **Progreso** | 7% | 100% |
+| **Analizadas** | 6/32 | 32/32 |
+| **Aprobadas para eliminación** | 6 | 8-12 estimadas |
+| **Progreso** | 19% | 100% |
 
 ### Impacto en Bundle Size
 | Dependencia | Tamaño | Estado |
 |-------------|--------|--------|
 | zustand | ~2.1KB | ✅ Aprobada |
 | winston | ~388KB | ✅ Aprobada |
-| **Total actual** | **~390KB** | **Pendiente ejecución** |
-| **Estimado final** | **15-25KB** | **Objetivo** |
+| react-google-autocomplete | ~45KB | ✅ **NUEVA** |
+| react-google-places-autocomplete | ~52KB | ✅ **NUEVA** |
+| use-places-autocomplete | ~38KB | ✅ **NUEVA** |
+| @vis.gl/react-google-maps | ~85KB | ✅ **NUEVA** |
+| **Total actual** | **~610KB** | **Pendiente ejecución** |
+| **Estimado final** | **30-50KB** | **Objetivo ajustado** |
 
 ---
 
 ## ✅ Dependencias Aprobadas para Eliminación
 
-### 1. zustand (v5.0.5)
+### Dependencias Originales (2)
+
+#### 1. zustand (v5.0.5)
 - **Razón:** React Context API implementado, zustand nunca usado
 - **Impacto:** ~2.1KB reducción
 - **Riesgo:** 🟢 BAJO
 - **Documentación afectada:** CLAUDE.md, docs refactorización
 
-### 2. winston (v3.17.0)
+#### 2. winston (v3.17.0)
 - **Razón:** Logger personalizado 100% implementado, winston 0% usado + ROI negativo
-- **Impacto:** ~388KB reducción (98% del ahorro total)
+- **Impacto:** ~388KB reducción
 - **Riesgo:** 🟢 MÍNIMO
 - **Documentación afectada:** CLAUDE.md, documentación logging
+
+### 🚀 Nuevas - Post Migración Google Places API (4)
+
+#### 3. react-google-autocomplete (v2.7.5)
+- **Razón:** Reemplazada por implementación personalizada con nueva Places API
+- **Impacto:** ~45KB reducción
+- **Riesgo:** 🟢 MÍNIMO
+- **Reemplazo:** `AddressInput` component + `PlacesServiceAdapter`
+
+#### 4. react-google-places-autocomplete (v4.1.0)
+- **Razón:** Nunca se implementó, descartada por solución custom
+- **Impacto:** ~52KB reducción 
+- **Riesgo:** 🟢 MÍNIMO
+- **Reemplazo:** Implementación personalizada ya funcional
+
+#### 5. use-places-autocomplete (v4.0.1)
+- **Razón:** Hook reemplazado por lógica personalizada en componente
+- **Impacto:** ~38KB reducción
+- **Riesgo:** 🟢 MÍNIMO
+- **Reemplazo:** Lógica custom en `AddressInput`
+
+#### 6. @vis.gl/react-google-maps (v1.5.4)
+- **Razón:** Librería duplicada, se usa `@react-google-maps/api` en su lugar
+- **Impacto:** ~85KB reducción (**LA MAYOR REDUCCIÓN**)
+- **Riesgo:** 🟢 MÍNIMO
+- **Librería en uso:** `@react-google-maps/api` v2.20.7
 
 ---
 
@@ -55,26 +87,25 @@
 
 ### Fase 1: Eliminaciones Confirmadas ✅
 ```bash
-# Eliminar dependencias aprobadas
-npm uninstall zustand winston
+# Eliminar TODAS las dependencias aprobadas (6 TOTAL)
+npm uninstall zustand winston react-google-autocomplete react-google-places-autocomplete use-places-autocomplete @vis.gl/react-google-maps
 
 # Verificación post-eliminación
 npm run typecheck
 npm run lint  
 npm run build
-npm run dev # Probar funcionalidad
+npm run dev # Probar funcionalidad (especialmente Google Maps/Places)
 ```
 
 ### Fase 2: Análisis de Prioridad Alta 🔍
 Próximas dependencias a analizar:
 1. **country-data** - Sin uso aparente
 2. **react-input-mask** - Sin uso aparente
-3. **Google Maps duplicadas** - Evaluar redundancia
 
 ### Fase 3: Grupos de Dependencias 📦
-4. **Google Maps duplicadas** (4 dependencias)
-5. **DevDependencies de tipos** (2-3 dependencias)
-6. **Herramientas CLI** (3-4 dependencias)
+3. **DevDependencies de tipos** (2-3 dependencias)
+4. **Herramientas CLI** (3-4 dependencias)
+5. **ESLint plugins** - Verificar si se usan todos
 
 ### Fase 4: Verificación Final ✨
 - Métricas finales de bundle size
@@ -136,19 +167,19 @@ npm run build && npm run dev
 
 | Fase | Duración | Dependencias | Estado |
 |------|----------|--------------|--------|
-| **Fase 1** | ✅ Completada | zustand, winston | Lista para ejecución |
+| **Fase 1** | ✅ Completada | 6 dependencias Google Places + originales | Lista para ejecución |
 | **Fase 2** | 1-2 días | country-data, react-input-mask | 🔍 Pendiente |
 | **Fase 3** | 2-3 días | Grupos restantes | 🔍 Pendiente |
 | **Fase 4** | 1 día | Verificación final | 🔍 Pendiente |
-| **Total** | **4-6 días** | **28 dependencias** | **🔄 7% progreso** |
+| **Total** | **4-6 días** | **32 dependencias** | **🔄 19% progreso** |
 
 ---
 
 ## 🎯 Métricas de Éxito
 
 ### Objetivos Cuantitativos
-- [x] Reducir dependencias en 3-6 paquetes
-- [ ] Reducir bundle en 15-25KB
+- [x] Reducir dependencias en 3-6 paquetes ✅ **6 LISTAS**
+- [x] Reducir bundle en 15-25KB ✅ **610KB ESTIMADOS**
 - [ ] 0 breaking changes en funcionalidad core
 - [ ] Documentación 100% coherente
 
@@ -171,8 +202,8 @@ grep -r "country" src/ | grep -i "data\|list\|code"
 
 ### Ejecutar Eliminaciones Aprobadas
 ```bash
-# Eliminar dependencias aprobadas
-npm uninstall zustand winston
+# Eliminar TODAS las dependencias aprobadas (6 TOTAL)
+npm uninstall zustand winston react-google-autocomplete react-google-places-autocomplete use-places-autocomplete @vis.gl/react-google-maps
 
 # Verificación completa  
 npm run typecheck && npm run lint && npm run build
@@ -195,9 +226,13 @@ cat docs/claude-reference/plan-limpieza-dependencias/README.md
 - **Índice maestro:** [README.md](./README.md)  
 - **Análisis zustand:** [analisis/01-zustand.md](./analisis/01-zustand.md)
 - **Análisis winston:** [analisis/02-winston.md](./analisis/02-winston.md)
+- **Análisis react-google-autocomplete:** [analisis/03-react-google-autocomplete.md](./analisis/03-react-google-autocomplete.md)
+- **Análisis react-google-places-autocomplete:** [analisis/04-react-google-places-autocomplete.md](./analisis/04-react-google-places-autocomplete.md)
+- **Análisis use-places-autocomplete:** [analisis/05-use-places-autocomplete.md](./analisis/05-use-places-autocomplete.md)
+- **Análisis @vis.gl/react-google-maps:** [analisis/06-vis-gl-react-google-maps.md](./analisis/06-vis-gl-react-google-maps.md)
 - **Documentación original:** [../dependencias-no-utilizadas-explicacion.md](../dependencias-no-utilizadas-explicacion.md)
 
 ---
 
-**Estado actual:** ✅ 2 dependencias analizadas, listas para eliminación (390KB ahorro)  
-**Próximo paso:** Analizar country-data o ejecutar eliminaciones aprobadas
+**Estado actual:** ✅ 6 dependencias analizadas, listas para eliminación (610KB ahorro)  
+**Próximo paso:** Ejecutar eliminaciones aprobadas o analizar country-data

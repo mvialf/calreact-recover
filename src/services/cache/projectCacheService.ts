@@ -1,10 +1,10 @@
 import { onSnapshot, doc, Firestore } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { db } from '@/lib/firebase';
 import { ProjectType } from '@/types/project';
 import { getProjectById } from '@/services/projectService';
-import { createLogger } from '@/lib/logger';
+import { utilityLogger } from '@/lib/logger';
 
-const logger = createLogger('ProjectCacheService');
+const logger = utilityLogger;
 
 // Configuración del cache
 interface CacheConfig {
@@ -70,7 +70,7 @@ class ProjectCacheService {
       this.stats.misses++;
       logger.debug('Cache MISS - cargando desde Firestore', { projectId });
       
-      const project = await getProjectById(projectId, firestore);
+      const project = await getProjectById(projectId);
       
       if (project) {
         // Agregar al cache con listener en tiempo real
@@ -112,7 +112,7 @@ class ProjectCacheService {
       
       const loadPromises = missingIds.map(async (projectId) => {
         try {
-          const project = await getProjectById(projectId, firestore);
+          const project = await getProjectById(projectId);
           if (project) {
             await this.addToCache(projectId, project, firestore);
             results.set(projectId, project);
@@ -180,7 +180,7 @@ class ProjectCacheService {
     const loadPromises = projectIds.map(async (projectId) => {
       if (!this.cache.has(projectId)) {
         try {
-          const project = await getProjectById(projectId, firestore);
+          const project = await getProjectById(projectId);
           if (project) {
             await this.addToCache(projectId, project, firestore);
           }

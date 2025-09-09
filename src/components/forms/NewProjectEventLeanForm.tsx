@@ -26,9 +26,9 @@ import type { ProjectType, ProjectStatus, ChecklistItem } from '@/types/project'
 import { PROJECT_STATUS_OPTIONS } from '@/constants/project';
 
 // Utilidades
-import { createLogger } from '@/lib/logger';
+import { formLogger } from '@/lib/logger';
 
-const logger = createLogger('NewProjectEventLeanForm');
+const logger = formLogger;
 
 // === ESQUEMA DE VALIDACIÓN ===
 
@@ -52,7 +52,7 @@ const newProjectEventLeanSchema = z.object({
   // Campos opcionales para override del proyecto
   customDescription: z.string().optional(),
   customPhone: z.string().optional(),
-  customStatus: z.nativeEnum(PROJECT_STATUS_OPTIONS).optional(),
+  customStatus: z.enum(['ingresado', 'programar', 'fabricación', 'montaje', 'sello', 'continuación', 'complicación', 'completado']).optional(),
   eventNotes: z.string().optional(),
 });
 
@@ -116,7 +116,14 @@ export const NewProjectEventLeanForm = forwardRef<HTMLFormElement, NewProjectEve
       };
 
       const currentChecklist = watchedChecklist || [];
-      setValue('checklist', [...currentChecklist, newItem]);
+      setValue('checklist', [...currentChecklist, newItem] as Array<{
+        description: string;
+        isCompleted: boolean;
+        priority: "low" | "medium" | "high";
+        id?: string | undefined;
+        category?: string | undefined;
+        notes?: string | undefined;
+      }>);
       
       logger.debug('Item agregado al checklist', { itemId: newItem.id });
     };
@@ -210,7 +217,7 @@ export const NewProjectEventLeanForm = forwardRef<HTMLFormElement, NewProjectEve
                 <FormControl>
                   <InputDate
                     date={field.value}
-                    onDateChange={(date) => field.onChange(date)}
+                    onSelect={(date) => field.onChange(date)}
                     placeholder="Seleccionar fecha..."
                   />
                 </FormControl>
@@ -281,16 +288,16 @@ export const NewProjectEventLeanForm = forwardRef<HTMLFormElement, NewProjectEve
                       <CheckSquare className="h-4 w-4" />
                       Estado Específico del Evento
                     </FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select value={field.value as string} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder={`Estado actual: ${project?.status || 'Seleccionar estado'}`} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Object.entries(PROJECT_STATUS_OPTIONS).map(([key, label]) => (
-                          <SelectItem key={key} value={key}>
-                            {label}
+                        {PROJECT_STATUS_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
                           </SelectItem>
                         ))}
                       </SelectContent>

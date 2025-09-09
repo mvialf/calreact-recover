@@ -44,7 +44,7 @@ Cobralon-FB es una aplicación Next.js construida con Firebase para servicios ba
 - **Frontend**: Next.js 15, React 18, TypeScript
 - **Framework UI**: Tailwind CSS con componentes Shadcn/ui
 - **Backend**: Firebase (Firestore, Authentication)
-- **Gestión de Estado**: Zustand
+- **Gestión de Estado**: React Context API
 - **Formularios**: React Hook Form con validación Zod
 - **Pruebas**: Jest, React Testing Library, Playwright E2E
 - **Mapas**: Integración Google Maps API
@@ -95,7 +95,7 @@ import { Button } from "@/components/ui/button"
 ```
 
 #### State Management & Forms
-- **Zustand**: `5.0.5` - Store global ligero
+- **React Context API**: Gestión de estado nativo
 - **React Hook Form**: `7.54.2` - Gestión de formularios
 - **Zod**: `3.25.67` - Validación de esquemas
 - **TanStack Query**: `5.81.5` - Cache de datos server state
@@ -250,17 +250,19 @@ import { createEvent } from '@/services/eventService'; // NO EXISTE
 
 **SIEMPRE ejecutar antes de completar cualquier tarea:**
 
-1. **Diagnóstico IDE Automático (PRIORIDAD)**
-   - Ejecutar `mcp__ide__getDiagnostics` para verificar TODOS los archivos modificados
-   - Corregir cualquier error de linting o tipos detectado
-   - Este paso es CRÍTICO y NUNCA debe omitirse
-
-2. **Comandos de Validación Complementarios**
+1. **Validación de Código Obligatoria (CRÍTICO)**
+   - **CADA VEZ que modifiques código**, ejecutar inmediatamente:
    ```bash
-   npm run lint        # Verificar calidad de código
-   npm run typecheck   # Verificar tipos TypeScript  
+   npm run lint        # Verificar calidad de código ESLint
+   npm run typecheck   # Verificar tipos TypeScript
+   ```
+   - **Corregir cualquier error detectado** antes de continuar
+   - **Este paso es CRÍTICO y NUNCA debe omitirse**
+
+2. **Comandos Complementarios (Opcionales)**
+   ```bash
    npm run build       # Verificar build exitoso (opcional)
-   npm run test        # Ejecutar tests si existen
+   npm run test        # Ejecutar tests si existen (opcional)
    ```
 
 3. **Otros principios de desarrollo:**

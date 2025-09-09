@@ -270,3 +270,45 @@ La migración de Google Places API ha sido implementada con éxito, incluyendo:
 ✅ **Código mantenible** con TypeScript estricto y documentación completa  
 
 **La funcionalidad está lista para producción.** 🚀
+
+---
+
+## ⚠️ ACTUALIZACIÓN CRÍTICA - Septiembre 2025
+
+### 🚨 **NUEVA SITUACIÓN: APIs Deprecated para Nuevos Clientes**
+
+**Fecha:** Marzo 1, 2025  
+**Impacto:** Google discontinuó `AutocompleteService` y `PlacesService` para **nuevos clientes**
+
+#### **Estado Actual de la Migración v1:**
+- ✅ **Funciona perfectamente** para proyectos existentes
+- ⚠️ **Genera warnings** en consola de navegador
+- 🚨 **No funcionará** para nuevos deploys o cuentas de Google
+
+#### **Migración v2 REQUERIDA:**
+La migración v1 completada arriba queda como **contexto histórico**. Se requiere **migración v2 inmediata**:
+
+📚 **Nueva Documentación Crítica:**
+- [06-MIGRACION-V2-2025.md](./06-MIGRACION-V2-2025.md) - **Contexto del cambio disruptivo**
+- [07-NUEVA-ARQUITECTURA.md](./07-NUEVA-ARQUITECTURA.md) - **Arquitectura moderna requerida**  
+- [08-CODIGO-MIGRACION.md](./08-CODIGO-MIGRACION.md) - **Código de implementación v2**
+- [09-ROLLBACK-STRATEGY.md](./09-ROLLBACK-STRATEGY.md) - **Plan de contingencia completo**
+
+#### **Nuevas APIs Requeridas:**
+```typescript
+// ❌ DEPRECATED (desde Marzo 2025)
+google.maps.places.AutocompleteService
+google.maps.places.PlacesService
+
+// ✅ NUEVAS APIS OBLIGATORIAS
+google.maps.places.AutocompleteSuggestion
+google.maps.places.Place
+```
+
+#### **Acción Inmediata Requerida:**
+1. 🔥 **Implementar migración v2** usando nuevos archivos 06-09
+2. 🧪 **Testing exhaustivo** con AutocompleteSuggestion API
+3. 🔄 **Plan de rollback** preparado para emergencias
+4. 📊 **Monitoreo intensivo** post-migración v2
+
+> **⚠️ CRÍTICO**: La migración v1 (este documento) sigue siendo valiosa como referencia arquitectural, pero la **migración v2 es OBLIGATORIA** para mantener funcionalidad.

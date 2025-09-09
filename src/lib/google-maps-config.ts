@@ -261,8 +261,71 @@ export const testGoogleMapsConfig: GoogleMapsConfig = {
   minQueryLength: 1 // Permitir queries más cortas en tests
 };
 
-// Tipos exportados para uso en componentes
+// ✅ MIGRACIÓN: Feature flags para nueva API
+export const placesAPIFeatureFlags = {
+  USE_NEW_API: process.env.NEXT_PUBLIC_USE_NEW_PLACES_API === 'true' || false,
+  ALLOW_FALLBACK: process.env.NEXT_PUBLIC_PLACES_API_FALLBACK !== 'false',
+  ENABLE_MONITORING: process.env.NEXT_PUBLIC_PLACES_API_MONITORING === 'true' || true
+};
 
+// ✅ MIGRACIÓN: Configuración específica para nuevas APIs
+export const modernPlacesConfig = {
+  // Campos optimizados para nueva API
+  autocompleteSuggestionFields: [
+    'placePrediction.text',
+    'placePrediction.placeId',
+    'placePrediction.structuredFormat'
+  ],
+  // Configuración de requests
+  sessionTokenEnabled: true,
+  includedPrimaryTypes: ['establishment', 'geocode'],
+  locationBiasRadius: 50000, // 50km
+};
+
+// Tipos exportados para uso en componentes
 export type GoogleMapsPrediction = google.maps.places.AutocompletePrediction;
 export type GoogleMapsPlace = google.maps.places.PlaceResult;
 export type GoogleMapsStatus = google.maps.places.PlacesServiceStatus;
+
+// ✅ MIGRACIÓN: Tipos para nueva API
+export interface ModernPlacesConfig {
+  autocompleteSuggestionFields: string[];
+  sessionTokenEnabled: boolean;
+  includedPrimaryTypes: string[];
+  locationBiasRadius: number;
+}
+
+// ✅ MIGRACIÓN: Helper para detectar disponibilidad de nueva API
+export const PlacesAPIDetector = {
+  /**
+   * Detecta si la nueva API está disponible
+   */
+  isModernAPIAvailable: async (): Promise<boolean> => {
+    try {
+      const placesLib = await google.maps.importLibrary("places") as google.maps.PlacesLibrary;
+      return !!(placesLib.AutocompleteSuggestion && placesLib.AutocompleteSessionToken);
+    } catch (error) {
+      return false;
+    }
+  },
+
+  /**
+   * Detecta si la API legacy está disponible
+   */
+  isLegacyAPIAvailable: (): boolean => {
+    return !!(window.google?.maps?.places?.AutocompleteService);
+  },
+
+  /**
+   * Retorna qué API está disponible
+   */
+  getAvailableAPI: async (): Promise<'modern' | 'legacy' | 'none'> => {
+    const modernAvailable = await PlacesAPIDetector.isModernAPIAvailable();
+    if (modernAvailable) return 'modern';
+    
+    const legacyAvailable = PlacesAPIDetector.isLegacyAPIAvailable();
+    if (legacyAvailable) return 'legacy';
+    
+    return 'none';
+  }
+};

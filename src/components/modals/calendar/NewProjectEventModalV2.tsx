@@ -12,15 +12,15 @@ import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Autocomplete, type AutocompleteItem } from '@/components/ui/autocomplete';
-import { ProjectClientDisplay } from '@/components/client-display';
+import { ClientDisplay } from '@/components/client-display';
 import { X, CheckCircle, AlertCircle, Zap } from 'lucide-react';
-import { createLogger } from '@/lib/logger';
+import { uiLogger } from '@/lib/logger';
 
 // Nuevo formulario optimizado para eventos lean
 import { NewProjectEventLeanForm, type NewProjectEventLeanFormValues } from '@/components/forms/NewProjectEventLeanForm';
 import { validateProjectForEvents } from '@/utils/eventValidation';
 
-const logger = createLogger('NewProjectEventModalV2');
+const logger = uiLogger;
 
 export interface NewProjectEventModalV2Props {
   isOpen: boolean;
@@ -53,25 +53,26 @@ export function NewProjectEventModalV2({
   const formRef = useRef<HTMLFormElement>(null);
 
   // Obtener la lista de proyectos
-  const { data: projects = [], isLoading: isLoadingProjects } = useQuery({
+  const { data: projects = [], isLoading: isLoadingProjects } = useQuery<ProjectType[]>({
     queryKey: ['projects'],
     queryFn: () => getProjects(),
     enabled: isOpen,
     staleTime: 2 * 60 * 1000, // 2 minutos - reducido gracias al cache
-    onSuccess: useCallback((projectsData: ProjectType[]) => {
-      // Pre-cargar proyectos frecuentes en cache cuando se abra el modal
-      if (useCache && projectsData.length > 0) {
-        const projectIds = projectsData.map(p => p.id);
-        preloadProjects(projectIds).catch(error => 
-          logger.warn('Error pre-cargando proyectos en cache', { error })
-        );
-      }
-    }, [useCache]),
   });
+
+  // Pre-cargar proyectos frecuentes en cache cuando se obtengan
+  React.useEffect(() => {
+    if (useCache && projects.length > 0) {
+      const projectIds = projects.map(p => p.id);
+      preloadProjects(projectIds).catch(error => 
+        logger.warn('Error pre-cargando proyectos en cache', { error })
+      );
+    }
+  }, [projects, useCache]);
 
   // Filtrar proyectos: excluir completados y pagados
   const filteredProjects = useMemo(() => {
-    return projects.filter(project => 
+    return (projects as ProjectType[]).filter(project => 
       project.status !== 'completado' && project.isPaid !== true
     );
   }, [projects]);
@@ -219,7 +220,7 @@ export function NewProjectEventModalV2({
         })),
         customDescription: data.customDescription?.trim() || undefined,
         customPhone: data.customPhone?.trim() || undefined,
-        customStatus: data.customStatus || undefined,
+        customStatus: data.customStatus as ProjectStatus || undefined,
         eventNotes: data.eventNotes?.trim() || undefined,
       };
 
@@ -291,7 +292,6 @@ export function NewProjectEventModalV2({
       isOpen={isOpen}
       onClose={onClose}
       title="Nuevo Evento de Proyecto"
-      description="Crear un evento programado para un proyecto específico (Versión Optimizada)"
     >
       <div className="space-y-6">
         {/* Header con indicador de cache */}
@@ -336,14 +336,15 @@ export function NewProjectEventModalV2({
 
           {!selectedProject ? (
             <Autocomplete
-              options={autocompleteOptions}
-              onSelectionChange={(selection) => {
-                if (selection) {
-                  handleProjectSelect(selection.value);
+              items={autocompleteOptions}
+              value={''}
+              onSelect={(value) => {
+                if (value) {
+                  handleProjectSelect(value);
                 }
               }}
               placeholder="Buscar proyecto por número o cliente..."
-              emptyMessage="No se encontraron proyectos"
+              emptyText="No se encontraron proyectos"
               isLoading={isLoadingProjects}
               className="w-full"
             />
@@ -356,7 +357,7 @@ export function NewProjectEventModalV2({
                     <p className="font-medium text-green-800 dark:text-green-200">
                       {selectedProject.projectNumber}
                     </p>
-                    <ProjectClientDisplay 
+                    <ClientDisplay 
                       clientName={selectedProject.clientName} 
                       className="text-sm text-green-700 dark:text-green-300"
                     />

@@ -45,15 +45,13 @@ import {
   docSnapshotToEntity, 
   timestampToDate, 
   prepareDataForFirestore, 
-  dateToTimestamp,
-  addTimestamps,
-  updateTimestamps
+  dateToTimestamp
 } from '@/utils/firestore-helpers';
 import { getProjectFromCache, invalidateProjectCache } from '@/services/cache/projectCacheService';
 import { enrichEvent, enrichEvents, composeSimplifiedEvent } from '@/services/eventEnrichmentService';
-import { createLogger } from '@/lib/logger';
+import { eventLogger } from '@/lib/logger';
 
-const logger = createLogger('ProjectEventServiceV2');
+const logger = eventLogger;
 
 /** Nombre de la colección de eventos de proyecto en Firestore */
 const PROJECT_EVENTS_COLLECTION = 'projectEvents';
@@ -64,16 +62,15 @@ const PROJECT_EVENTS_COLLECTION = 'projectEvents';
  * Convierte un documento de Firestore a ProjectEventLean
  */
 const projectEventLeanFromDoc = (docSnapshot: DocumentSnapshot): ProjectEventLean => {
-  return docSnapshotToEntity<ProjectEventLean, ProjectEventLean>(
+  return docSnapshotToEntity<any, ProjectEventLean>(
     docSnapshot,
-    {
-      eventDate: (doc) => timestampToDate(doc.eventDate),
-      createdAt: (doc) => doc.createdAt ? timestampToDate(doc.createdAt) : undefined,
-      updatedAt: (doc) => doc.updatedAt ? timestampToDate(doc.updatedAt) : undefined,
-    }
+    (doc, id) => ({
+      eventDate: timestampToDate(doc.eventDate),
+      createdAt: doc.createdAt ? timestampToDate(doc.createdAt) : undefined,
+      updatedAt: doc.updatedAt ? timestampToDate(doc.updatedAt) : undefined,
+    })
   );
 };
-
 /**
  * Valida los datos de entrada para crear un evento lean
  */
@@ -146,7 +143,7 @@ export const createProjectEventLean = async (
     const sanitizedData = sanitizeEventLeanData(eventData);
     
     // Preparar documento para Firestore con timestamps automáticos
-    const eventDoc = addTimestamps({
+    const eventDoc = prepareDataForFirestore({
       ...sanitizedData,
       id: '', // Se asignará automáticamente
     });
@@ -156,7 +153,11 @@ export const createProjectEventLean = async (
     
     const createdEvent: ProjectEventLean = {
       ...eventDoc,
-      id: docRef.id
+      id: docRef.id,
+      // Convertir Timestamps a Date para compatibilidad con tipo ProjectEventLean
+      eventDate: eventDoc.eventDate instanceof Date ? eventDoc.eventDate : (eventDoc.eventDate as any).toDate(),
+      createdAt: eventDoc.createdAt instanceof Date ? eventDoc.createdAt : (eventDoc.createdAt as any)?.toDate(),
+      updatedAt: eventDoc.updatedAt instanceof Date ? eventDoc.updatedAt : (eventDoc.updatedAt as any)?.toDate(),
     };
     
     logger.info('Evento lean creado exitosamente', {
@@ -383,7 +384,7 @@ export const updateProjectEventLean = async (
     }
     
     // Agregar timestamp de actualización
-    const finalUpdate = updateTimestamps(sanitizedUpdate);
+    const finalUpdate = prepareDataForFirestore(sanitizedUpdate, true);
     
     // Actualizar documento
     await updateDoc(doc(firestore, PROJECT_EVENTS_COLLECTION, eventId), finalUpdate);
@@ -530,8 +531,18 @@ export const convertLegacyToLean = (legacyEvent: ProjectEventType): ProjectEvent
 
 // === EXPORTS PARA INTEGRACIÓN CON DI ===
 
-export const createProjectEventLeanImpl = createFirestoreFunction(createProjectEventLean);
-export const getComposedProjectEventImpl = createFirestoreFunction(getComposedProjectEvent);
-export const getProjectEventsLeanImpl = createFirestoreFunction(getProjectEventsLean);
-export const updateProjectEventLeanImpl = createFirestoreFunction(updateProjectEventLean);
-export const deleteProjectEventLeanImpl = createFirestoreFunction(deleteProjectEventLean);
+export const createProjectEventLeanImpl = createFirestoreFunction(
+  (firestore: Firestore, eventData: CreateProjectEventLeanData) => createProjectEventLean(eventData, firestore)
+);
+export const getComposedProjectEventImpl = createFirestoreFunction(
+  (firestore: Firestore, eventId: string) => getComposedProjectEvent(eventId, firestore)
+);
+export const getProjectEventsLeanImpl = createFirestoreFunction(
+  (firestore: Firestore, filters: EventLeanFilters = {}, options: EventLeanQueryOptions = {}) => getProjectEventsLean(filters, options, firestore)
+);
+export const updateProjectEventLeanImpl = createFirestoreFunction(
+  (firestore: Firestore, eventId: string, updateData: Partial<Omit<ProjectEventLean, "id" | "createdAt" | "updatedAt">>) => updateProjectEventLean(eventId, updateData, firestore)
+);
+export const deleteProjectEventLeanImpl = createFirestoreFunction(
+  (firestore: Firestore, eventId: string) => deleteProjectEventLean(eventId, firestore)
+);

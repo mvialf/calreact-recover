@@ -1,10 +1,10 @@
 import { ProjectType, ProjectEventType, FormattedAddress, ProjectStatus } from '@/types/project';
 import { getProjectFromCache } from '@/services/cache/projectCacheService';
-import { createLogger } from '@/lib/logger';
+import { eventLogger } from '@/lib/logger';
 import { Firestore } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { db } from '@/lib/firebase';
 
-const logger = createLogger('EventEnrichmentService');
+const logger = eventLogger;
 
 // Tipo para evento enriquecido con datos del proyecto
 export interface EnrichedProjectEvent extends ProjectEventType {

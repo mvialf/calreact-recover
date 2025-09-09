@@ -277,8 +277,8 @@ export const isProjectEventLean = (event: any): event is ProjectEventLean => {
  */
 export const isComposedProjectEvent = (event: any): event is ComposedProjectEvent => {
   return isProjectEventLean(event) &&
-         typeof event.clientName === 'string' &&
-         typeof event.composedAt !== 'undefined';
+         typeof (event as ComposedProjectEvent).clientName === 'string' &&
+         typeof (event as ComposedProjectEvent).composedAt !== 'undefined';
 };
 
 /**
