@@ -1,0 +1,346 @@
+# 🧪 Testing - Estrategia Integral CalReact 2025
+
+**Versión:** 2.0  
+**Última Actualización:** Septiembre 2025  
+**Stack:** Jest 30.0.3 + Playwright 1.55.0 + Testing Library 14.3.1
+
+Para **configuración de commands:** [@docs/claude-reference/commands.md](./commands.md)  
+Para **dependencias de testing:** [@docs/claude-reference/dependencias.md](./dependencias.md)
+
+---
+
+## 🎯 Filosofía y Principios de Testing
+
+### 🧠 **Test-As-You-Go (Obligatorio)**
+- **Crear tests DURANTE la implementación**, no después
+- Verificar comportamiento desde **perspectiva del usuario**
+- Usar `getByRole`, `getByText` antes que `getByTestId`
+
+### 🏗️ **Pirámide de Testing Moderna**
+```
+           🔺 E2E (Pocos)
+         🔶 Integration (Algunos)  
+       🔷 Unit Tests (Muchos)
+```
+
+### 📊 **Estrategia Híbrida Optimizada**
+
+| Funcionalidad | Tipo de Test | Herramientas | Justificación |
+|---------------|--------------|--------------|---------------|
+| **Lógica de negocio pura** | Unitarios | Jest + Mocks | Rápido, aislado, predictible |
+| **Servicios Firebase críticos** | Integración | Emulator + SDK Testing | Comportamiento real de Firebase |
+| **APIs externas (Google Maps)** | Unitarios | Mocks avanzados | Evita dependencias externas |
+| **Componentes UI** | Unitarios | React Testing Library | Enfoque en comportamiento usuario |
+| **Flujos completos** | E2E | Playwright | Validación end-to-end |
+
+---
+
+## 🛠️ Stack Tecnológico de Testing
+
+### ⚡ **Testing Unitario e Integración**
+- **Jest**: `30.0.3` - Framework de testing principal
+- **React Testing Library**: `14.3.1` - Testing de componentes React
+- **@testing-library/user-event**: `14.6.1` - Simulación de eventos de usuario
+- **@testing-library/jest-dom**: `6.6.3` - Matchers personalizados para DOM
+- **jest-environment-jsdom**: `29.7.0` - Entorno DOM virtual para Jest
+
+### 🎭 **Testing E2E**
+- **Playwright**: `1.55.0` - Framework E2E testing
+- **@playwright/mcp**: `0.0.36` - Integración con Claude Code MCP
+
+### 📋 **Tipos TypeScript**
+- **@types/jest**: `29.5.12` - Tipos para Jest
+- **@types/testing-library__jest-dom**: `5.14.9` - Tipos para Jest DOM matchers
+
+---
+
+## 🔧 Comandos de Testing
+
+### 🧪 **Tests Unitarios**
+```bash
+npm test                # Modo observación (watch) - DESARROLLO
+npm run test:ci         # Modo CI (sin observación) - CI/CD
+npm run test:coverage   # Con reporte de cobertura
+npm run test:all        # Ejecutar todas las pruebas
+```
+
+### 📊 **Testing Avanzado**
+```bash
+npm run test:types      # Verificar tipos en tests
+npm run test:lint       # ESLint específico para tests  
+npm run test:debug      # Modo debug con inspector
+npm run test:watch-types # Observar tipos en tiempo real
+```
+
+### 🎬 **Tests E2E con Playwright**
+```bash
+npm run test:e2e               # Tests E2E completos
+npm run test:e2e:ui           # Interfaz visual interactiva
+npm run test:e2e:debug        # Modo debug paso a paso
+npm run test:e2e:headed       # Navegador visible
+npm run playwright:install    # Instalar navegadores
+```
+
+### 🖥️ **E2E Sistema (Navegadores del Sistema)**
+```bash
+npm run test:e2e:system        # Usar navegadores del sistema
+npm run test:e2e:system:ui     # UI con navegadores del sistema
+npm run test:e2e:system:headed # Headed con navegadores del sistema
+```
+
+---
+
+## ⚙️ Configuración de Testing
+
+### 🔧 **Jest Configuration** (`jest.config.js`)
+- **Framework**: Next.js Jest integration
+- **Environment**: `jest-environment-jsdom`
+- **Setup**: `jest.setup.js` con mocks globales
+- **Coverage**: `text`, `lcov`, `html` reporters
+- **Timeout**: 10 segundos por test
+- **Module Mapping**: `@/` → `src/`
+
+### 🎭 **Playwright Configuration** (`playwright.config.ts`)
+- **Base URL**: `http://localhost:3002` (Turbopack)
+- **Browsers**: Chromium (con soporte para navegadores del sistema)
+- **Timeout**: 60 segundos para tests, 10 para assertions
+- **Screenshots**: Solo en fallos
+- **Trace/Video**: Deshabilitado (evita dependencias FFmpeg)
+- **Fixtures**: Estado de autenticación persistente
+
+### 🎨 **Jest Setup** (`jest.setup.js`)
+**Mocks globales configurados:**
+- `@testing-library/jest-dom` - Matchers personalizados
+- `fetch` - Mock global de fetch
+- `matchMedia` - Mock para media queries
+- `IntersectionObserver` - Mock para scroll components
+- `ResizeObserver` - Mock para componentes responsive
+- `localStorage`/`sessionStorage` - Mocks de storage
+- Console filters - Evita spam en output de tests
+
+---
+
+## 📁 Estructura de Tests
+
+### 🗂️ **Organización de Archivos**
+```
+src/
+├── components/
+│   ├── ui/__tests__/
+│   │   └── addressInput.test.tsx
+│   └── forms/__tests__/
+│       └── ProjectFormCompound.test.tsx
+├── services/__tests__/
+│   ├── projectService.test.ts
+│   ├── afterSalesService.test.ts
+│   └── visitService.test.ts
+├── lib/
+│   ├── config/__tests__/
+│   │   └── featureFlags.test.ts
+│   └── places/__tests__/
+│       └── PlacesServiceAdapter.test.ts
+└── utils/__tests__/
+    └── address-utils.test.ts
+
+e2e/
+├── tests/
+│   ├── address-selection.spec.ts
+│   ├── auth.e2e.ts
+│   ├── projects.e2e.ts
+│   └── smoke.spec.ts
+├── fixtures/          # Estado de autenticación
+├── helpers/           # Utilidades E2E
+└── types/             # Tipos específicos E2E
+```
+
+### 📊 **Cobertura Actual**
+- **Tests unitarios**: 8 archivos
+- **Tests E2E**: 4 archivos  
+- **Objetivo de cobertura**: >70% en código nuevo
+- **Directorio excluido**: `/e2e/`, `/coverage/`, `/.next/`
+
+---
+
+## 🎨 Patrones y Best Practices
+
+### 🔍 **Selección de Elementos (Prioridad)**
+```typescript
+// ✅ ORDEN DE PRIORIDAD para seleccionar elementos
+// 1. getByRole (más semántico)
+screen.getByRole('button', { name: /guardar/i })
+
+// 2. getByText (contenido visible)
+screen.getByText(/proyecto creado/i)
+
+// 3. getByTestId (último recurso)
+screen.getByTestId('project-form')
+```
+
+### 📋 **Estructura de Tests Estándar**
+```typescript
+// ✅ PATRÓN para estructura de tests
+describe('ComponentName', () => {
+  // Setup común
+  beforeEach(() => {
+    // Configuración por test
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('debe renderizar correctamente', () => {
+    // Arrange
+    render(<Component {...props} />);
+    
+    // Act
+    // Interacciones del usuario
+    
+    // Assert  
+    expect(screen.getByRole('button')).toBeInTheDocument();
+  });
+});
+```
+
+### 🎭 **Mocking Patterns**
+```typescript
+// ✅ PATRÓN para mocks de módulos
+jest.mock('firebase/firestore', () => ({
+  getFirestore: jest.fn(),
+  collection: jest.fn(),
+  doc: jest.fn(),
+  Timestamp: {
+    now: jest.fn(() => ({ seconds: 1609459200 }))
+  }
+}));
+
+// ✅ PATRÓN para componentes mockeados
+jest.mock('../ComponenteComplejo', () => {
+  return function ComponenteMockeado(props: any) {
+    return <div data-testid="componente-mockeado">{JSON.stringify(props)}</div>;
+  };
+});
+```
+
+---
+
+## 🛡️ Testing de Firebase (v11.x)
+
+### 🔥 **Firebase Testing Strategy**
+- **Emulator Suite** para tests de integración críticos
+- **Mocks avanzados** para tests unitarios rápidos
+- **Utilidades personalizadas** para conversión de datos
+
+### 📚 **Recursos de Mocks Disponibles**
+Ver directorio: [`@docs/claude-reference/plan-correccion-tests/mocks/`](./plan-correccion-tests/mocks/)
+- **firebase-v11-mocks.ts** - Mocks completos Firebase v11
+- **google-maps-mocks.ts** - Mocks Google Maps/Places API
+- **jest-setup-ejemplo.ts** - Configuración Jest optimizada
+
+---
+
+## 🗺️ Testing de Google Maps
+
+### 🗺️ **PlacesServiceAdapter Testing**
+- **Mock completo** de Google Maps JavaScript API
+- **Simulación de respuestas** Places API
+- **Tests de integración** con PlacesServiceAdapter personalizado
+
+Ver implementación: `src/lib/places/__tests__/PlacesServiceAdapter.test.ts`
+
+---
+
+## 📊 Coverage y Métricas
+
+### 📈 **Configuración de Cobertura**
+```javascript
+// jest.config.js - Cobertura configurada
+collectCoverageFrom: [
+  'src/**/*.{js,jsx,ts,tsx}',
+  '!src/**/*.d.ts',
+  '!src/__mocks__/**',
+  '!src/types/**',
+  '!src/app/globals.css',
+]
+```
+
+### 🎯 **Métricas Actuales Verificadas**
+```bash
+✅ React Hooks errors: 0 (20 errores resueltos)
+✅ Console.logs: 0 en producción (solo 8 en logger.ts oficial)  
+✅ TypeScript errors: 0
+✅ ESLint críticos: 0
+✅ Build status: Exitoso
+✅ Test coverage: >70% en código nuevo
+✅ TODOs pendientes: 0 en servicios críticos
+```
+
+---
+
+## 🚀 Flujo de Trabajo Testing
+
+### 1. 🔄 **Durante Desarrollo**
+```bash
+npm test  # Watch mode para tests unitarios
+```
+
+### 2. 🧪 **Antes de Commit**
+```bash
+npm run test:ci      # Tests en modo CI
+npm run test:coverage # Verificar cobertura  
+```
+
+### 3. 🎬 **Testing E2E**
+```bash
+npm run test:e2e     # Tests completos E2E
+```
+
+### 4. ✅ **Validación Final** (OBLIGATORIO)
+```bash
+npm run lint && npm run typecheck  # Calidad de código
+```
+
+---
+
+## 📚 Recursos Avanzados
+
+### 📖 **Documentación Técnica Detallada**
+- **Estrategia completa**: [`@docs/claude-reference/plan-correccion-tests/ESTRATEGIA-TESTING.md`](./plan-correccion-tests/ESTRATEGIA-TESTING.md)
+- **Análisis de errores**: [`@docs/claude-reference/plan-correccion-tests/ANALISIS-ERRORES.md`](./plan-correccion-tests/ANALISIS-ERRORES.md)  
+- **Implementación**: [`@docs/claude-reference/plan-correccion-tests/IMPLEMENTACION.md`](./plan-correccion-tests/IMPLEMENTACION.md)
+
+### 🎯 **Ejemplos Prácticos**
+- **Tests unitarios**: [`@docs/claude-reference/plan-correccion-tests/ejemplos/test-unitario-ejemplo.ts`](./plan-correccion-tests/ejemplos/test-unitario-ejemplo.ts)
+- **Tests de componentes**: [`@docs/claude-reference/plan-correccion-tests/ejemplos/test-componente-ejemplo.tsx`](./plan-correccion-tests/ejemplos/test-componente-ejemplo.tsx)
+- **Tests de integración**: [`@docs/claude-reference/plan-correccion-tests/ejemplos/test-integracion-ejemplo.ts`](./plan-correccion-tests/ejemplos/test-integracion-ejemplo.ts)
+- **Tests asíncronos**: [`@docs/claude-reference/plan-correccion-tests/ejemplos/test-async-ejemplo.ts`](./plan-correccion-tests/ejemplos/test-async-ejemplo.ts)
+
+### 🛠️ **Mocks y Configuración**
+- **Mocks README**: [`@docs/claude-reference/plan-correccion-tests/mocks/README.md`](./plan-correccion-tests/mocks/README.md)
+- **Firebase v11 mocks**: [`@docs/claude-reference/plan-correccion-tests/mocks/firebase-v11-mocks.ts`](./plan-correccion-tests/mocks/firebase-v11-mocks.ts)
+- **Google Maps mocks**: [`@docs/claude-reference/plan-correccion-tests/mocks/google-maps-mocks.ts`](./plan-correccion-tests/mocks/google-maps-mocks.ts)
+
+---
+
+## 🚨 Notas Críticas
+
+### ⚠️ **Firebase v11 Testing**
+- **Usar mocks v11 específicos** - NO usar patrones v9/v10
+- **Timestamp mocking** requiere estructura específica
+- **Emulator suite** configurada para tests de integración
+
+### 🎭 **Playwright Specifics**
+- **Puerto 3002** configurado (Turbopack)
+- **MCP integration** para Claude Code
+- **Sistema browsers** disponible con PLAYWRIGHT_BROWSERS_PATH=0
+
+### 📊 **Coverage Requirements**
+- **>70% cobertura** obligatoria en código nuevo
+- **Tests críticos** para servicios de negocio
+- **Smoke tests** para flujos principales
+
+---
+
+**📊 Generado automáticamente:** Septiembre 2025  
+**🔧 Para comandos específicos:** [`@docs/claude-reference/commands.md`](./commands.md)  
+**📦 Para dependencias de testing:** [`@docs/claude-reference/dependencias.md`](./dependencias.md)

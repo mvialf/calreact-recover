@@ -8,6 +8,7 @@
  * @date 2025-09-08
  */
 
+import React from 'react';
 import { setupJestGoogleMapsMocks } from './google-maps-mocks';
 import { mockFirestore } from './firebase-v11-mocks';
 
@@ -67,7 +68,7 @@ jest.mock('next/image', () => ({
   __esModule: true,
   default: ({ src, alt, ...props }: any) => {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={alt} {...props} />;
+    return React.createElement('img', { src, alt, ...props });
   }
 }));
 
