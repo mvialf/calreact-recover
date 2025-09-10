@@ -233,28 +233,192 @@ export class PlacesServiceAdapter {
   }
 
   /**
-   * Obtiene detalles de un lugar (mantiene compatibilidad con implementación actual)
+   * Obtiene detalles de un lugar usando la nueva API cuando está disponible
    */
   public async getPlaceDetails(
     placeId: string, 
     fields?: string[]
   ): Promise<google.maps.places.PlaceResult | null> {
-    // Para esta versión inicial, mantenemos el comportamiento legacy
-    // En futuras versiones se puede migrar a la nueva Place API
+    if (!this.initialized) {
+      await this.initialize();
+    }
+
+    // Usar nueva API si está disponible
+    if (this.placesLib && this.apiVersion === 'modern') {
+      try {
+        // Importar Place class desde la documentación oficial
+        const { Place } = this.placesLib;
+        
+        // Crear instancia de Place según documentación
+        const place = new Place({ 
+          id: placeId,
+          requestedLanguage: this.config.language || 'es'
+        });
+        
+        // Mapear campos legacy a moderna API según documentación oficial
+        const modernFields = this.mapFieldsToModernAPI(fields);
+        
+        // Usar fetchFields() según documentación oficial
+        await place.fetchFields({ 
+          fields: modernFields 
+        });
+        
+        // Convertir respuesta moderna a formato legacy para compatibilidad
+        const legacyResult = this.convertModernPlaceToLegacy(place);
+        
+        if (PlacesFeatureFlags.isMonitoringEnabled()) {
+          uiLogger.info('✅ Place details obtenidos con nueva API', { placeId, fields: modernFields });
+        }
+        
+        return legacyResult;
+      } catch (error) {
+        if (PlacesFeatureFlags.isMonitoringEnabled()) {
+          uiLogger.warn('⚠️ Error con nueva API, usando fallback', { error, placeId });
+        }
+        
+        // Solo hacer fallback si está permitido
+        if (PlacesFeatureFlags.isFallbackAllowed()) {
+          return this.getPlaceDetailsLegacy(placeId, fields);
+        } else {
+          throw new Error(`Nueva API falló y fallback no permitido: ${error}`);
+        }
+      }
+    }
+    
+    // Usar implementación legacy si no hay moderna disponible
+    return this.getPlaceDetailsLegacy(placeId, fields);
+  }
+
+  /**
+   * Implementación legacy separada para mayor claridad
+   */
+  private async getPlaceDetailsLegacy(
+    placeId: string,
+    fields?: string[]
+  ): Promise<google.maps.places.PlaceResult | null> {
     return new Promise((resolve, reject) => {
       const service = new google.maps.places.PlacesService(document.createElement('div'));
       const request: google.maps.places.PlaceDetailsRequest = {
         placeId,
-        fields: fields || ['place_id', 'formatted_address', 'geometry.location', 'address_components']
+        fields: fields || [
+          'place_id',
+          'formatted_address', 
+          'geometry',
+          'address_components',
+          'name',
+          'types',
+          'vicinity',
+          'website',
+          'formatted_phone_number',
+          'international_phone_number',
+          'rating',
+          'user_ratings_total'
+        ]
       };
 
       service.getDetails(request, (place, status) => {
         if (status === google.maps.places.PlacesServiceStatus.OK && place) {
+          if (PlacesFeatureFlags.isMonitoringEnabled()) {
+            uiLogger.info('✅ Place details obtenidos con API legacy', { placeId, fields });
+          }
           resolve(place);
         } else {
-          reject(new Error(`Place details error: ${status}`));
+          const errorMsg = `Place details error: ${status}`;
+          uiLogger.error(errorMsg, { placeId, status });
+          reject(new Error(errorMsg));
         }
       });
     });
+  }
+
+  /**
+   * Mapea campos legacy a moderna API según documentación oficial de Google
+   */
+  private mapFieldsToModernAPI(legacyFields?: string[]): string[] {
+    // Mapeo según documentación oficial: snake_case -> camelCase
+    const fieldMapping: Record<string, string> = {
+      'place_id': 'id',
+      'formatted_address': 'formattedAddress',
+      'geometry': 'location',
+      'geometry.location': 'location',
+      'geometry.viewport': 'viewport', 
+      'address_components': 'addressComponents',
+      'name': 'displayName',
+      'types': 'types',
+      'vicinity': 'shortFormattedAddress',
+      'website': 'websiteURI',
+      'formatted_phone_number': 'nationalPhoneNumber',
+      'international_phone_number': 'internationalPhoneNumber',
+      'rating': 'rating',
+      'user_ratings_total': 'userRatingCount',
+      'price_level': 'priceLevel',
+      'opening_hours': 'regularOpeningHours',
+      'photos': 'photos',
+      'reviews': 'reviews',
+      'plus_code': 'plusCode',
+      'business_status': 'businessStatus'
+    };
+    
+    // Campos por defecto según documentación
+    const defaultFields = [
+      'id',
+      'displayName', 
+      'formattedAddress',
+      'location',
+      'addressComponents',
+      'types'
+    ];
+    
+    if (!legacyFields || legacyFields.length === 0) {
+      return defaultFields;
+    }
+    
+    // Mapear campos o usar original si no existe mapeo
+    return legacyFields.map(field => fieldMapping[field] || field);
+  }
+
+  /**
+   * Convierte respuesta de nueva API a formato legacy según documentación oficial
+   */
+  private convertModernPlaceToLegacy(modernPlace: any): google.maps.places.PlaceResult {
+    return {
+      place_id: modernPlace.id || '',
+      name: modernPlace.displayName || '',
+      formatted_address: modernPlace.formattedAddress || '',
+      geometry: {
+        location: modernPlace.location || null,
+        viewport: modernPlace.viewport || null
+      },
+      address_components: modernPlace.addressComponents || [],
+      types: modernPlace.types || [],
+      vicinity: modernPlace.shortFormattedAddress || '',
+      website: modernPlace.websiteURI || undefined,
+      formatted_phone_number: modernPlace.nationalPhoneNumber || undefined,
+      international_phone_number: modernPlace.internationalPhoneNumber || undefined,
+      rating: modernPlace.rating || undefined,
+      user_ratings_total: modernPlace.userRatingCount || undefined,
+      price_level: modernPlace.priceLevel || undefined,
+      plus_code: modernPlace.plusCode || undefined,
+      business_status: modernPlace.businessStatus || undefined,
+      photos: modernPlace.photos ? modernPlace.photos.map((photo: any) => ({
+        getUrl: (options?: any) => photo.getURI(options),
+        height: photo.heightPx || 0,
+        width: photo.widthPx || 0,
+        html_attributions: [photo.authorAttributions?.[0]?.displayName || '']
+      })) : undefined,
+      reviews: modernPlace.reviews ? modernPlace.reviews.map((review: any) => ({
+        rating: review.rating || 0,
+        text: review.text || '',
+        time: review.publishTime ? new Date(review.publishTime).getTime() / 1000 : 0,
+        author_name: review.authorAttribution?.displayName || '',
+        author_url: review.authorAttribution?.uri || '',
+        profile_photo_url: review.authorAttribution?.photoURI || ''
+      })) : undefined,
+      opening_hours: modernPlace.regularOpeningHours ? {
+        open_now: modernPlace.regularOpeningHours.openNow || false,
+        weekday_text: modernPlace.regularOpeningHours.weekdayDescriptions || [],
+        isOpen: () => modernPlace.regularOpeningHours.openNow || false
+      } : undefined
+    };
   }
 }

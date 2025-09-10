@@ -297,24 +297,34 @@ export function AddressInput({
       setIsLoading(true);
 
       try {
-        const placesService = new window.google.maps.places.PlacesService(
-          document.createElement("div")
+        // ✅ USAR EL ADAPTADOR en lugar de PlacesService directo
+        const placeDetails = await placesAdapterRef.current!.getPlaceDetails(
+          placeId,
+          [
+            'place_id',
+            'formatted_address', 
+            'geometry',
+            'address_components',
+            'name',
+            'types',
+            'vicinity',
+            'website',
+            'formatted_phone_number',
+            'rating'
+          ]
         );
 
-        const request = GoogleMapsUtils.buildPlaceDetailsRequest(placeId, config);
+        setIsLoading(false);
+        
+        if (!placeDetails) {
+          uiLogger.error('Error al obtener detalles del lugar', { placeId });
+          return;
+        }
 
-        placesService.getDetails(request, (place, status) => {
-          setIsLoading(false);
-          
-          if (status !== window.google.maps.places.PlacesServiceStatus.OK || !place) {
-            uiLogger.error('Error al obtener detalles del lugar', { status, placeId });
-            return;
-          }
-
-          // Guardar en caché
-          googleMapsCache.set(cacheKey, place);
-          processPlaceDetails(place, placeId);
-        });
+        // Guardar en caché
+        googleMapsCache.set(cacheKey, placeDetails);
+        processPlaceDetails(placeDetails, placeId);
+        
       } catch (error) {
         uiLogger.error('Error al obtener detalles del lugar', error);
         setIsLoading(false);

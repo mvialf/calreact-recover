@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
+import type { UseFormReturn } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
 
 import { ModalLayout } from '../modalLayout';
@@ -40,10 +41,10 @@ export function NewProjectEventModal({
 }: NewProjectEventModalProps) {
   const { toast } = useToast();
   const [selectedProject, setSelectedProject] = useState<ProjectType | null>(null);
-  const [formData, setFormData] = useState<Partial<NewProjectEventFormValues>>(initialData || {});
   const [isInternalSubmitting, setIsInternalSubmitting] = useState(false);
   const [projectValidation, setProjectValidation] = useState<{isValid: boolean, warnings: string[]}>({isValid: true, warnings: []});
   const formRef = useRef<HTMLFormElement>(null);
+  const formInstanceRef = useRef<UseFormReturn<NewProjectEventFormValues> | null>(null);
 
   // Obtener la lista de proyectos
   const { data: projects = [], isLoading: isLoadingProjects } = useQuery({
@@ -70,21 +71,20 @@ export function NewProjectEventModal({
 
   // Efecto para establecer el proyecto seleccionado si hay projectId inicial
   React.useEffect(() => {
-    if (formData.projectId && projects.length > 0 && !selectedProject) {
-      const project = projects.find(p => p.id === formData.projectId);
+    if (initialData?.projectId && projects.length > 0 && !selectedProject) {
+      const project = projects.find(p => p.id === initialData.projectId);
       if (project) {
         setSelectedProject(project);
       }
     }
-  }, [projects, formData.projectId, selectedProject]);
+  }, [projects, initialData?.projectId, selectedProject]);
 
   // Efecto para resetear cuando se cierra la modal
   React.useEffect(() => {
     if (!isOpen) {
       setSelectedProject(null);
-      setFormData(initialData || {});
     }
-  }, [isOpen, initialData]);
+  }, [isOpen]);
 
   // Función para renderizar items del autocomplete
   const renderProjectItem = React.useCallback((item: AutocompleteItem) => {
@@ -135,23 +135,28 @@ export function NewProjectEventModal({
         }
       }
       
-      // Auto-completar datos del formulario con datos del proyecto
-      const updatedFormData: Partial<NewProjectEventFormValues> = {
-        projectId: project.id,
-        description: project.description || '',
-        phone: project.phone || '',
-        fullAddress: project.fullAddress || undefined,
-        status: project.status,
-        windowsCount: project.windowsCount || 0,
-        squareMeters: project.squareMeters || 0,
-        uninstall: project.uninstall || false,
-        uninstallTypes: project.uninstallTypes,
-        uninstallOther: project.uninstallOther || '',
-        clientName: project.clientName,
-        checklist: initialData?.checklist || [],
-        eventDate: new Date(), // Fecha por defecto es hoy
-      };
-      setFormData(updatedFormData);
+      // Auto-completar datos del formulario usando setValue de React Hook Form
+      if (formInstanceRef.current) {
+        const { setValue, trigger } = formInstanceRef.current;
+        
+        // Establecer valores del proyecto en el formulario
+        setValue('projectId', project.id);
+        setValue('description', project.description || '');
+        setValue('phone', project.phone || '');
+        setValue('fullAddress', project.fullAddress || undefined);
+        setValue('status', project.status);
+        setValue('windowsCount', project.windowsCount || 0);
+        setValue('squareMeters', project.squareMeters || 0);
+        setValue('uninstall', project.uninstall || false);
+        setValue('uninstallTypes', project.uninstallTypes || []);
+        setValue('uninstallOther', project.uninstallOther || '');
+        setValue('clientName', project.clientName);
+        setValue('checklist', initialData?.checklist || []);
+        setValue('eventDate', new Date()); // Fecha por defecto es hoy
+        
+        // Trigger validación después de establecer los valores
+        trigger();
+      }
       
       // Mostrar advertencias si las hay
       if (validation.warnings.length > 0) {
@@ -167,7 +172,10 @@ export function NewProjectEventModal({
   // Función para limpiar la selección
   const handleClearSelection = React.useCallback(() => {
     setSelectedProject(null);
-    setFormData(initialData || {});
+    // Reset del formulario se maneja directamente por React Hook Form
+    if (formInstanceRef.current) {
+      formInstanceRef.current.reset(initialData || {});
+    }
   }, [initialData]);
 
   // Manejar el envío del formulario con guardado automático
@@ -185,18 +193,12 @@ export function NewProjectEventModal({
       return;
     }
     
-    // Datos del formulario con información adicional del proyecto
-    const formDataWithProject: NewProjectEventFormValues = {
+    // Los datos ya vienen completos del formulario, solo necesitamos asegurar algunos valores
+    const completeFormData: NewProjectEventFormValues = {
       ...data,
       projectId: selectedProject.id,
       eventDate: data.eventDate || new Date(),
       clientName: selectedProject.clientName || data.clientName || 'Cliente pendiente',
-      checklist: data.checklist || [],
-      // Asegurar valores por defecto para campos requeridos
-      windowsCount: data.windowsCount ?? 0,
-      squareMeters: data.squareMeters ?? 0,
-      uninstall: data.uninstall ?? false,
-      uninstallTypes: data.uninstallTypes ?? [],
     };
     
 
@@ -209,27 +211,27 @@ export function NewProjectEventModal({
         // Transformar datos del formulario al formato de entidad para createProjectEvent
         const eventDataForService: Omit<ProjectEventType, 'id' | 'createdAt' | 'updatedAt'> = {
           projectId: selectedProject.id,
-          eventDate: formDataWithProject.eventDate || new Date(),
-          status: formDataWithProject.status as ProjectStatus,
-          clientName: selectedProject.clientName || formDataWithProject.clientName || 'Cliente pendiente',
-          description: formDataWithProject.description,
-          phone: formDataWithProject.phone,
-          fullAddress: formDataWithProject.fullAddress ? {
-            textoCompleto: formDataWithProject.fullAddress.textoCompleto,
-            placeId: formDataWithProject.fullAddress.placeId,
-            coordenadas: formDataWithProject.fullAddress.coordenadas,
-            componentes: formDataWithProject.fullAddress.componentes,
-            detalle: formDataWithProject.fullAddress.detalle,
-            informacionAdicional: formDataWithProject.fullAddress.informacionAdicional,
-            comune: formDataWithProject.fullAddress.comune
+          eventDate: completeFormData.eventDate || new Date(),
+          status: completeFormData.status as ProjectStatus,
+          clientName: selectedProject.clientName || completeFormData.clientName || 'Cliente pendiente',
+          description: completeFormData.description,
+          phone: completeFormData.phone,
+          fullAddress: completeFormData.fullAddress ? {
+            textoCompleto: completeFormData.fullAddress.textoCompleto,
+            placeId: completeFormData.fullAddress.placeId,
+            coordenadas: completeFormData.fullAddress.coordenadas,
+            componentes: completeFormData.fullAddress.componentes,
+            detalle: completeFormData.fullAddress.detalle,
+            informacionAdicional: completeFormData.fullAddress.informacionAdicional,
+            comune: completeFormData.fullAddress.comune
           } : undefined,
-          windowsCount: formDataWithProject.windowsCount || 0,
-          squareMeters: formDataWithProject.squareMeters || 0,
-          uninstall: formDataWithProject.uninstall || false,
-          uninstallTypes: formDataWithProject.uninstallTypes || [],
-          uninstallOther: formDataWithProject.uninstallOther,
+          windowsCount: completeFormData.windowsCount || 0,
+          squareMeters: completeFormData.squareMeters || 0,
+          uninstall: completeFormData.uninstall || false,
+          uninstallTypes: completeFormData.uninstallTypes || [],
+          uninstallOther: completeFormData.uninstallOther,
           glosa: selectedProject.glosa,
-          checklist: formDataWithProject.checklist || [],
+          checklist: completeFormData.checklist || [],
         };
         
 
@@ -254,7 +256,7 @@ export function NewProjectEventModal({
       } else {
         // Si no está en modo autoSave, usar onSubmit externo
         if (typeof onSubmit === 'function') {
-          onSubmit(formDataWithProject);
+          onSubmit(completeFormData);
         } else {
           throw new Error('No se proporcionó función onSubmit y autoSave está deshabilitado');
         }
@@ -291,7 +293,7 @@ export function NewProjectEventModal({
           {!selectedProject ? (
             <Autocomplete
               items={projectItems}
-              value={formData.projectId || ''}
+              value={initialData?.projectId || ''}
               onSelect={handleProjectSelect}
               placeholder="Buscar proyecto..."
               renderItem={renderProjectItem}
@@ -346,8 +348,9 @@ export function NewProjectEventModal({
         {/* Formulario */}
         <NewProjectEventForm
           formRef={formRef}
+          formInstanceRef={formInstanceRef}
           onSubmit={handleFormSubmit}
-          initialData={formData}
+          initialData={initialData}
           isSubmitting={isSubmitting}
           //disabled={!!selectedProject}  Deshabilitar campos cuando hay proyecto seleccionado
         />
