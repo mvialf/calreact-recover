@@ -40,47 +40,69 @@ jest.mock('@/lib/config/featureFlags', () => ({
   }
 }));
 
-// Mocks para Google Maps APIs
-const mockAutocompleteSuggestion = {
-  fetchAutocompleteSuggestions: jest.fn()
-};
-
-const mockPlacesLib = {
-  AutocompleteSuggestion: mockAutocompleteSuggestion,
-  AutocompleteSessionToken: jest.fn(() => ({ token: 'test-token' }))
-};
-
-const mockLegacyService = {
-  getPlacePredictions: jest.fn()
-};
-
-// Mock dinámico que simula detección de API
-const mockImportLibrary = jest.fn((library: string) => {
-  if (library === 'places') {
-    return Promise.resolve(mockPlacesLib);
-  }
-  return Promise.reject(new Error('Library not found'));
+// Factory functions para crear mocks frescos en cada test
+const createMockPlace = () => ({
+  fetchFields: jest.fn().mockResolvedValue(undefined)
 });
 
-// Setup global mocks
-beforeEach(() => {
-  global.google = {
-    maps: {
-      importLibrary: mockImportLibrary,
-      places: {
-        PlacesServiceStatus: {
-          OK: 'OK'
-        },
-        // Mock API legacy disponible para fallback
-        AutocompleteService: jest.fn(() => mockLegacyService)
-      }
-    }
-  } as any;
-  
-  jest.clearAllMocks();
+const createMockAutocompleteSuggestion = () => ({
+  fetchAutocompleteSuggestions: jest.fn().mockResolvedValue({ suggestions: [] })
+});
+
+const createMockLegacyService = () => ({
+  getPlacePredictions: jest.fn()
+});
+
+const createMockPlacesLib = () => ({
+  AutocompleteSuggestion: createMockAutocompleteSuggestion(),
+  AutocompleteSessionToken: jest.fn(() => ({ token: 'test-token' })),
+  Place: jest.fn().mockImplementation(() => createMockPlace())
 });
 
 describe('PlacesServiceAdapter', () => {
+  // Variables locales para cada suite de tests
+  let mockImportLibrary: jest.Mock;
+  let mockPlacesLib: any;
+  let mockLegacyService: any;
+
+  // Setup global limpio antes de cada test
+  beforeEach(() => {
+    // Crear mocks frescos para cada test
+    mockPlacesLib = createMockPlacesLib();
+    mockLegacyService = createMockLegacyService();
+    mockImportLibrary = jest.fn();
+    
+    // Configurar comportamiento por defecto
+    mockImportLibrary.mockImplementation((library: string) => {
+      if (library === 'places') {
+        return Promise.resolve(mockPlacesLib);
+      }
+      return Promise.reject(new Error('Library not found'));
+    });
+
+    // Setup global Google Maps mock
+    global.google = {
+      maps: {
+        importLibrary: mockImportLibrary,
+        places: {
+          PlacesServiceStatus: {
+            OK: 'OK'
+          },
+          // Mock API legacy disponible para fallback
+          AutocompleteService: jest.fn(() => mockLegacyService),
+          PlacesService: jest.fn().mockImplementation(() => ({
+            getDetails: jest.fn()
+          }))
+        }
+      }
+    } as any;
+  });
+  
+  // Limpieza completa después de cada test
+  afterEach(() => {
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
+  });
   const mockPredictions = [
     {
       description: 'Test Address 1',
@@ -157,10 +179,13 @@ describe('PlacesServiceAdapter', () => {
 
   describe('getPlacePredictions - API Moderna', () => {
     let adapter: PlacesServiceAdapter;
+    let localMockPlacesLib: any;
 
     beforeEach(async () => {
-      // Asegurar que nueva API esté disponible
-      mockImportLibrary.mockResolvedValue(mockPlacesLib);
+      // Crear mocks locales frescos para este describe
+      localMockPlacesLib = createMockPlacesLib();
+      mockImportLibrary.mockResolvedValue(localMockPlacesLib);
+      
       adapter = new PlacesServiceAdapter();
       await adapter.initialize();
     });
@@ -183,11 +208,12 @@ describe('PlacesServiceAdapter', () => {
         ]
       };
 
-      mockAutocompleteSuggestion.fetchAutocompleteSuggestions.mockResolvedValue(mockResponse);
+      // Configurar el mock específico para este test
+      localMockPlacesLib.AutocompleteSuggestion.fetchAutocompleteSuggestions.mockResolvedValue(mockResponse);
 
       const result = await adapter.getPlacePredictions('test query');
 
-      expect(mockAutocompleteSuggestion.fetchAutocompleteSuggestions).toHaveBeenCalledWith(
+      expect(localMockPlacesLib.AutocompleteSuggestion.fetchAutocompleteSuggestions).toHaveBeenCalledWith(
         expect.objectContaining({
           input: 'test query',
           sessionToken: expect.any(Object),
@@ -204,7 +230,7 @@ describe('PlacesServiceAdapter', () => {
     });
 
     it('debe manejar errores de nueva API', async () => {
-      mockAutocompleteSuggestion.fetchAutocompleteSuggestions.mockRejectedValue(
+      localMockPlacesLib.AutocompleteSuggestion.fetchAutocompleteSuggestions.mockRejectedValue(
         new Error('API Error')
       );
 
@@ -224,9 +250,11 @@ describe('PlacesServiceAdapter', () => {
     });
 
     it('debe obtener sugerencias usando API legacy', async () => {
-      mockLegacyService.getPlacePredictions.mockImplementation((request, callback) => {
-        callback(mockPredictions, 'OK');
-      });
+      mockLegacyService.getPlacePredictions.mockImplementation(
+        (request: any, callback: (predictions: any, status: string) => void) => {
+          callback(mockPredictions, 'OK');
+        }
+      );
 
       const result = await adapter.getPlacePredictions('test query');
 
@@ -243,35 +271,40 @@ describe('PlacesServiceAdapter', () => {
     });
 
     it('debe manejar errores de API legacy', async () => {
-      mockLegacyService.getPlacePredictions.mockImplementation((request, callback) => {
-        callback(null, 'ERROR');
-      });
+      mockLegacyService.getPlacePredictions.mockImplementation(
+        (request: any, callback: (predictions: any, status: string) => void) => {
+          callback(null, 'ERROR');
+        }
+      );
 
       await expect(adapter.getPlacePredictions('test query')).rejects.toThrow('Places service error: ERROR');
     });
   });
 
   describe('Session Token Management', () => {
-    beforeEach(() => {
-      // Resetear mocks para tests de session tokens
-      mockImportLibrary.mockResolvedValue(mockPlacesLib);
-    });
-
     it('debe crear session token cuando esté habilitado', async () => {
+      // Usar un mock específico para este test
+      const localMockPlacesLib = createMockPlacesLib();
+      mockImportLibrary.mockResolvedValue(localMockPlacesLib);
+      
       const adapter = new PlacesServiceAdapter({ sessionToken: true });
       await adapter.initialize();
       
-      expect(mockPlacesLib.AutocompleteSessionToken).toHaveBeenCalled();
+      expect(localMockPlacesLib.AutocompleteSessionToken).toHaveBeenCalled();
     });
 
     it('debe permitir refrescar session token', async () => {
+      // Usar un mock específico para este test
+      const localMockPlacesLib = createMockPlacesLib();
+      mockImportLibrary.mockResolvedValue(localMockPlacesLib);
+      
       const adapter = new PlacesServiceAdapter();
       await adapter.initialize();
       
-      const initialCalls = mockPlacesLib.AutocompleteSessionToken.mock.calls.length;
+      const initialCalls = localMockPlacesLib.AutocompleteSessionToken.mock.calls.length;
       adapter.refreshSessionToken();
       
-      expect(mockPlacesLib.AutocompleteSessionToken).toHaveBeenCalledTimes(initialCalls + 1);
+      expect(localMockPlacesLib.AutocompleteSessionToken).toHaveBeenCalledTimes(initialCalls + 1);
     });
   });
 
@@ -289,9 +322,11 @@ describe('PlacesServiceAdapter', () => {
       mockImportLibrary.mockRejectedValue(new Error('Nueva API no disponible'));
       await adapter.initialize();
 
-      mockLegacyService.getPlacePredictions.mockImplementation((request, callback) => {
-        callback(mockPredictions, 'OK');
-      });
+      mockLegacyService.getPlacePredictions.mockImplementation(
+        (request: any, callback: (predictions: any, status: string) => void) => {
+          callback(mockPredictions, 'OK');
+        }
+      );
 
       await adapter.getPlacePredictions('test');
 
@@ -305,66 +340,308 @@ describe('PlacesServiceAdapter', () => {
     });
   });
 
-  describe('getPlaceDetails', () => {
-    it('debe obtener detalles de lugar usando PlacesService', async () => {
-      const adapter = new PlacesServiceAdapter();
-      await adapter.initialize();
-
-      const mockPlace = {
-        place_id: 'test_place_id',
-        formatted_address: 'Test Address',
-        geometry: { location: { lat: () => 1, lng: () => 2 } }
+  describe('getPlaceDetails - Nueva Implementación Completa', () => {
+    describe('API Moderna', () => {
+      let adapter: PlacesServiceAdapter;
+      let localMockPlace: any;
+      const mockModernPlace = {
+        id: 'ChIJN5Nz71W3j4ARhx5bwpTQEGg',
+        displayName: 'Restaurant Modern',
+        formattedAddress: 'Calle Moderna 123, Santiago, Chile',
+        location: { lat: () => -33.4489, lng: () => -70.6693 },
+        addressComponents: [
+          { long_name: 'Calle Moderna 123', types: ['street_number', 'route'] }
+        ],
+        types: ['restaurant', 'establishment'],
+        shortFormattedAddress: 'Santiago, Chile',
+        websiteURI: 'https://restaurant-modern.cl',
+        nationalPhoneNumber: '+56 2 1234 5678',
+        internationalPhoneNumber: '+56 2 1234 5678',
+        rating: 4.5,
+        userRatingCount: 120,
+        businessStatus: 'OPERATIONAL'
       };
 
-      const mockPlacesService = {
-        getDetails: jest.fn((request, callback) => {
-          callback(mockPlace, 'OK');
-        }),
-        findPlaceFromPhoneNumber: jest.fn(),
-        findPlaceFromQuery: jest.fn(),
-        nearbySearch: jest.fn(),
-        textSearch: jest.fn()
-      };
+      beforeEach(async () => {
+        // Crear un mock local fresco para este describe
+        localMockPlace = createMockPlace();
+        Object.assign(localMockPlace, mockModernPlace);
+        
+        // Crear un mock de PlacesLib específico para este describe
+        const localMockPlacesLib = createMockPlacesLib();
+        localMockPlacesLib.Place = jest.fn().mockImplementation(() => localMockPlace);
+        
+        mockImportLibrary.mockResolvedValue(localMockPlacesLib);
+        
+        adapter = new PlacesServiceAdapter();
+        await adapter.initialize();
+      });
 
-      global.google.maps.places.PlacesService = jest.fn(() => mockPlacesService) as any;
+      it('debe usar nueva API cuando está disponible', async () => {
+        const result = await adapter.getPlaceDetails('ChIJN5Nz71W3j4ARhx5bwpTQEGg');
+        
+        expect(localMockPlace.fetchFields).toHaveBeenCalledWith({
+          fields: [
+            'id',
+            'displayName', 
+            'formattedAddress',
+            'location',
+            'addressComponents',
+            'types'
+          ]
+        });
+        
+        expect(result).toEqual({
+          place_id: 'ChIJN5Nz71W3j4ARhx5bwpTQEGg',
+          name: 'Restaurant Modern',
+          formatted_address: 'Calle Moderna 123, Santiago, Chile',
+          geometry: {
+            location: mockModernPlace.location,
+            viewport: null
+          },
+          address_components: mockModernPlace.addressComponents,
+          types: ['restaurant', 'establishment'],
+          vicinity: 'Santiago, Chile',
+          website: 'https://restaurant-modern.cl',
+          formatted_phone_number: '+56 2 1234 5678',
+          international_phone_number: '+56 2 1234 5678',
+          rating: 4.5,
+          user_ratings_total: 120,
+          business_status: 'OPERATIONAL',
+          plus_code: undefined,
+          photos: undefined,
+          reviews: undefined,
+          opening_hours: undefined
+        });
+      });
 
-      const result = await adapter.getPlaceDetails('test_place_id');
+      it('debe mapear campos legacy a moderna API correctamente', async () => {
+        await adapter.getPlaceDetails('test_id', [
+          'place_id',
+          'name', 
+          'formatted_address',
+          'geometry.location',
+          'address_components',
+          'website',
+          'formatted_phone_number',
+          'rating'
+        ]);
+        
+        expect(localMockPlace.fetchFields).toHaveBeenCalledWith({
+          fields: [
+            'id',
+            'displayName',
+            'formattedAddress', 
+            'location',
+            'addressComponents',
+            'websiteURI',
+            'nationalPhoneNumber',
+            'rating'
+          ]
+        });
+      });
 
-      expect(mockPlacesService.getDetails).toHaveBeenCalledWith(
-        expect.objectContaining({
-          placeId: 'test_place_id',
-          fields: expect.any(Array)
-        }),
-        expect.any(Function)
-      );
+      it('debe hacer fallback a legacy si nueva API falla', async () => {
+        localMockPlace.fetchFields.mockRejectedValue(new Error('Nueva API falló'));
+        
+        const mockPlacesService = {
+          getDetails: jest.fn((request, callback) => {
+            callback({
+              place_id: 'test_id',
+              name: 'Legacy Restaurant',
+              formatted_address: 'Legacy Address'
+            }, 'OK');
+          })
+        };
 
-      expect(result).toEqual(mockPlace);
+        global.google.maps.places.PlacesService = jest.fn(() => mockPlacesService) as any;
+
+        const result = await adapter.getPlaceDetails('test_id');
+
+        expect(mockPlacesService.getDetails).toHaveBeenCalled();
+        expect(result?.name).toBe('Legacy Restaurant');
+      });
+
+      it('debe convertir photos correctamente', async () => {
+        const mockPlaceWithPhotos = {
+          ...localMockPlace,
+          photos: [
+            {
+              getURI: jest.fn((options) => `https://photo.url?maxHeight=${options?.maxHeight || 400}`),
+              heightPx: 1200,
+              widthPx: 1600,
+              authorAttributions: [{ displayName: 'Photographer Name' }]
+            }
+          ]
+        };
+
+        Object.assign(localMockPlace, mockPlaceWithPhotos);
+
+        const result = await adapter.getPlaceDetails('test_id', ['photos']);
+
+        expect(result?.photos).toHaveLength(1);
+        expect(result?.photos![0]).toEqual({
+          getUrl: expect.any(Function),
+          height: 1200,
+          width: 1600,
+          html_attributions: ['Photographer Name']
+        });
+      });
+
+      it('debe convertir reviews correctamente', async () => {
+        const mockPlaceWithReviews = {
+          ...localMockPlace,
+          reviews: [
+            {
+              rating: 5,
+              text: 'Great restaurant!',
+              publishTime: '2023-09-01T12:00:00Z',
+              authorAttribution: {
+                displayName: 'John Doe',
+                uri: 'https://maps.google.com/user123',
+                photoURI: 'https://photo.url/user123.jpg'
+              }
+            }
+          ]
+        };
+
+        Object.assign(localMockPlace, mockPlaceWithReviews);
+
+        const result = await adapter.getPlaceDetails('test_id', ['reviews']);
+
+        expect(result?.reviews).toHaveLength(1);
+        expect(result?.reviews![0]).toEqual({
+          rating: 5,
+          text: 'Great restaurant!',
+          time: expect.any(Number),
+          author_name: 'John Doe',
+          author_url: 'https://maps.google.com/user123',
+          profile_photo_url: 'https://photo.url/user123.jpg'
+        });
+      });
     });
 
-    it('debe manejar errores en getPlaceDetails', async () => {
-      const adapter = new PlacesServiceAdapter();
-      await adapter.initialize();
+    describe('API Legacy (fallback)', () => {
+      let adapter: PlacesServiceAdapter;
 
-      const mockPlacesService = {
-        getDetails: jest.fn((request, callback) => {
-          callback(null, 'ERROR');
-        }),
-        findPlaceFromPhoneNumber: jest.fn(),
-        findPlaceFromQuery: jest.fn(),
-        nearbySearch: jest.fn(),
-        textSearch: jest.fn()
-      };
+      beforeEach(async () => {
+        // Forzar API legacy
+        mockImportLibrary.mockRejectedValue(new Error('Nueva API no disponible'));
+        
+        adapter = new PlacesServiceAdapter();
+        await adapter.initialize();
+      });
 
-      global.google.maps.places.PlacesService = jest.fn(() => mockPlacesService) as any;
+      it('debe usar API legacy cuando moderna no está disponible', async () => {
+        const mockPlace = {
+          place_id: 'test_place_id',
+          name: 'Legacy Restaurant', 
+          formatted_address: 'Legacy Address 123',
+          geometry: { location: { lat: () => 1, lng: () => 2 } },
+          address_components: [],
+          types: ['restaurant']
+        };
 
-      await expect(adapter.getPlaceDetails('test_place_id')).rejects.toThrow('Place details error: ERROR');
+        const mockPlacesService = {
+          getDetails: jest.fn((request, callback) => {
+            callback(mockPlace, 'OK');
+          })
+        };
+
+        global.google.maps.places.PlacesService = jest.fn(() => mockPlacesService) as any;
+
+        const result = await adapter.getPlaceDetails('test_place_id');
+
+        expect(mockPlacesService.getDetails).toHaveBeenCalledWith(
+          expect.objectContaining({
+            placeId: 'test_place_id',
+            fields: expect.arrayContaining([
+              'place_id',
+              'formatted_address',
+              'geometry',
+              'address_components',
+              'name',
+              'types'
+            ])
+          }),
+          expect.any(Function)
+        );
+
+        expect(result).toEqual(mockPlace);
+      });
+
+      it('debe manejar errores de API legacy', async () => {
+        const mockPlacesService = {
+          getDetails: jest.fn((request, callback) => {
+            callback(null, 'ZERO_RESULTS');
+          })
+        };
+
+        global.google.maps.places.PlacesService = jest.fn(() => mockPlacesService) as any;
+
+        await expect(adapter.getPlaceDetails('invalid_id')).rejects.toThrow('Place details error: ZERO_RESULTS');
+      });
+    });
+
+    describe('Manejo de errores y feature flags', () => {
+      it('debe fallar si nueva API falla y fallback no está permitido', async () => {
+        const { PlacesFeatureFlags } = require('@/lib/config/featureFlags');
+        PlacesFeatureFlags.isFallbackAllowed.mockReturnValue(false);
+
+        const mockPlacesLibWithFailingPlace = {
+          ...mockPlacesLib,
+          Place: jest.fn(() => ({
+            fetchFields: jest.fn().mockRejectedValue(new Error('Nueva API falló'))
+          }))
+        };
+
+        mockImportLibrary.mockResolvedValue(mockPlacesLibWithFailingPlace);
+        
+        const adapter = new PlacesServiceAdapter();
+        await adapter.initialize();
+
+        await expect(adapter.getPlaceDetails('test_id')).rejects.toThrow('Nueva API falló y fallback no permitido');
+      });
+
+      it('debe usar campos por defecto cuando no se especifican', async () => {
+        const mockPlace = {
+          fetchFields: jest.fn().mockResolvedValue(undefined)
+        };
+
+        const mockPlacesLibWithPlace = {
+          ...mockPlacesLib,
+          Place: jest.fn(() => mockPlace)
+        };
+
+        mockImportLibrary.mockResolvedValue(mockPlacesLibWithPlace);
+        
+        const adapter = new PlacesServiceAdapter();
+        await adapter.initialize();
+
+        await adapter.getPlaceDetails('test_id');
+
+        expect(mockPlace.fetchFields).toHaveBeenCalledWith({
+          fields: [
+            'id',
+            'displayName',
+            'formattedAddress',
+            'location', 
+            'addressComponents',
+            'types'
+          ]
+        });
+      });
     });
   });
 
   describe('Conversión de formatos API', () => {
     let adapter: PlacesServiceAdapter;
+    let localMockPlacesLib: any;
 
     beforeEach(async () => {
+      localMockPlacesLib = createMockPlacesLib();
+      mockImportLibrary.mockResolvedValue(localMockPlacesLib);
+      
       adapter = new PlacesServiceAdapter();
       await adapter.initialize();
     });
@@ -390,7 +667,7 @@ describe('PlacesServiceAdapter', () => {
         ]
       };
 
-      mockAutocompleteSuggestion.fetchAutocompleteSuggestions.mockResolvedValue(mockResponse);
+      localMockPlacesLib.AutocompleteSuggestion.fetchAutocompleteSuggestions.mockResolvedValue(mockResponse);
 
       const results = await adapter.getPlacePredictions('Restaurant');
 
@@ -420,7 +697,7 @@ describe('PlacesServiceAdapter', () => {
         ]
       };
 
-      mockAutocompleteSuggestion.fetchAutocompleteSuggestions.mockResolvedValue(mockResponse);
+      localMockPlacesLib.AutocompleteSuggestion.fetchAutocompleteSuggestions.mockResolvedValue(mockResponse);
 
       const results = await adapter.getPlacePredictions('test');
 
@@ -441,22 +718,26 @@ describe('PlacesServiceAdapter', () => {
 
   describe('Funcionalidades específicas de nueva API', () => {
     let adapter: PlacesServiceAdapter;
+    let localMockPlacesLib: any;
 
     beforeEach(async () => {
+      localMockPlacesLib = createMockPlacesLib();
+      mockImportLibrary.mockResolvedValue(localMockPlacesLib);
+      
       adapter = new PlacesServiceAdapter();
       await adapter.initialize();
     });
 
     it('debe usar locationBias cuando se proporciona location', async () => {
       const mockResponse = { suggestions: [] };
-      mockAutocompleteSuggestion.fetchAutocompleteSuggestions.mockResolvedValue(mockResponse);
+      localMockPlacesLib.AutocompleteSuggestion.fetchAutocompleteSuggestions.mockResolvedValue(mockResponse);
 
       await adapter.getPlacePredictions('test', { 
         location: { lat: () => -33.4489, lng: () => -70.6693 } as any,
         radius: 5000
       });
 
-      expect(mockAutocompleteSuggestion.fetchAutocompleteSuggestions).toHaveBeenCalledWith(
+      expect(localMockPlacesLib.AutocompleteSuggestion.fetchAutocompleteSuggestions).toHaveBeenCalledWith(
         expect.objectContaining({
           locationBias: {
             center: { lat: -33.4489, lng: -70.6693 },
@@ -471,11 +752,11 @@ describe('PlacesServiceAdapter', () => {
       await customAdapter.initialize();
 
       const mockResponse = { suggestions: [] };
-      mockAutocompleteSuggestion.fetchAutocompleteSuggestions.mockResolvedValue(mockResponse);
+      localMockPlacesLib.AutocompleteSuggestion.fetchAutocompleteSuggestions.mockResolvedValue(mockResponse);
 
       await customAdapter.getPlacePredictions('pizza');
 
-      expect(mockAutocompleteSuggestion.fetchAutocompleteSuggestions).toHaveBeenCalledWith(
+      expect(localMockPlacesLib.AutocompleteSuggestion.fetchAutocompleteSuggestions).toHaveBeenCalledWith(
         expect.objectContaining({
           includedPrimaryTypes: ['restaurant', 'food']
         })
@@ -530,15 +811,18 @@ describe('PlacesServiceAdapter', () => {
     });
 
     it('debe crear session token solo cuando esté habilitado', async () => {
+      const localMockPlacesLib = createMockPlacesLib();
+      mockImportLibrary.mockResolvedValue(localMockPlacesLib);
+      
       const adapterSinToken = new PlacesServiceAdapter({ sessionToken: false });
       await adapterSinToken.initialize();
 
       const mockResponse = { suggestions: [] };
-      mockAutocompleteSuggestion.fetchAutocompleteSuggestions.mockResolvedValue(mockResponse);
+      localMockPlacesLib.AutocompleteSuggestion.fetchAutocompleteSuggestions.mockResolvedValue(mockResponse);
 
       await adapterSinToken.getPlacePredictions('test');
 
-      expect(mockAutocompleteSuggestion.fetchAutocompleteSuggestions).toHaveBeenCalledWith(
+      expect(localMockPlacesLib.AutocompleteSuggestion.fetchAutocompleteSuggestions).toHaveBeenCalledWith(
         expect.objectContaining({
           sessionToken: undefined
         })
