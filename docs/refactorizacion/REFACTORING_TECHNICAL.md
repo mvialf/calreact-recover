@@ -364,9 +364,9 @@ export const handleServiceError = (error: Error, context: string) => {
   "typescript": "5.8.3",
   "firebase": "11.9.1",
   "testing": "Jest + Playwright MCP",
-  "logging": "Winston (12 loggers)",
+  "logging": "Logger personalizado (12 loggers)",
   "ui": "Shadcn/ui + Tailwind CSS",
-  "state": "Zustand + TanStack Query",
+  "state": "React Context + TanStack Query",
   "validation": "Zod schemas"
 }
 ```

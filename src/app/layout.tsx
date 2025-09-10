@@ -24,7 +24,6 @@ import { Toaster } from '@/components/ui/toaster';
 import { HeaderNav } from '@/components/ui/headernav';
 import { Sidebar, SidebarProvider } from '@/components/ui/sidebar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import Script from 'next/script';
 import { cn } from '@/lib/utils';
 import { AppConfigProvider } from '@/contexts/AppConfigContext';
 import { GlobalErrorBoundary } from '@/components/error-boundary/GlobalErrorBoundary';
@@ -204,17 +203,6 @@ export default function RootLayout({
                   </div>
                 </SidebarProvider>
               <Toaster />
-              <Script
-                src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&callback=initGoogleMaps`}
-                strategy="beforeInteractive"
-              />
-              <Script id="google-maps-init">
-                {`
-                  window.initGoogleMaps = function() {
-                    window.googleMapsLoaded = true;
-                  };
-                `}
-              </Script>
               </AppConfigProvider>
             </ThemeProvider>
           </QueryClientProvider>

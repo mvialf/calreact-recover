@@ -2,6 +2,7 @@
 
 // React imports
 import React, { useEffect } from 'react';
+import type { UseFormReturn } from 'react-hook-form';
 
 // Third-party imports
 import { useForm } from 'react-hook-form';
@@ -68,6 +69,7 @@ export type NewProjectEventFormValues = z.infer<typeof formSchema> & {
 
 export interface NewProjectEventFormProps {
   formRef?: React.RefObject<HTMLFormElement>;
+  formInstanceRef?: React.MutableRefObject<UseFormReturn<NewProjectEventFormValues> | null>;
   onSubmit: (data: NewProjectEventFormValues) => void;
   initialData?: Partial<NewProjectEventFormValues>;
   isSubmitting?: boolean;
@@ -76,6 +78,7 @@ export interface NewProjectEventFormProps {
 
 export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
   formRef,
+  formInstanceRef,
   onSubmit,
   initialData,
   isSubmitting = false,
@@ -111,6 +114,12 @@ export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
     },
   });
 
+  // Exponer la instancia del formulario al componente padre
+  useEffect(() => {
+    if (formInstanceRef) {
+      formInstanceRef.current = form;
+    }
+  }, [form, formInstanceRef]);
 
   // Efecto para actualizar el formulario cuando cambian los datos iniciales
   useEffect(() => {

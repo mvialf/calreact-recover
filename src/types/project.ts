@@ -2,6 +2,18 @@
 import type { Timestamp } from 'firebase/firestore';
 import type { ProjectStatusConstant } from '@/constants/project';
 
+// Re-export lean types for convenience
+export type { 
+  ProjectEventLean, 
+  ChecklistItem, 
+  ComposedProjectEvent,
+  EventCompositionConfig,
+  EventLeanFilters,
+  EventLeanQueryOptions,
+  EventLeanQueryResponse,
+  CreateProjectEventLeanData
+} from '@/types/projectEventLean';
+
 // Tipo para las coordenadas geográficas
 export interface GeoCoordinates {
   latitude: number;
@@ -126,4 +138,16 @@ export interface ProjectEventDocument
   eventDate: Timestamp;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
+}
+
+// Tipo para resultados de migración por lotes
+export interface MigrationBatchResult {
+  batchId: string;
+  processed: number;
+  successful: number;
+  failed: number;
+  errors: Array<{eventId: string; error: string}>;
+  startTime: Date;
+  endTime: Date;
+  duration: number;
 }

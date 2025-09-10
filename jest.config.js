@@ -31,11 +31,13 @@ const customJestConfig = {
   clearMocks: true,
   restoreMocks: true,
 
-  // Ignora archivos sin tests
+  // Ignora archivos sin tests y tests E2E de Playwright
   testPathIgnorePatterns: [
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',
     '<rootDir>/coverage/',
+    '<rootDir>/e2e/',
+    '<rootDir>/playwright-tests/',
   ],
 };
 

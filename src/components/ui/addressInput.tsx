@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useCallback } from "react"
-import { Loader2, MapPin, MapPinOff, X, MoreVertical, Building, Copy, Map, Share2 } from "lucide-react"
+import React from "react"
+import { Loader2, MapPin, X, MoreVertical, Building, Copy, Map, Share2, MapPinOff } from "lucide-react" // TODO: Implementar estados de error geolocalización con MapPinOff
 import { useLoadScript } from "@react-google-maps/api"
 import { extractAddressComponents } from "@/utils/address-utils"
 import { cn } from "@/lib/utils"
@@ -29,8 +29,17 @@ import {
 import type { FormattedAddress } from "@/types/project"
 import { uiLogger } from '@/lib/logger';
 
-// ✅ SOLUCIÓN: Mover libraries fuera del componente para evitar recargas
-const GOOGLE_MAPS_LIBRARIES: ('places')[] = ['places'];
+// Importar configuración optimizada
+import { 
+  getGoogleMapsConfig, 
+  GoogleMapsUtils, 
+  googleMapsCache,
+  type GoogleMapsPrediction,
+  type GoogleMapsPlace 
+} from '@/lib/google-maps-config'; // sessionTokenManager removido - manejado por PlacesServiceAdapter
+
+// Importar nuevo adaptador
+import { PlacesServiceAdapter } from '@/lib/places/PlacesServiceAdapter';
 
 // Extender la interfaz global de Window para incluir google
 declare global {
@@ -38,9 +47,6 @@ declare global {
     google: typeof google;
   }
 }
-
-type GooglePlacePrediction = google.maps.places.AutocompletePrediction;
-type GooglePlaceResult = google.maps.places.PlaceResult;
 
 export interface AddressInputProps {
   /**
@@ -90,14 +96,27 @@ export function AddressInput({
   const [isOpen, setIsOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [inputValue, setInputValue] = React.useState(value?.textoCompleto || "");
-  const [suggestions, setSuggestions] = React.useState<GooglePlacePrediction[]>([]);
+  const [suggestions, setSuggestions] = React.useState<GoogleMapsPrediction[]>([]);
   const [selectedAddress, setSelectedAddress] = React.useState<FormattedAddress | null>(value || null);
   const [additionalInfo, setAdditionalInfo] = React.useState(value?.informacionAdicional || "");
+  const [apiStatus, setApiStatus] = React.useState<'loading' | 'ready' | 'error'>('loading');
 
-  // ✅ SOLUCIÓN: Usar la constante libraries para evitar recargas
+  // Obtener configuración optimizada
+  const config = React.useMemo(() => {
+    try {
+      return getGoogleMapsConfig();
+    } catch (error) {
+      uiLogger.error('Error al obtener configuración de Google Maps', error);
+      return null;
+    }
+  }, []);
+
+  // ✅ SOLUCIÓN: Usar configuración centralizada
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-    libraries: GOOGLE_MAPS_LIBRARIES,
+    googleMapsApiKey: config?.apiKey || "",
+    libraries: config?.libraries as ('places')[] || ['places'],
+    language: config?.language,
+    region: config?.region,
   });
 
   // Manejar cuando el input se borra
@@ -142,126 +161,176 @@ export function AddressInput({
     // No hacer nada si value es undefined (carga inicial)
   }, [value]);
 
-  // Estado para las sugerencias de direcciones
-  const autocompleteService = React.useRef<google.maps.places.AutocompleteService | null>(null);
-  const placesService = React.useRef<google.maps.places.PlacesService | null>(null);
+  // ✅ MIGRACIÓN: Reemplazar refs de servicios con adapter
+  const placesAdapterRef = React.useRef<PlacesServiceAdapter | null>(null);
 
-  // ✅ SOLUCIÓN: Inicializar servicios con validaciones defensivas
+  // ✅ MIGRACIÓN: Inicializar nuevo adaptador
   React.useEffect(() => {
-    if (isLoaded && window.google && window.google.maps && window.google.maps.places) {
-      try {
-        autocompleteService.current = new window.google.maps.places.AutocompleteService();
-        placesService.current = new window.google.maps.places.PlacesService(
-          document.createElement('div')
-        );
-      } catch (error) {
-        uiLogger.warn('Error al inicializar servicios de Google Maps', error);
+    const initializePlacesAPI = async () => {
+      if (!isLoaded || !window.google?.maps) {
+        return;
       }
-    }
+      
+      try {
+        setApiStatus('loading');
+        
+        const adapter = new PlacesServiceAdapter({
+          componentRestrictions: { country: 'es' },
+          types: ['establishment'],
+          sessionToken: true
+        });
+        
+        await adapter.initialize();
+        placesAdapterRef.current = adapter;
+        setApiStatus('ready');
+        
+        uiLogger.info(`Places API inicializada: ${adapter.getAPIVersion()}`);
+        
+      } catch (error) {
+        setApiStatus('error');
+        uiLogger.error('Error al inicializar Places API:', error);
+      }
+    };
+    
+    initializePlacesAPI();
   }, [isLoaded]);
 
-  // ✅ SOLUCIÓN: Buscar sugerencias con validaciones mejoradas
+  // ✅ MIGRACIÓN: Buscar sugerencias con nuevo adaptador
   const searchAddresses = React.useCallback(async (query: string) => {
-    if (!autocompleteService.current || !query.trim()) {
+    if (!config || !placesAdapterRef.current || apiStatus !== 'ready' || !GoogleMapsUtils.isValidQuery(query, config)) {
       setSuggestions([]);
       return;
     }
 
+    const trimmedQuery = query.trim();
+    const cacheKey = GoogleMapsUtils.generateCacheKey(trimmedQuery);
+
+    // Verificar caché primero
+    const cachedResults = googleMapsCache.get(cacheKey);
+    if (cachedResults) {
+      setSuggestions(cachedResults);
+      uiLogger.info('Usando resultados desde caché', { query: trimmedQuery });
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
-      const request = {
-        input: query.trim(),
-        componentRestrictions: { country: 'cl' },
-        types: ['address'],
+      const predictions = await placesAdapterRef.current.getPlacePredictions(trimmedQuery);
+
+      // Limitar número de sugerencias según configuración
+      const limitedPredictions = GoogleMapsUtils.limitSuggestions(predictions, config);
+      
+      // Guardar en caché
+      googleMapsCache.set(cacheKey, limitedPredictions);
+      setSuggestions(limitedPredictions);
+      
+      uiLogger.debug(`Encontradas ${limitedPredictions.length} sugerencias para: "${trimmedQuery}"`);
+      
+    } catch (error) {
+      setSuggestions([]);
+      uiLogger.error('Error buscando direcciones:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [config, apiStatus]);
+
+  // Función auxiliar para procesar detalles del lugar
+  const processPlaceDetails = React.useCallback((place: GoogleMapsPlace, placeId: string) => {
+    try {
+      // Extraer componentes de la dirección con validación
+      const addressComponents = extractAddressComponents(place);
+
+      // Formatear la dirección completa según el tipo FormattedAddress
+      const formattedAddress: FormattedAddress = {
+        textoCompleto: place.formatted_address || "",
+        coordenadas: {
+          latitude: place.geometry?.location?.lat() || 0,
+          longitude: place.geometry?.location?.lng() || 0,
+        },
+        placeId: place.place_id || placeId,
+        componentes: {
+          calle: addressComponents?.route || '',
+          numero: addressComponents?.streetNumber || '',
+          comuna: addressComponents?.locality || '',
+          ciudad: addressComponents?.locality || '',
+          region: addressComponents?.administrativeArea || '',
+          pais: addressComponents?.country || 'Chile',
+          codigoPostal: addressComponents?.postalCode || '',
+        },
+        detalle: place.formatted_address || '',
+        comune: addressComponents?.locality || '', // Campo directo para acceso rápido
       };
 
-      const results = await new Promise<GooglePlacePrediction[]>((resolve) => {
-        autocompleteService.current?.getPlacePredictions(request, (predictions, status) => {
-          if (status === window.google?.maps?.places?.PlacesServiceStatus?.OK && predictions) {
-            resolve(predictions);
-          } else {
-            uiLogger.warn('Error en búsqueda de direcciones', { status });
-            resolve([]);
-          }
-        });
-      });
-
-      setSuggestions(results);
-    } catch (error) {
-      uiLogger.error('Error al buscar direcciones', error);
+      // Actualizar el estado
+      setSelectedAddress(formattedAddress);
+      setInputValue(formattedAddress.textoCompleto);
       setSuggestions([]);
-    }
-  }, []);
+      setIsOpen(false);
 
-  // ✅ SOLUCIÓN: Manejo mejorado de selección de lugar con validaciones
+      // Llamar a los callbacks
+      onSelect?.(formattedAddress);
+      onPlaceSelected?.(formattedAddress);
+    } catch (addressError) {
+      uiLogger.error('Error al procesar la dirección', addressError);
+    }
+  }, [onSelect, onPlaceSelected]);
+
+  // ✅ MIGRACIÓN: Manejo optimizado de selección de lugar con caché
   const handlePlaceSelect = React.useCallback(
     async (placeId: string) => {
-      if (!window.google || !window.google.maps || !window.google.maps.places || !placeId) {
+      if (!config || !GoogleMapsUtils.isGoogleMapsAvailable() || !placeId) {
         uiLogger.error('Google Maps API no está disponible o placeId inválido');
+        return;
+      }
+
+      // Verificar caché primero
+      const cacheKey = GoogleMapsUtils.generatePlaceDetailsCacheKey(placeId);
+      const cachedPlace = googleMapsCache.get(cacheKey);
+      
+      if (cachedPlace) {
+        processPlaceDetails(cachedPlace, placeId);
+        uiLogger.info('Usando detalles de lugar desde caché', { placeId });
         return;
       }
 
       setIsLoading(true);
 
       try {
-        const placesService = new window.google.maps.places.PlacesService(
-          document.createElement("div")
+        // ✅ USAR EL ADAPTADOR en lugar de PlacesService directo
+        const placeDetails = await placesAdapterRef.current!.getPlaceDetails(
+          placeId,
+          [
+            'place_id',
+            'formatted_address', 
+            'geometry',
+            'address_components',
+            'name',
+            'types',
+            'vicinity',
+            'website',
+            'formatted_phone_number',
+            'rating'
+          ]
         );
 
-        placesService.getDetails(
-          { placeId, fields: ["address_components", "formatted_address", "geometry", "place_id"] },
-          (place, status) => {
-            setIsLoading(false);
-            
-            if (status !== window.google.maps.places.PlacesServiceStatus.OK || !place) {
-              uiLogger.error('Error al obtener detalles del lugar', { status });
-              return;
-            }
+        setIsLoading(false);
+        
+        if (!placeDetails) {
+          uiLogger.error('Error al obtener detalles del lugar', { placeId });
+          return;
+        }
 
-            try {
-              // Extraer componentes de la dirección con validación
-              const addressComponents = extractAddressComponents(place);
-
-              // Formatear la dirección completa según el tipo FormattedAddress
-              const formattedAddress: FormattedAddress = {
-                textoCompleto: place.formatted_address || "",
-                coordenadas: {
-                  latitude: place.geometry?.location?.lat() || 0,
-                  longitude: place.geometry?.location?.lng() || 0,
-                },
-                placeId: place.place_id || placeId,
-                componentes: {
-                  calle: addressComponents?.route || '',
-                  numero: addressComponents?.streetNumber || '',
-                  comuna: addressComponents?.locality || '',
-                  ciudad: addressComponents?.locality || '',
-                  region: addressComponents?.administrativeArea || '',
-                  pais: addressComponents?.country || 'Chile',
-                  codigoPostal: addressComponents?.postalCode || '',
-                },
-                detalle: place.formatted_address || '',
-                comune: addressComponents?.locality || '', // Campo directo para acceso rápido
-              };
-
-              // Actualizar el estado
-              setSelectedAddress(formattedAddress);
-              setInputValue(formattedAddress.textoCompleto);
-              setSuggestions([]);
-              setIsOpen(false);
-
-              // Llamar a los callbacks
-              onSelect?.(formattedAddress);
-              onPlaceSelected?.(formattedAddress);
-            } catch (addressError) {
-              uiLogger.error('Error al procesar la dirección', addressError);
-            }
-          }
-        );
+        // Guardar en caché
+        googleMapsCache.set(cacheKey, placeDetails);
+        processPlaceDetails(placeDetails, placeId);
+        
       } catch (error) {
         uiLogger.error('Error al obtener detalles del lugar', error);
         setIsLoading(false);
       }
     },
-    [onSelect, onPlaceSelected]
+    [config, processPlaceDetails]
   );
 
   const handleClear = React.useCallback(() => {
@@ -288,44 +357,33 @@ export function AddressInput({
     }
   }, [selectedAddress]);
 
-  // Generar URL de vista previa personalizada
-  const generateShareableLink = useCallback((name?: string) => {
-    if (!selectedAddress?.coordenadas || !selectedAddress.textoCompleto) return '';
-    
-    const baseUrl = `${window.location.origin}/api/map-preview/1`;
-    const params = new URLSearchParams({
-      lat: selectedAddress.coordenadas.latitude.toString(),
-      lng: selectedAddress.coordenadas.longitude.toString(),
-      address: selectedAddress.textoCompleto,
-    });
-    
-    if (name) params.append('name', name);
-    if (selectedAddress.informacionAdicional) {
-      params.append('additionalInfo', selectedAddress.informacionAdicional);
-    }
-    
-    return `${baseUrl}?${params.toString()}`;
-  }, [selectedAddress]);
-
-  // Manejar la acción de ver en el mapa
+  // ✅ MIGRACIÓN: Usar utilidades optimizadas para URLs
   const handleViewOnMap = React.useCallback(() => {
-    const mapUrl = generateShareableLink();
-    if (mapUrl) {
-      window.open(mapUrl, '_blank', 'noopener,noreferrer');
-    }
-  }, [generateShareableLink]);
+    if (!selectedAddress?.coordenadas) return;
+    
+    const mapUrl = GoogleMapsUtils.generateMapsUrl(
+      selectedAddress.coordenadas.latitude,
+      selectedAddress.coordenadas.longitude
+    );
+    window.open(mapUrl, '_blank', 'noopener,noreferrer');
+  }, [selectedAddress]);
   
-  // Manejar la acción de compartir ubicación
+  // ✅ MIGRACIÓN: Función mejorada para compartir ubicación
   const handleShareLocation = React.useCallback(async (name?: string) => {
-    const shareUrl = generateShareableLink(name);
-    if (!shareUrl) return;
+    if (!selectedAddress) return;
+    
+    const shareUrl = GoogleMapsUtils.generateShareUrl(
+      selectedAddress.textoCompleto,
+      selectedAddress.coordenadas?.latitude,
+      selectedAddress.coordenadas?.longitude
+    );
     
     try {
       if (navigator.share) {
         const title = name || 'Ubicación';
-        const text = selectedAddress?.informacionAdicional 
+        const text = selectedAddress.informacionAdicional 
           ? `${selectedAddress.textoCompleto} (${selectedAddress.informacionAdicional})`
-          : selectedAddress?.textoCompleto || '';
+          : selectedAddress.textoCompleto;
         
         await navigator.share({
           title,
@@ -335,8 +393,8 @@ export function AddressInput({
       } else {
         // Fallback para navegadores que no soportan Web Share API
         const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(
-          `${name ? `${name}\n` : ''}${selectedAddress?.textoCompleto || ''}${
-            selectedAddress?.informacionAdicional ? `\n${selectedAddress.informacionAdicional}` : ''
+          `${name ? `${name}\n` : ''}${selectedAddress.textoCompleto}${
+            selectedAddress.informacionAdicional ? `\n${selectedAddress.informacionAdicional}` : ''
           }\n\nVer en mapa: ${shareUrl}`
         )}`;
         window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
@@ -344,7 +402,7 @@ export function AddressInput({
     } catch (err) {
       uiLogger.error('Error al compartir', err);
     }
-  }, [generateShareableLink, selectedAddress]);
+  }, [selectedAddress]);
 
   // Estado para controlar la visibilidad del input de información adicional
   const [showAdditionalInfoInput, setShowAdditionalInfoInput] = React.useState(false);
@@ -371,6 +429,12 @@ export function AddressInput({
   // Referencia al input para mantener el foco
   const inputRef = React.useRef<HTMLInputElement>(null);
 
+  // ✅ MIGRACIÓN: Debounced search function
+  const debouncedSearchAddresses = React.useMemo(() => {
+    if (!config) return () => {};
+    return GoogleMapsUtils.debounce(searchAddresses, config.debounceMs);
+  }, [searchAddresses, config]);
+
   // Manejar cambios en el input
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
@@ -382,8 +446,8 @@ export function AddressInput({
       return;
     }
     
-    // Buscar sugerencias para cualquier longitud de texto
-    searchAddresses(newValue);
+    // ✅ MIGRACIÓN: Usar búsqueda con debounce optimizada
+    debouncedSearchAddresses(newValue);
     
     // Mantener el foco en el input
     if (inputRef.current) {
@@ -446,7 +510,7 @@ export function AddressInput({
   // Renderizar el componente de búsqueda de direcciones
   if (selectedAddress) {
     return (
-      <div className={cn("w-full bg-background border rounded-md p-3 relative group", className)}>
+      <div className={cn("w-full bg-background border rounded-md p-3 relative group", className)} data-testid="selected-address">
         <div className="space-y-1">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -466,9 +530,10 @@ export function AddressInput({
                     size="icon"
                     className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={(e) => e.stopPropagation()}
+                    aria-label="Más acciones"
                   >
                     <MoreVertical className="h-4 w-4" />
-                    <span className="sr-only">Acciones</span>
+                    <span className="sr-only">Más acciones</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent 
@@ -508,6 +573,7 @@ export function AddressInput({
                             placeholder="Ej: Depto 405, Block C"
                             className="h-8 text-sm"
                             onClick={(e) => e.stopPropagation()}
+                            data-testid="additional-info-input"
                           />
                           <Button 
                             type="submit" 
@@ -563,6 +629,7 @@ export function AddressInput({
                 size="icon"
                 className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={handleClear}
+                aria-label="Limpiar dirección"
               >
                 <X className="h-4 w-4" />
                 <span className="sr-only">Limpiar dirección</span>
@@ -587,8 +654,18 @@ export function AddressInput({
     );
   }
 
+  // ✅ Mostrar estado de API en desarrollo
+  const showAPIStatus = process.env.NODE_ENV === 'development';
+
   return (
     <div className={cn("w-full", className)}>
+      {/* Status indicator para desarrollo */}
+      {showAPIStatus && (
+        <div className="absolute -top-6 right-0 text-xs opacity-50">
+          API: {apiStatus === 'ready' ? placesAdapterRef.current?.getAPIVersion() : apiStatus}
+        </div>
+      )}
+      
       <Popover 
         open={isOpen} 
         onOpenChange={(open) => {
@@ -618,13 +695,13 @@ export function AddressInput({
                   }
                 }
               }}
-              disabled={disabled || externalLoading || !isLoaded}
+              disabled={disabled || externalLoading || !isLoaded || apiStatus !== 'ready'}
               className={cn("w-full pr-10", inputClassName)}
               autoComplete="off"
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
               {isLoading || externalLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" data-testid="search-loading-indicator" />
               ) : (
                 <MapPin className="h-4 w-4 text-muted-foreground" />
               )}
@@ -640,7 +717,7 @@ export function AddressInput({
             <CommandList>
               {isLoading || externalLoading ? (
                 <div className="flex justify-center items-center py-6">
-                  <Loader2 className="h-6 w-6 animate-spin" />
+                  <Loader2 className="h-6 w-6 animate-spin" data-testid="suggestions-loading" />
                 </div>
               ) : suggestions.length === 0 ? (
                 <CommandEmpty>No se encontraron direcciones</CommandEmpty>
