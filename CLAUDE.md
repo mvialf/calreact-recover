@@ -8,14 +8,14 @@ Este archivo proporciona orientación a Claude Code (claude.ai/code) cuando trab
 
 ## 📚 Importaciones de Documentación
 
-@docs/claude/references/commands.md
-@docs/claude/references/stack.md
-@docs/claude/references/dependencias.md
-@docs/claude/references/patterns.md
-@docs/claude/context/architecture.md
-@docs/claude/workflow/workflow.md
-@docs/claude/workflow/testing.md
-@docs/IMPLEMENTATIONS.md
+@claude-docs/references/commands.md
+@claude-docs/references/stack.md
+@claude-docs/references/dependencias.md
+@claude-docs/references/patterns.md
+@claude-docs/context/architecture.md
+@claude-docs/workflow/workflow.md
+@claude-docs/workflow/testing.md
+@claude-docs/IMPLEMENTATIONS.md
 
 ## 🎯 Estado Actual del Proyecto
 
