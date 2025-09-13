@@ -51,9 +51,7 @@ technical/
     │   ├── 03-IMPLEMENTACION-TESTS.md
     │   ├── MIGRACION-COMPLETADA.md
     │   └── ... (11 archivos total)
-    ├── dependencies-cleanup/     # Limpieza de dependencias
-    │   ├── analisis/           # Análisis individuales
-    │   └── README.md
+    ├── DEPENDENCIES-CLEANUP-COMPLETED.md  # Limpieza de dependencias (completada)
     └── refactoring-2025/        # Refactorización general 2025
         ├── REFACTORING_STATUS.md
         ├── REFACTORING_TECHNICAL.md
@@ -101,7 +99,7 @@ operations/
 
 ### 📦 Dependencias
 - **Inventario completo:** `/claude/references/dependencias.md`
-- **Limpieza histórica:** `/technical/migrations/dependencies-cleanup/`
+- **Limpieza completada:** `/technical/migrations/DEPENDENCIES-CLEANUP-COMPLETED.md`
 
 ### 🗺️ Migraciones Importantes
 - **Google Places 2025:** `/technical/migrations/google-places-2025/`
