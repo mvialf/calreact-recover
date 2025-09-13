@@ -169,12 +169,6 @@ export const GoogleMapsUtils = {
     return `place_details_${placeId}`;
   },
 
-  /**
-   * Valida si una query es válida para enviar a la API
-   */
-  isValidQuery: (query: string, config: GoogleMapsConfig): boolean => {
-    return query.trim().length >= config.minQueryLength;
-  },
 
   /**
    * Construye las opciones para AutocompleteService.getPlacePredictions
@@ -221,17 +215,27 @@ export const GoogleMapsUtils = {
    * Limita el número de sugerencias según la configuración
    */
   limitSuggestions: <T>(
-    suggestions: T[], 
+    suggestions: T[],
     config: GoogleMapsConfig
   ): T[] => {
     return suggestions.slice(0, config.maxSuggestions);
   },
 
   /**
+   * Valida si una query es válida para enviar a la API
+   */
+  isValidQuery: (query: string, config: GoogleMapsConfig): boolean => {
+    const trimmed = query.trim();
+    return trimmed.length >= config.minQueryLength && trimmed.length <= 200;
+  },
+
+  /**
    * Verifica si Google Maps está disponible
    */
   isGoogleMapsAvailable: (): boolean => {
-    return !!(window.google && window.google.maps && window.google.maps.places);
+    return typeof window !== 'undefined' &&
+           typeof window.google !== 'undefined' &&
+           typeof window.google.maps !== 'undefined';
   },
 
   /**
@@ -249,6 +253,48 @@ export const GoogleMapsUtils = {
       return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
     }
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+  },
+
+  /**
+   * Maneja errores de la API de Google Maps
+   */
+  handleApiError: (error: any): string => {
+    if (error.code === 'ZERO_RESULTS') {
+      return 'No se encontraron resultados';
+    }
+    if (error.code === 'OVER_QUERY_LIMIT') {
+      return 'Se ha excedido el límite de consultas';
+    }
+    if (error.code === 'REQUEST_DENIED') {
+      return 'Solicitud denegada - verificar API key';
+    }
+    if (error.code === 'INVALID_REQUEST') {
+      return 'Solicitud inválida';
+    }
+    return 'Error al buscar direcciones';
+  },
+
+  /**
+   * Convierte respuesta de la nueva API a formato legacy para compatibilidad
+   */
+  convertNewApiResponse: (response: any): GoogleMapsPrediction[] => {
+    if (!response?.suggestions) return [];
+
+    return response.suggestions
+      .filter((suggestion: any) => suggestion.placePrediction)
+      .map((suggestion: any) => {
+        const prediction = suggestion.placePrediction;
+        return {
+          place_id: prediction.placeId,
+          description: prediction.text?.text || '',
+          structured_formatting: {
+            main_text: prediction.structuredFormat?.mainText?.text || '',
+            secondary_text: prediction.structuredFormat?.secondaryText?.text || '',
+            main_text_matched_substrings: prediction.structuredFormat?.mainText?.matches || []
+          },
+          types: prediction.types || []
+        };
+      });
   }
 };
 
@@ -282,9 +328,44 @@ export const modernPlacesConfig = {
   locationBiasRadius: 50000, // 50km
 };
 
-// Tipos exportados para uso en componentes
-export type GoogleMapsPrediction = google.maps.places.AutocompletePrediction;
-export type GoogleMapsPlace = google.maps.places.PlaceResult;
+// Tipos personalizados para Google Maps API
+export interface GoogleMapsPrediction {
+  place_id: string;
+  description: string;
+  structured_formatting?: {
+    main_text: string;
+    secondary_text: string;
+    main_text_matched_substrings?: Array<{
+      offset: number;
+      length: number;
+    }>;
+  };
+  types: string[];
+}
+
+export interface GoogleMapsPlace {
+  place_id?: string;
+  formatted_address?: string;
+  geometry?: {
+    location?: {
+      lat(): number;
+      lng(): number;
+    };
+  };
+  address_components?: Array<{
+    long_name: string;
+    short_name: string;
+    types: string[];
+  }>;
+  name?: string;
+  types?: string[];
+  vicinity?: string;
+  website?: string;
+  formatted_phone_number?: string;
+  rating?: number;
+}
+
+// Tipos adicionales para compatibilidad
 export type GoogleMapsStatus = google.maps.places.PlacesServiceStatus;
 
 // ✅ MIGRACIÓN: Tipos para nueva API

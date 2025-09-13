@@ -11,6 +11,7 @@
 
 import { uiLogger } from '@/lib/logger';
 import { PlacesFeatureFlags } from '@/lib/config/featureFlags';
+import { getGoogleMapsConfig, GoogleMapsUtils } from '@/lib/google-maps-config';
 
 // Configuración del adaptador
 export interface PlacesAdapterConfig {
