@@ -75,6 +75,31 @@ git commit -m "refactor: Optimizar PlacesServiceAdapter con nuevas APIs"
 - Usar herramientas de búsqueda específicas (`grep`, `find`) cuando se conoce el objetivo
 - Evitar lectura masiva innecesaria de archivos
 
+#### Metodología Bash-First para Análisis Técnico
+Para análisis complejos, debugging educativo o evaluación arquitectural:
+
+**Referencia completa:** Ver sección "🔬 Metodología de Análisis Técnico (Bash-First)" en `/CLAUDE.md`
+
+##### Exploración Rápida (80% casos):
+```bash
+# Estructura y navegación
+find src/ -name "*.ts*" | head -20
+tree src/ -I node_modules -L 3
+
+# Búsquedas eficientes
+grep -r "patrón" src/ --include="*.tsx" -n
+rg "interface.*Props" src/ -t typescript
+
+# Git analysis
+git log --oneline --graph -20
+git diff --stat HEAD~5..HEAD
+```
+
+##### Análisis Semántico (20% casos):
+- Usar `Serena.find_symbol()` solo para relaciones entre símbolos
+- `Serena.get_symbols_overview()` para arquitectura compleja
+- **Principio:** Bash primero, Serena cuando sea específicamente necesario
+
 ### Validación de Existencia (DRY)
 ```typescript
 // ✅ ANTES de crear nueva funcionalidad:
@@ -152,6 +177,11 @@ git commit -m "feat: Descripción específica del cambio"
 - **Consultar documentación local SIEMPRE**: `/docs`
 - **Antes de especular**: Usar herramientas de documentación
 - **Contexto específico**: Proporcionar información relevante del error
+
+#### Para Análisis Técnico Complejo
+- **Metodología estructurada**: Ver "🔬 Metodología de Análisis Técnico (Bash-First)" en `/CLAUDE.md`
+- **Sequential thinking**: Usar `mcp__sequential-thinking__sequentialthinking` para problemas complejos
+- **Evaluación de alternativas**: Protocolo de comparación objetiva con criterios específicos
 
 ### Para Dependencias y APIs
 - **Context7**: Utilizar servidor MCP para documentación actualizada
