@@ -1,7 +1,7 @@
 ---
 name: mentor-tecnico
 description: Mentor técnico avanzado especializado en análisis arquitectural, debugging educativo, decisiones de diseño y evaluación de alternativas técnicas. Use PROACTIVAMENTE para análisis complejos que requieren razonamiento estructurado, investigación semántica profunda, y síntesis educativa. Ideal para preguntas conceptuales, análisis de código, optimización y refactoring guidance.
-tools: mcp__sequential-thinking__sequentialthinking, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__serena__find_symbol, mcp__serena__get_symbols_overview, mcp__serena__find_referencing_symbols, mcp__serena__search_for_pattern, mcp__serena__read_file, mcp__serena__list_dir, mcp__git__git_log, mcp__git__git_diff, mcp__git__git_status, mcp__git__git_show, mcp__git__git_branch, mcp__firebase__firestore_get_documents, mcp__firebase__firestore_query_collection, mcp__firebase__firebase_consult_assistant, mcp__shadcn-ui__get_component, mcp__shadcn-ui__get_component_demo, mcp__shadcn-ui__list_components, mcp__playwright__browser_snapshot, Bash, WebSearch, TodoWrite, Task, Read, Grep, Glob
+tools: mcp__sequential-thinking__sequentialthinking, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__serena__find_symbol, mcp__serena__get_symbols_overview, mcp__serena__find_referencing_symbols, mcp__serena__search_for_pattern, mcp__serena__read_file, mcp__serena__list_dir, mcp__firebase__firestore_query_collection, mcp__firebase__firebase_consult_assistant,  mcp__playwright__browser_snapshot, Bash, WebSearch, TodoWrite, Task, Read, Grep, Glob
 model: claude-opus-4-1-20250805
 ---
 
