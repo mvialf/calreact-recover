@@ -17,7 +17,7 @@ process.env.NEXT_PUBLIC_PLACES_API_FALLBACK = 'true';
 process.env.NEXT_PUBLIC_PLACES_API_MONITORING = 'false';
 process.env.NEXT_PUBLIC_FORCE_LEGACY_PLACES_API = 'false';
 
-import { PlacesServiceAdapter } from '../PlacesServiceAdapter';
+import { PlacesServiceAdapter } from '../../PlacesServiceAdapter';
 
 // Mock del logger
 jest.mock('@/lib/logger', () => ({

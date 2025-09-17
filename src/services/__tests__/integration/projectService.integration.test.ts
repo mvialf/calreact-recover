@@ -30,12 +30,12 @@ jest.mock('@/lib/firebase/di', () => ({
 }));
 
 // Mock servicios dependientes (estos no los vamos a testear aquí)
-jest.mock('../paymentService', () => ({
+jest.mock('../../paymentService', () => ({
   deletePaymentsForProject: jest.fn().mockResolvedValue(undefined),
   getPaymentsForProject: jest.fn().mockResolvedValue([])
 }));
 
-jest.mock('../afterSalesService', () => ({
+jest.mock('../../afterSalesService', () => ({
   deleteAfterSalesForProject: jest.fn().mockResolvedValue(undefined)
 }));
 
@@ -47,7 +47,7 @@ import {
   updateProject,
   deleteProject,
   calculateProjectBalance
-} from '../projectService';
+} from '../../projectService';
 
 // Conectar a emulator después de imports
 connectFirestoreEmulator(testDb, 'localhost', 8081);

@@ -4,7 +4,7 @@ import {
   isValidAddress,
   createAddressSuggestion,
   type AddressComponents
-} from '../address-utils';
+} from '../../address-utils';
 
 describe('address-utils', () => {
   describe('extractAddressComponents', () => {

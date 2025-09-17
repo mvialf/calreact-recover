@@ -9,7 +9,7 @@ import {
   updateVisit,
   deleteVisit,
   seedExampleVisits
-} from '../visitService';
+} from '../../visitService';
 import type { Visit } from '@/types/visit';
 
 // Mock Firebase

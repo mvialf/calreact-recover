@@ -10,7 +10,7 @@ import {
   updateAfterSales,
   deleteAfterSales,
   deleteAfterSalesForProject
-} from '../afterSalesService';
+} from '../../afterSalesService';
 import { Timestamp } from 'firebase/firestore';
 import type { AfterSales } from '@/types/afterSales';
 

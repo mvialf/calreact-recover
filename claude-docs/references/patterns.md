@@ -19,7 +19,7 @@ import { createEvent } from '@/services/eventService'; // NO EXISTE
 
 ### 🗄️ Sistema de Cache Inteligente
 ```typescript
-// ✅ NUEVO - Sistema de cache para eventos de proyecto
+// ✅ IMPLEMENTADO - Sistema de cache para eventos de proyecto (EN USO)
 import { projectCacheService } from '@/services/cache/projectCacheService';
 import { eventEnrichmentService } from '@/services/eventEnrichmentService';
 ```
@@ -30,11 +30,11 @@ import { eventEnrichmentService } from '@/services/eventEnrichmentService';
 ```typescript
 // ✅ USAR SIEMPRE - Utilidades centralizadas
 import { 
-  convertFirestoreDocuments,
-  addTimestamps,
-  updateTimestamps,
+  docSnapshotToEntity,
+  docSnapshotsToEntities,
+  prepareDataForFirestore,
   timestampToDate 
-} from '@/lib/firebase/firestore-helpers';
+} from '@/utils/firestore-helpers';
 ```
 
 ### Patrón de Servicios Firebase
@@ -45,7 +45,7 @@ export const operacion = async (
   parametros: TipoParam
 ): Promise<TipoReturn> => {
   // Usar utilidades centralizadas
-  return convertFirestoreDocuments(docs, convertDocument);
+  return docSnapshotsToEntities(docs, convertDocument);
 };
 ```
 

@@ -122,24 +122,37 @@ npm run test:e2e:system:headed # Headed con navegadores del sistema
 
 ## 📁 Estructura de Tests
 
-### 🗂️ **Organización de Archivos**
+### 🗂️ **Organización de Archivos (Actualizada Sept 2025)**
 ```
 src/
+├── __tests__/                     # Setup centralizado
+│   ├── setup/
+│   │   ├── jest.setup.ts         # Configuración Jest unificada
+│   │   ├── firebase-mocks.ts     # Mocks Firebase v11 centralizados
+│   │   └── google-maps-mocks.ts  # Mocks Google Maps/Places
+│   ├── helpers/
+│   │   ├── test-data-factory.ts  # Factory datos de prueba
+│   │   └── assertion-helpers.ts  # Assertions personalizadas
+│   └── types/
+│       └── testing.d.ts          # Tipos consolidados
+│
 ├── components/
 │   ├── ui/__tests__/
-│   │   └── addressInput.test.tsx
+│   │   └── AddressInput.test.tsx  # Convención PascalCase
 │   └── forms/__tests__/
 │       └── ProjectFormCompound.test.tsx
 ├── services/__tests__/
-│   ├── projectService.test.ts
-│   ├── afterSalesService.test.ts
-│   └── visitService.test.ts
+│   ├── unit/                     # Tests unitarios con mocks
+│   │   ├── afterSalesService.test.ts
+│   │   └── visitService.test.ts
+│   └── integration/              # Tests con Firebase Emulator
+│       └── projectService.integration.test.ts
 ├── lib/
-│   ├── config/__tests__/
+│   ├── config/__tests__/unit/
 │   │   └── featureFlags.test.ts
-│   └── places/__tests__/
+│   └── places/__tests__/unit/
 │       └── PlacesServiceAdapter.test.ts
-└── utils/__tests__/
+└── utils/__tests__/unit/
     └── address-utils.test.ts
 
 e2e/
@@ -153,11 +166,12 @@ e2e/
 └── types/             # Tipos específicos E2E
 ```
 
-### 📊 **Cobertura Actual**
-- **Tests unitarios**: 8 archivos
-- **Tests E2E**: 4 archivos  
+### 📊 **Cobertura Actual (Actualizada Sept 2025)**
+- **Tests unitarios**: 8 archivos organizados en estructura unit/integration
+- **Tests E2E**: 4 archivos
+- **Setup centralizado**: 5 archivos en `/src/__tests__/`
 - **Objetivo de cobertura**: >70% en código nuevo
-- **Directorio excluido**: `/e2e/`, `/coverage/`, `/.next/`
+- **Directorios excluidos**: `/e2e/`, `/coverage/`, `/.next/`, `/src/__tests__/`
 
 ---
 
@@ -202,24 +216,22 @@ describe('ComponentName', () => {
 });
 ```
 
-### 🎭 **Mocking Patterns**
+### 🎭 **Mocking Patterns (Actualizados)**
 ```typescript
-// ✅ PATRÓN para mocks de módulos
-jest.mock('firebase/firestore', () => ({
-  getFirestore: jest.fn(),
-  collection: jest.fn(),
-  doc: jest.fn(),
-  Timestamp: {
-    now: jest.fn(() => ({ seconds: 1609459200 }))
-  }
-}));
+// ✅ USAR setup centralizado
+import { setupFirestoreResponse, resetFirebaseMocks } from '@/__tests__/setup/firebase-mocks';
+import { setupPlacesResponse, resetGoogleMapsMocks } from '@/__tests__/setup/google-maps-mocks';
+import { createMockProject, createMockClient } from '@/__tests__/helpers/test-data-factory';
 
-// ✅ PATRÓN para componentes mockeados
-jest.mock('../ComponenteComplejo', () => {
-  return function ComponenteMockeado(props: any) {
-    return <div data-testid="componente-mockeado">{JSON.stringify(props)}</div>;
-  };
+// ✅ Setup en tests
+beforeEach(() => {
+  resetFirebaseMocks();
+  resetGoogleMapsMocks();
 });
+
+// ✅ Configurar respuestas específicas
+setupFirestoreResponse.success(createMockProject());
+setupPlacesResponse.predictions();
 ```
 
 ---
@@ -231,22 +243,26 @@ jest.mock('../ComponenteComplejo', () => {
 - **Mocks avanzados** para tests unitarios rápidos
 - **Utilidades personalizadas** para conversión de datos
 
-### 📚 **Recursos de Mocks Disponibles**
-Ver directorio: [`@docs/claude-reference/plan-correccion-tests/mocks/`](./plan-correccion-tests/mocks/)
-- **firebase-v11-mocks.ts** - Mocks completos Firebase v11
-- **google-maps-mocks.ts** - Mocks Google Maps/Places API
-- **jest-setup-ejemplo.ts** - Configuración Jest optimizada
+### 📚 **Recursos de Mocks Disponibles (Actualizados)**
+Setup centralizado en `/src/__tests__/setup/`:
+- **firebase-mocks.ts** - Mocks completos Firebase v11 centralizados
+- **google-maps-mocks.ts** - Mocks Google Maps/Places API centralizados
+- **jest.setup.ts** - Configuración Jest optimizada y unificada
+
+Helpers en `/src/__tests__/helpers/`:
+- **test-data-factory.ts** - Factories para datos de prueba consistentes
+- **assertion-helpers.ts** - Helpers para assertions comunes
 
 ---
 
 ## 🗺️ Testing de Google Maps
 
-### 🗺️ **PlacesServiceAdapter Testing**
-- **Mock completo** de Google Maps JavaScript API
-- **Simulación de respuestas** Places API
-- **Tests de integración** con PlacesServiceAdapter personalizado
+### 🗺️ **PlacesServiceAdapter Testing (Actualizado)**
+- **Mocks centralizados** en `/src/__tests__/setup/google-maps-mocks.ts`
+- **Simulación de respuestas** Places API con helpers
+- **Tests unitarios** organizados en estructura estándar
 
-Ver implementación: `src/lib/places/__tests__/PlacesServiceAdapter.test.ts`
+Ver implementación: `src/lib/places/__tests__/unit/PlacesServiceAdapter.test.ts`
 
 ---
 

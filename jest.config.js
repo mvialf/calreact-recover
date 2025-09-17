@@ -7,7 +7,7 @@ const createJestConfig = nextJest({
 
 // Configuración personalizada de Jest (limpia y simplificada)
 const customJestConfig = {
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup/jest.setup.ts'],
   testEnvironment: 'jest-environment-jsdom',
 
   // Mapeo de módulos - Next.js ya maneja TypeScript
@@ -20,6 +20,7 @@ const customJestConfig = {
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',
     '!src/__mocks__/**',
+    '!src/__tests__/**',
     '!src/types/**',
     '!src/app/globals.css',
   ],
