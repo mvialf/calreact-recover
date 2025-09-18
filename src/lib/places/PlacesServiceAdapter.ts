@@ -251,17 +251,21 @@ export class PlacesServiceAdapter {
         const { Place } = this.placesLib;
         
         // Crear instancia de Place según documentación
-        const place = new Place({ 
+        // Nota: sessionToken es requerido por Google API para evitar facturación duplicada
+        // pero las definiciones TypeScript están desactualizadas
+        const place = new Place({
           id: placeId,
-          requestedLanguage: this.config.language || 'es'
-        });
+          requestedLanguage: this.config.language || 'es',
+          sessionToken: this.sessionToken
+        } as any);
         
         // Mapear campos legacy a moderna API según documentación oficial
         const modernFields = this.mapFieldsToModernAPI(fields);
         
         // Usar fetchFields() según documentación oficial
-        await place.fetchFields({ 
-          fields: modernFields 
+        // El sessionToken ya se pasó en el constructor, no es necesario aquí
+        await place.fetchFields({
+          fields: modernFields
         });
         
         // Convertir respuesta moderna a formato legacy para compatibilidad
