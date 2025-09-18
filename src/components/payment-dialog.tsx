@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { EnrichedProject } from '@/types/project';
 import { PaymentMethod } from '@/types/payment';
-import { POSSIBLE_PAYMENT_METHODS } from '@/constants/payments';
+import { PAYMENT_METHODS } from '@/constants/payment';
 
 interface PaymentDialogProps {
   isOpen: boolean;
@@ -93,7 +93,7 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({ isOpen, onClose, p
                 <SelectValue placeholder="Seleccione un método" />
               </SelectTrigger>
               <SelectContent>
-                {POSSIBLE_PAYMENT_METHODS.map((method) => (
+                {PAYMENT_METHODS.map((method) => (
                   <SelectItem key={method} value={method}>{method.charAt(0).toUpperCase() + method.slice(1)}</SelectItem>
                 ))}
               </SelectContent>
