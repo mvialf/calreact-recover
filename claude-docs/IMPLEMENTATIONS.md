@@ -94,6 +94,18 @@
   - Enlaces y referencias cruzadas actualizadas
 - **Implementación:** ✅ Completada - documentación actualizada para reflejar código real
 
+### 🧹 Payment Components Cleanup
+- **Status:** ✅ Complete | **Date:** 2025-09-18 | **Impact:** Medium
+- **Branch:** `DEV`
+- **Key commits:** Current session
+- **Benefits:**
+  - Eliminación de 186 líneas de código muerto (`payment-modal.tsx`)
+  - Consolidación de constantes duplicadas (`PAYMENT_METHODS` vs `POSSIBLE_PAYMENT_METHODS`)
+  - Eliminación de 2 archivos redundantes (`constants/payments.ts`, duplicación en `types/payment.ts`)
+  - Claridad arquitectural: un solo componente activo para crear pagos (`PaymentDialog`)
+  - Fuente única de verdad en `/constants/payment.ts`
+- **Implementación:** ✅ Completada - código muerto eliminado, constantes consolidadas
+
 ### 🧹 Documentation Migration Cleanup
 - **Status:** ✅ Complete | **Date:** 2025-09 | **Impact:** Low-Medium
 - **Branch:** `DEV`
@@ -112,8 +124,8 @@
 
 ## 📊 Implementation Statistics
 
-**Total completadas:** 7 implementaciones major
-**Impacto alto:** 5/7 implementaciones
+**Total completadas:** 8 implementaciones major
+**Impacto alto:** 5/8 implementaciones
 **Beneficios cuantificados:** 30% reducción costos, 67% menos duplicación docs, 70%+ test coverage, 4/4 formularios migrados  
 
 ## 🎯 Success Metrics
