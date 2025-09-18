@@ -21,7 +21,7 @@ npm run test:ci     # Ejecutar tests (opcional)
 
 ## 🎯 Filosofía de Testing
 
-**Para información completa de testing:** [@docs/claude-reference/testing.md](./testing.md)
+**Para información completa de testing:** [testing.md](./testing.md)
 
 **Filosofía principal:** Test-As-You-Go con Playwright E2E integration
 
@@ -186,7 +186,7 @@ git commit -m "feat: Descripción específica del cambio"
 ### Para Dependencias y APIs
 - **Context7**: Utilizar servidor MCP para documentación actualizada
 - **Bibliotecas**: Consultar documentación oficial antes de implementar
-- **Patrones**: Seguir los establecidos en `/docs/claude-reference/patterns.md`
+- **Patrones**: Seguir los establecidos en [patterns.md](../references/patterns.md)
 
 ## 🎯 Optimización de Workflow
 
@@ -211,11 +211,10 @@ npx tsx scripts/test-project-events.ts
 ## 📚 Recursos de Consulta
 
 ### Documentación Interna (Consulta Obligatoria)
-- **Estado del proyecto**: `/docs/refactorizacion/REFACTORING_STATUS.md`
-- **Detalles técnicos**: `/docs/refactorizacion/REFACTORING_TECHNICAL.md`
-- **Migración Google Places**: `/docs/google-places-migration/`
+- **Estado actual**: Ver [IMPLEMENTATIONS.md](../IMPLEMENTATIONS.md) para estado de implementaciones
+- **Arquitectura**: Ver [architecture.md](../context/architecture.md) para detalles técnicos
 
 ### Herramientas de Desarrollo
 - **Claude Code**: `/docs` para cualquier duda
 - **Context7**: Para documentación de bibliotecas externas
-- **Testing**: Ver [`@docs/claude-reference/testing.md`](./testing.md)
+- **Testing**: Ver [testing.md](./testing.md)

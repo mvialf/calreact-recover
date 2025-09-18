@@ -22,7 +22,7 @@ npm run typecheck   # TypeScript - OBLIGATORIO después de cambios
 
 ## 🧪 Testing
 
-**Para información completa de testing:** [@docs/claude-reference/testing.md](./testing.md)
+**Para información completa de testing:** [testing.md](../workflow/testing.md)
 
 ### Comandos Básicos de Testing
 ```bash

@@ -4,8 +4,8 @@
 **Última Actualización:** Septiembre 2025  
 **Stack:** Jest 30.0.3 + Playwright 1.55.0 + Testing Library 14.3.1
 
-Para **configuración de commands:** [@docs/claude-reference/commands.md](./commands.md)  
-Para **dependencias de testing:** [@docs/claude-reference/dependencias.md](./dependencias.md)
+Para **configuración de commands:** [commands.md](../references/commands.md)
+Para **dependencias de testing:** [dependencias.md](../references/dependencias.md)
 
 ---
 
@@ -320,21 +320,19 @@ npm run lint && npm run typecheck  # Calidad de código
 
 ## 📚 Recursos Avanzados
 
-### 📖 **Documentación Técnica Detallada**
-- **Estrategia completa**: [`@docs/claude-reference/plan-correccion-tests/ESTRATEGIA-TESTING.md`](./plan-correccion-tests/ESTRATEGIA-TESTING.md)
-- **Análisis de errores**: [`@docs/claude-reference/plan-correccion-tests/ANALISIS-ERRORES.md`](./plan-correccion-tests/ANALISIS-ERRORES.md)  
-- **Implementación**: [`@docs/claude-reference/plan-correccion-tests/IMPLEMENTACION.md`](./plan-correccion-tests/IMPLEMENTACION.md)
+### 📖 **Implementación Actual**
+Ver implementación práctica en:
+- **Setup centralizado**: `src/__tests__/setup/` - Configuración Jest y mocks centralizados
+- **Helpers de testing**: `src/__tests__/helpers/` - Factories y assertions personalizadas
+- **Tests unitarios**: `src/**/__tests__/unit/` - Ejemplos de tests unitarios
+- **Tests de integración**: `src/**/__tests__/integration/` - Tests con Firebase Emulator
+- **Tests E2E**: `e2e/tests/` - Tests end-to-end con Playwright
 
-### 🎯 **Ejemplos Prácticos**
-- **Tests unitarios**: [`@docs/claude-reference/plan-correccion-tests/ejemplos/test-unitario-ejemplo.ts`](./plan-correccion-tests/ejemplos/test-unitario-ejemplo.ts)
-- **Tests de componentes**: [`@docs/claude-reference/plan-correccion-tests/ejemplos/test-componente-ejemplo.tsx`](./plan-correccion-tests/ejemplos/test-componente-ejemplo.tsx)
-- **Tests de integración**: [`@docs/claude-reference/plan-correccion-tests/ejemplos/test-integracion-ejemplo.ts`](./plan-correccion-tests/ejemplos/test-integracion-ejemplo.ts)
-- **Tests asíncronos**: [`@docs/claude-reference/plan-correccion-tests/ejemplos/test-async-ejemplo.ts`](./plan-correccion-tests/ejemplos/test-async-ejemplo.ts)
-
-### 🛠️ **Mocks y Configuración**
-- **Mocks README**: [`@docs/claude-reference/plan-correccion-tests/mocks/README.md`](./plan-correccion-tests/mocks/README.md)
-- **Firebase v11 mocks**: [`@docs/claude-reference/plan-correccion-tests/mocks/firebase-v11-mocks.ts`](./plan-correccion-tests/mocks/firebase-v11-mocks.ts)
-- **Google Maps mocks**: [`@docs/claude-reference/plan-correccion-tests/mocks/google-maps-mocks.ts`](./plan-correccion-tests/mocks/google-maps-mocks.ts)
+### 🛠️ **Mocks y Configuración Actuales**
+- **Firebase v11 mocks**: `src/__tests__/setup/firebase-mocks.ts`
+- **Google Maps mocks**: `src/__tests__/setup/google-maps-mocks.ts`
+- **Jest setup**: `src/__tests__/setup/jest.setup.ts`
+- **Test data factory**: `src/__tests__/helpers/test-data-factory.ts`
 
 ---
 
@@ -358,5 +356,5 @@ npm run lint && npm run typecheck  # Calidad de código
 ---
 
 **📊 Generado automáticamente:** Septiembre 2025  
-**🔧 Para comandos específicos:** [`@docs/claude-reference/commands.md`](./commands.md)  
-**📦 Para dependencias de testing:** [`@docs/claude-reference/dependencias.md`](./dependencias.md)
+**🔧 Para comandos específicos:** [commands.md](../references/commands.md)
+**📦 Para dependencias de testing:** [dependencias.md](../references/dependencias.md)

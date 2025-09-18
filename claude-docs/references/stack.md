@@ -4,7 +4,7 @@
 **Node.js Requerido:** >=18.0.0  
 **Última Actualización:** Septiembre 2025
 
-Para el **inventario completo de dependencias** ver: [@docs/claude-reference/dependencias.md](./dependencias.md)
+Para el **inventario completo de dependencias** ver: [dependencias.md](./dependencias.md)
 
 ## 🎯 Framework Core & Principios Arquitecturales
 
@@ -71,7 +71,7 @@ const form = useForm<SchemaType>({
 
 ## 🧪 Testing Architecture
 
-**Para información completa de testing:** [@docs/claude-reference/testing.md](./testing.md)
+**Para información completa de testing:** [testing.md](../workflow/testing.md)
 
 **Estrategia:** Test-As-You-Go con integración Playwright MCP
 
@@ -175,7 +175,6 @@ if (featureFlags.useNewProjectEventForm) {
 ## 📚 Referencias Arquitecturales
 
 ### Documentación Técnica
-- **Estado del proyecto:** `/docs/refactorizacion/REFACTORING_STATUS.md`
-- **Detalles técnicos:** `/docs/refactorizacion/REFACTORING_TECHNICAL.md`
-- **Migración Google Places:** `/docs/google-places-migration/`
-- **Inventario de dependencias:** [`@docs/claude-reference/dependencias.md`](./dependencias.md)
+- **Estado actual:** [IMPLEMENTATIONS.md](../IMPLEMENTATIONS.md) - Log de implementaciones completadas
+- **Arquitectura:** [architecture.md](../context/architecture.md) - Principios y estructura del proyecto
+- **Inventario de dependencias:** [dependencias.md](./dependencias.md)

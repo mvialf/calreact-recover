@@ -258,7 +258,6 @@ FIREBASE_CLIENT_EMAIL=              # Firebase Admin
 ## 📚 Documentación Referencial
 
 ### Documentación Consolidada
-- **Estado actual**: `/docs/refactorizacion/REFACTORING_STATUS.md`
-- **Técnica detallada**: `/docs/refactorizacion/REFACTORING_TECHNICAL.md`
-- **Migración Google Places**: `/docs/google-places-migration/`
-- **Testing**: `/docs/claude-reference/plan-correccion-tests/`
+- **Estado actual**: [IMPLEMENTATIONS.md](../IMPLEMENTATIONS.md) - Log de implementaciones completadas
+- **Testing**: [testing.md](../workflow/testing.md) - Estrategia integral de testing
+- **Patrones**: [patterns.md](../references/patterns.md) - Patrones de código establecidos

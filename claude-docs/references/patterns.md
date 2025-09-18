@@ -180,7 +180,7 @@ const useFirebaseOperation = () => {
 
 ## 🧪 Testing Patterns
 
-**Para patrones completos de testing:** [@docs/claude-reference/testing.md](./testing.md)
+**Para patrones completos de testing:** [testing.md](../workflow/testing.md)
 
 **Principios básicos:** `getByRole` > `getByText` > `getByTestId`
 
