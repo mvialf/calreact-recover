@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { ProjectForm, ProjectFormData as ProjectFormValues } from '@/components/forms/compound/ProjectFormCompound';
+import { ProjectForm, ProjectFormData as ProjectFormValues } from '@/components/forms/ProjectForm';
 import { createProject } from '@/services/projectService';
 import { addClient } from '@/services/clientService';
 import { useToast } from '@/components/ui/use-toast';
@@ -148,19 +148,14 @@ export function NewProjectDialog() {
         formRef={formRef}
         isSubmitting={createProjectMutation.isPending}
         submitButtonText="Crear Proyecto"
-        className="w-full max-w-md"
+        
       >
         <div className="space-y-4 py-2">
           <ProjectForm
             onSubmit={handleFormSubmit}
             submitButtonText="Crear Proyecto"
             showDefaultButtons
-          >
-            <ProjectForm.BasicInfo />
-            <ProjectForm.ContactInfo />
-            <ProjectForm.ServiceDetails />
-            <ProjectForm.Actions />
-          </ProjectForm>
+          />
         </div>
       </ModalLayout>
     </>

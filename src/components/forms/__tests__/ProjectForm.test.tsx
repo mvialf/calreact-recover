@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ProjectForm, ProjectFormData } from '../compound/ProjectFormCompound';
+import { ProjectForm, ProjectFormData } from '../ProjectForm';
 
 // Mock del servicio de clientes
 jest.mock('@/services/clientService', () => ({
@@ -51,7 +51,7 @@ const renderWithQueryClient = (component: React.ReactNode) => {
   );
 };
 
-describe('ProjectFormCompound', () => {
+describe('ProjectForm', () => {
   const mockSubmit = jest.fn();
 
   beforeEach(() => {
@@ -59,78 +59,50 @@ describe('ProjectFormCompound', () => {
   });
 
   describe('Renderizado de componentes', () => {
-    test('renderiza ProjectForm.BasicInfo correctamente', () => {
+    test('renderiza ProjectForm correctamente', () => {
       renderWithQueryClient(
-        <ProjectForm onSubmit={mockSubmit}>
-          <ProjectForm.BasicInfo />
-        </ProjectForm>
+        <ProjectForm onSubmit={mockSubmit} />
       );
 
       expect(screen.getByText('Información Básica')).toBeInTheDocument();
       expect(screen.getByLabelText(/Número de Proyecto/)).toBeInTheDocument();
-      expect(screen.getByRole('combobox')).toBeInTheDocument(); // Cliente Select
+      expect(screen.getAllByRole('combobox')[0]).toBeInTheDocument(); // Cliente Select
       expect(screen.getByLabelText(/Descripción/)).toBeInTheDocument();
       expect(screen.getByTestId('date-picker')).toBeInTheDocument(); // Date picker mock
-    });
-
-    test('renderiza ProjectForm.ContactInfo correctamente', () => {
-      renderWithQueryClient(
-        <ProjectForm onSubmit={mockSubmit}>
-          <ProjectForm.ContactInfo />
-        </ProjectForm>
-      );
 
       expect(screen.getByText('Información de Contacto')).toBeInTheDocument();
       expect(screen.getByLabelText(/Teléfono/)).toBeInTheDocument();
       expect(screen.getByTestId('address-input')).toBeInTheDocument(); // AddressInput mock
     });
 
-    test('renderiza ProjectForm.ServiceDetails correctamente', () => {
+    test('renderiza secciones de servicio y acciones correctamente', () => {
       renderWithQueryClient(
-        <ProjectForm onSubmit={mockSubmit}>
-          <ProjectForm.ServiceDetails />
-        </ProjectForm>
+        <ProjectForm onSubmit={mockSubmit} showDefaultButtons />
       );
 
       expect(screen.getByText('Detalles del Servicio')).toBeInTheDocument();
       expect(screen.getByLabelText(/Subtotal/)).toBeInTheDocument();
       expect(screen.getByLabelText(/Tasa de Impuesto/)).toBeInTheDocument();
-      expect(screen.getByText('Estado del Proyecto')).toBeInTheDocument(); // Label text, no control association needed
-    });
-
-    test('renderiza ProjectForm.Actions correctamente', () => {
-      renderWithQueryClient(
-        <ProjectForm onSubmit={mockSubmit} showDefaultButtons>
-          <ProjectForm.Actions />
-        </ProjectForm>
-      );
-
+      expect(screen.getByText('Estado del Proyecto')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Crear Proyecto/ })).toBeInTheDocument();
     });
   });
 
-  describe('Composición flexible', () => {
-    test('permite composición personalizada de secciones', () => {
+  describe('Configuración del formulario', () => {
+    test('muestra secciones en orden fijo y predecible', () => {
       renderWithQueryClient(
-        <ProjectForm onSubmit={mockSubmit}>
-          <ProjectForm.ServiceDetails />
-          <ProjectForm.BasicInfo />
-          <ProjectForm.ContactInfo />
-          <ProjectForm.Actions />
-        </ProjectForm>
+        <ProjectForm onSubmit={mockSubmit} />
       );
 
       const sections = screen.getAllByRole('heading', { level: 3 });
-      expect(sections[0]).toHaveTextContent('Detalles del Servicio');
-      expect(sections[1]).toHaveTextContent('Información Básica');
-      expect(sections[2]).toHaveTextContent('Información de Contacto');
+      expect(sections[0]).toHaveTextContent('Información Básica');
+      expect(sections[1]).toHaveTextContent('Información de Contacto');
+      expect(sections[2]).toHaveTextContent('Detalles del Servicio');
     });
 
     test('funciona sin mostrar botones por defecto', () => {
       renderWithQueryClient(
-        <ProjectForm onSubmit={mockSubmit} showDefaultButtons={false}>
-          <ProjectForm.BasicInfo />
-        </ProjectForm>
+        <ProjectForm onSubmit={mockSubmit} showDefaultButtons={false} />
       );
 
       expect(screen.queryByRole('button', { name: /Crear Proyecto/ })).not.toBeInTheDocument();
@@ -140,10 +112,7 @@ describe('ProjectFormCompound', () => {
   describe('Validación de formulario', () => {
     test('muestra errores de validación para campos requeridos', async () => {
       renderWithQueryClient(
-        <ProjectForm onSubmit={mockSubmit}>
-          <ProjectForm.BasicInfo />
-          <ProjectForm.Actions />
-        </ProjectForm>
+        <ProjectForm onSubmit={mockSubmit} />
       );
 
       const submitButton = screen.getByRole('button', { name: /Crear Proyecto/ });
@@ -160,7 +129,7 @@ describe('ProjectFormCompound', () => {
     test('ejecuta submit con formulario válido', async () => {
       // Usar defaultValues para evitar problemas de validación en testing
       renderWithQueryClient(
-        <ProjectForm 
+        <ProjectForm
           onSubmit={mockSubmit}
           defaultValues={{
             projectNumber: 'PR-2025-001',
@@ -170,10 +139,7 @@ describe('ProjectFormCompound', () => {
             taxRate: 19,
             status: 'ingresado'
           }}
-        >
-          <ProjectForm.BasicInfo />
-          <ProjectForm.Actions />
-        </ProjectForm>
+        />
       );
 
       const submitButton = screen.getByRole('button', { name: /Crear Proyecto/ });
@@ -184,8 +150,7 @@ describe('ProjectFormCompound', () => {
           expect.objectContaining({
             projectNumber: 'PR-2025-001',
             clientId: '1'
-          }),
-          expect.any(Object) // React form event
+          })
         );
       });
     });
@@ -194,9 +159,7 @@ describe('ProjectFormCompound', () => {
   describe('Funcionalidad de desinstalación', () => {
     test('muestra opciones de desinstalación cuando se activa', () => {
       renderWithQueryClient(
-        <ProjectForm onSubmit={mockSubmit}>
-          <ProjectForm.ServiceDetails />
-        </ProjectForm>
+        <ProjectForm onSubmit={mockSubmit} />
       );
 
       const uninstallCheckbox = screen.getByLabelText(/Requiere Desinstalación/);
@@ -212,12 +175,10 @@ describe('ProjectFormCompound', () => {
   describe('Cálculos financieros', () => {
     test('calcula el total correctamente basado en subtotal e impuesto', async () => {
       renderWithQueryClient(
-        <ProjectForm 
+        <ProjectForm
           onSubmit={mockSubmit}
           defaultValues={{ subtotal: 1000, taxRate: 19 }}
-        >
-          <ProjectForm.ServiceDetails />
-        </ProjectForm>
+        />
       );
 
       // El total debe ser 1000 * 1.19 = 1190

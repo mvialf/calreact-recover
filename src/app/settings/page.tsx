@@ -24,7 +24,7 @@ import { createProject } from '@/services/projectService';
 import { addPayment } from '@/services/paymentService';
 import type { ProjectImportData } from '@/types/project';
 import type { PaymentImportData as PaymentImportDataType } from '@/types/payment';
-import { POSSIBLE_PAYMENT_METHODS, POSSIBLE_PAYMENT_TYPES } from '@/types/payment';
+import { PAYMENT_METHODS, PAYMENT_TYPES } from '@/constants/payment';
 import type { ProjectStatus } from '@/types/project';
 import { Loader2, HelpCircle } from 'lucide-react';
 import { FileDndInput } from '@/components/ui/file-dnd-input';
@@ -83,9 +83,9 @@ const paymentJsonSchemaExample = `
     "projectId": "uuid-del-proyecto-asociado-requerido",
     "amount": 1000.00 (opcional, número)",
     "date": "2024-08-15 (requerido, formato YYYY-MM-DD o ISO 8601)",
-    "paymentMethod": "transferencia (opcional, valores aceptados: ${POSSIBLE_PAYMENT_METHODS.join(', ')})",
+    "paymentMethod": "transferencia (opcional, valores aceptados: ${PAYMENT_METHODS.join(', ')})",
     "createdAt": "2024-08-15T10:30:00.000Z (requerido, formato ISO 8601 o YYYY-MM-DD)",
-    "paymentType": "abono inicial (opcional, valores aceptados: ${POSSIBLE_PAYMENT_TYPES.join(', ')})",
+    "paymentType": "abono inicial (opcional, valores aceptados: ${PAYMENT_TYPES.join(', ')})",
     "installments": 1 (opcional, número, para tarjetas)",
     "isAdjustment": false (requerido, boolean: true o false)",
     "notes": "Notas adicionales sobre el pago (opcional)"
@@ -439,14 +439,14 @@ export default function SettingsPage() {
         }
         
         // Validar paymentMethod
-        if (currentPayTyped.paymentMethod && !POSSIBLE_PAYMENT_METHODS.includes(currentPayTyped.paymentMethod as any)) {
-          throw new Error(`Pago '${currentPayTyped.id || 'Desconocido'}': campo 'paymentMethod' con valor "${currentPayTyped.paymentMethod}" es incorrecto. Valores aceptados: ${POSSIBLE_PAYMENT_METHODS.join(', ')}.`);
+        if (currentPayTyped.paymentMethod && !PAYMENT_METHODS.includes(currentPayTyped.paymentMethod as any)) {
+          throw new Error(`Pago '${currentPayTyped.id || 'Desconocido'}': campo 'paymentMethod' con valor "${currentPayTyped.paymentMethod}" es incorrecto. Valores aceptados: ${PAYMENT_METHODS.join(', ')}.`);
         }
 
         // Validar paymentType
-        if (currentPayTyped.paymentType && !POSSIBLE_PAYMENT_TYPES.includes(currentPayTyped.paymentType as any)) {
-          // Nota: POSSIBLE_PAYMENT_TYPES no incluye ' '. Si se necesita, se debe añadir a la constante.
-          throw new Error(`Pago '${currentPayTyped.id || 'Desconocido'}': campo 'paymentType' con valor "${currentPayTyped.paymentType}" es incorrecto. Valores aceptados: ${POSSIBLE_PAYMENT_TYPES.join(', ')}.`);
+        if (currentPayTyped.paymentType && !PAYMENT_TYPES.includes(currentPayTyped.paymentType as any)) {
+          // Nota: PAYMENT_TYPES no incluye ' '. Si se necesita, se debe añadir a la constante.
+          throw new Error(`Pago '${currentPayTyped.id || 'Desconocido'}': campo 'paymentType' con valor "${currentPayTyped.paymentType}" es incorrecto. Valores aceptados: ${PAYMENT_TYPES.join(', ')}.`);
         }
 
 
