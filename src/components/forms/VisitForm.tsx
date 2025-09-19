@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/select';
 import { VisitStatus, VISIT_STATUS_OPTIONS, DEFAULT_VISIT_STATUS } from '@/types/visit';
 import { AddressInput } from '@/components/ui/addressInput';
-import { InputDate } from '@/components/ui/date-picker';
+import { DateInput } from '@/components/ui/date-input';
 import type { FormattedAddress } from '@/types/project';
 
 // Esquemas de validación centralizados
@@ -162,7 +162,7 @@ export const VisitForm: React.FC<VisitFormProps> = ({
               <FormItem className="space-y-1 w-64">
                 <FormLabel>Fecha</FormLabel>
                 <FormControl>
-                  <InputDate
+                  <DateInput
                     date={field.value}
                     onSelect={field.onChange}
                     disabled={isSubmitting}

@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { EnrichedProject } from '@/types/project';
 import { PaymentMethod } from '@/types/payment';
@@ -17,14 +18,14 @@ interface PaymentDialogProps {
 }
 
 export const PaymentDialog: React.FC<PaymentDialogProps> = ({ isOpen, onClose, project, onConfirm }) => {
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState<number | undefined>(undefined);
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('');
   const [installments, setInstallments] = useState('');
 
   useEffect(() => {
     if (isOpen) {
-      setAmount('');
+      setAmount(undefined);
       setPaymentDate(new Date().toISOString().split('T')[0]);
       setPaymentMethod('');
       setInstallments('');
@@ -32,10 +33,9 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({ isOpen, onClose, p
   }, [isOpen]);
 
   const handleConfirm = () => {
-    const paymentAmount = parseFloat(amount);
     const numInstallments = parseInt(installments, 10);
 
-    if (isNaN(paymentAmount) || paymentAmount <= 0) {
+    if (!amount || amount <= 0) {
       toast.error('Por favor, ingrese un monto válido.');
       return;
     }
@@ -53,7 +53,7 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({ isOpen, onClose, p
     }
 
     const paymentData: Parameters<PaymentDialogProps['onConfirm']>[0] = {
-      amount: paymentAmount,
+      amount: amount,
       date: new Date(paymentDate),
       paymentMethod,
       isAdjustment: false,
@@ -80,7 +80,13 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({ isOpen, onClose, p
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="amount" className="text-right">Monto</Label>
-            <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="col-span-3" />
+            <MoneyInput
+              id="amount"
+              value={amount}
+              onValueChange={setAmount}
+              placeholder="Ingrese el monto"
+              className="col-span-3"
+            />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="date" className="text-right">Fecha</Label>

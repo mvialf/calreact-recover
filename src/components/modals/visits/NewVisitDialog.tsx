@@ -98,7 +98,7 @@ export function NewVisitDialog() {
         formRef={formRef}
         isSubmitting={createVisitMutation.isPending}
         submitButtonText="Crear Visita"
-        className="w-full max-w-lg"
+        className="w-full max-w-xl"
       >
         <div className="space-y-4 py-2">
           <VisitForm

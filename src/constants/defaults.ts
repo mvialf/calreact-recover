@@ -33,6 +33,6 @@ export const DEFAULT_PAGE_NUMBER = 1;
 
 // Valores por defecto para proyectos
 export const DEFAULT_SUBTOTAL = 0;
-export const DEFAULT_TAX_RATE = 0.19; // 19% IVA Chile
+export const DEFAULT_TAX_RATE = 19; // 19% IVA Chile
 export const DEFAULT_COUNTRY = 'Chile';
 export const DEFAULT_REGION = 'Región Metropolitana';

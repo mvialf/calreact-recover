@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ProjectForm, ProjectFormData as ProjectFormValues } from '@/components/forms/ProjectForm';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ModalLayout } from '@/components/modals/modalLayout';
 import { useToast } from '@/components/ui/use-toast';
 import { updateProject } from '@/services/projectService';
 import type { ProjectType, ProjectStatus } from '@/types/project';
@@ -199,27 +199,26 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
         });
       }}
     >
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger asChild onClick={handleOpen}>
-          {children}
-        </DialogTrigger>
-        
-        <DialogContent className="sm:max-w-[800px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Editar Proyecto</DialogTitle>
-            <DialogDescription>
-              Modifica los detalles del proyecto.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <ProjectForm
-            onSubmit={handleSubmit}
-            defaultValues={initialData}
-            submitButtonText={isPending ? "Actualizando..." : "Actualizar Proyecto"}
-            showDefaultButtons
-          />
-        </DialogContent>
-      </Dialog>
+      <div onClick={handleOpen}>
+        {children}
+      </div>
+
+      <ModalLayout
+        isOpen={isOpen}
+        onClose={handleClose}
+        title="Editar Proyecto"
+        className="w-full max-w-xl"
+        showDefaultButtons={true}
+        formRef={formRef}
+        isSubmitting={isPending}
+        submitButtonText={isPending ? "Actualizando..." : "Actualizar Proyecto"}
+      >
+        <ProjectForm
+          onSubmit={handleSubmit}
+          defaultValues={initialData}
+          showDefaultButtons={false}
+        />
+      </ModalLayout>
     </DialogErrorBoundary>
   );
 }

@@ -24,7 +24,7 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import { AddressInput } from "@/components/ui/addressInput";
 import { Autocomplete, type AutocompleteItem } from "@/components/ui/autocomplete";
 import { CheckList, type CheckListItem } from "@/components/ui/check-list";
-import { InputDate } from "@/components/ui/date-picker";
+import { DateInput } from "@/components/ui/date-input";
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -313,7 +313,7 @@ export function AfterSaleForm({
                 <FormItem>
                   <FormLabel>Fecha</FormLabel>
                   <div className="w-full">
-                    <InputDate
+                    <DateInput
                       date={field.value}
                       onSelect={field.onChange}
                       className="w-full"

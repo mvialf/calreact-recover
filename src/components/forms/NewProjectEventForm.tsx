@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label';
 import { AddressInput } from '@/components/ui/addressInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { InputDate } from '@/components/ui/date-picker';
+import { DateInput } from '@/components/ui/date-input';
 
 // Types imports
 import type { ProjectStatus, FormattedAddress } from '@/types/project';
@@ -223,7 +223,7 @@ export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
             <FormItem>
               <FormLabel>Fecha del Evento</FormLabel>
               <FormControl> 
-                <InputDate
+                <DateInput
                   date={field.value}
                   onSelect={field.onChange}
                   disabled={disabled}

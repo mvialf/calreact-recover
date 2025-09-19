@@ -22,8 +22,8 @@ jest.mock('@/components/ui/addressInput', () => ({
   )
 }));
 
-jest.mock('@/components/ui/date-picker', () => ({
-  InputDate: ({ date, onSelect, placeholder }: any) => (
+jest.mock('@/components/ui/date-input', () => ({
+  DateInput: ({ date, onSelect, placeholder }: any) => (
     <input 
       data-testid="date-picker"
       id="date"

@@ -6,20 +6,19 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { FormModal, useModalState } from '@/components/ui/modal';
 import { ProjectForm, ProjectFormData as ProjectFormValues } from '@/components/forms/ProjectForm';
 import { createProject } from '@/services/projectService';
 import { addClient } from '@/services/clientService';
 import { useToast } from '@/components/ui/use-toast';
-import { ModalLayout } from '@/components/modals/modalLayout';
 import type { ProjectType, ProjectStatus } from '@/types/project';
 import { projectLogger } from '@/lib/logger';
 
-export function NewProjectDialog() {
-  const [isOpen, setIsOpen] = React.useState(false);
+export function NewProjectDialogV2() {
+  const { isOpen, open, close } = useModalState();
   const router = useRouter();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const formRef = React.useRef<HTMLFormElement>(null);
 
   // Mutación para crear un nuevo cliente
   const addClientMutation = useMutation({
@@ -68,7 +67,7 @@ export function NewProjectDialog() {
         title: 'Proyecto Creado',
         description: `El proyecto "${newProject.projectNumber}" ha sido creado exitosamente.`,
       });
-      setIsOpen(false); // Cerrar el diálogo después de crear el proyecto
+      close(); // Cerrar el modal después de crear el proyecto
       router.refresh(); // Refrescar la página para mostrar el nuevo proyecto
     },
     onError: (error: Error) => {
@@ -80,7 +79,7 @@ export function NewProjectDialog() {
     },
   });
 
-  // Manejador de envío del formulario
+  // Manejador de envío del formulario optimizado
   const handleFormSubmit = async (formData: ProjectFormValues) => {
     try {
       // Calcular total y balance
@@ -119,20 +118,32 @@ export function NewProjectDialog() {
         }),
       };
 
-      // Crear el proyecto
+      // Crear el proyecto usando la mutación
       await createProjectMutation.mutateAsync(projectData);
     } catch (error) {
       projectLogger.error('Error al crear el proyecto', error);
+      throw error; // Re-throw para que FormModal maneje el error
     }
+  };
+
+  // Callback de éxito personalizado
+  const handleSuccess = (data: ProjectFormValues) => {
+    projectLogger.info('Proyecto creado exitosamente', { projectNumber: data.projectNumber });
+  };
+
+  // Callback de error personalizado
+  const handleError = (error: Error) => {
+    projectLogger.error('Error en NewProjectDialog', error);
   };
 
   return (
     <>
+      {/* Trigger Button */}
       <Button 
         variant="default" 
         size="sm" 
         className="h-8 gap-1"
-        onClick={() => setIsOpen(true)}
+        onClick={open}
       >
         <Plus className="h-3.5 w-3.5" />
         <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -140,25 +151,33 @@ export function NewProjectDialog() {
         </span>
       </Button>
 
-      <ModalLayout
+      {/* Modal con nuevo sistema */}
+      <FormModal
         isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
+        onClose={close}
         title="Nuevo Proyecto"
-        className="w-full max-w-xl"
-        showDefaultButtons={true}
-        formRef={formRef}
-        isSubmitting={createProjectMutation.isPending}
-        submitButtonText="Crear Proyecto"
-
+        size="xl"
+        formId="new-project-form"
+        onSubmit={handleFormSubmit}
+        submitText="Crear Proyecto"
+        cancelText="Cancelar"
+        showCancel={true}
+        description="Complete la información para crear un nuevo proyecto"
+        scrollable={true}
+        onSuccess={handleSuccess}
+        onError={handleError}
+        preventCloseOnSubmit={false}
+        resetOnClose={true}
       >
-        <div className="space-y-4 py-2">
-          <ProjectForm
-            onSubmit={handleFormSubmit}
-            submitButtonText="Crear Proyecto"
-            showDefaultButtons
-          />
-        </div>
-      </ModalLayout>
+        {/* Formulario con variante modal */}
+        <ProjectForm
+          variant="modal"
+          formId="new-project-form"
+          onSubmit={handleFormSubmit}
+          isSubmitting={createProjectMutation.isPending}
+          showDefaultButtons={false} // Los botones los maneja FormModal
+        />
+      </FormModal>
     </>
   );
 }

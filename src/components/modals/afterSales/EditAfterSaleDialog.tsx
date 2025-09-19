@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AfterSaleForm, AfterSaleFormValues } from '@/components/forms/AfterSaleForm';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ModalLayout } from '@/components/modals/modalLayout';
 import { useToast } from '@/components/ui/use-toast';
 import { updateAfterSales } from '@/services/afterSalesService';
 import type { AfterSales } from '@/types/afterSales';
@@ -169,26 +169,26 @@ export function EditAfterSaleDialog({ afterSale, children }: EditAfterSaleDialog
         });
       }}
     >
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger asChild onClick={handleOpen}>
-          {children}
-        </DialogTrigger>
-        
-        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Editar Postventa</DialogTitle>
-            <DialogDescription>
-              Modifica los detalles de la postventa para el proyecto.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <AfterSaleForm
-            onSubmit={handleSubmit}
-            initialData={initialData}
-            isSubmitting={isPending}
-          />
-        </DialogContent>
-      </Dialog>
+      <div onClick={handleOpen}>
+        {children}
+      </div>
+
+      <ModalLayout
+        isOpen={isOpen}
+        onClose={handleClose}
+        title="Editar Postventa"
+        className="w-full max-w-xl"
+        showDefaultButtons={true}
+        formRef={formRef}
+        isSubmitting={isPending}
+        submitButtonText={isPending ? "Actualizando..." : "Actualizar Postventa"}
+      >
+        <AfterSaleForm
+          onSubmit={handleSubmit}
+          initialData={initialData}
+          hideButtons={true}
+        />
+      </ModalLayout>
     </DialogErrorBoundary>
   );
 }

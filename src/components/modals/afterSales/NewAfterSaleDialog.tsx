@@ -93,7 +93,7 @@ export function NewAfterSaleDialog() {
         formRef={formRef}
         isSubmitting={createAfterSaleMutation.isPending}
         submitButtonText="Crear Postventa"
-        className="w-full max-w-2xl"
+        className="w-full max-w-xl"
       >
         <div className="space-y-4 py-2">
           <AfterSaleForm

@@ -160,6 +160,18 @@ export const preprocessedNumber = (fieldName: string, defaultValue: number = 0) 
   );
 
 /**
+ * Validación para campos de porcentaje (0-100%)
+ */
+export const percentageSchema = (fieldName: string, defaultValue: number = 0) =>
+  z.preprocess(
+    numericPreprocessor(defaultValue),
+    z.number()
+      .min(0, `${fieldName} debe ser al menos 0%`)
+      .max(100, `${fieldName} no puede exceder 100%`)
+      .default(defaultValue)
+  );
+
+/**
  * Campo entero con preprocessor (para inputs que envían strings)
  */
 export const preprocessedInteger = (fieldName: string, defaultValue: number = 0) =>

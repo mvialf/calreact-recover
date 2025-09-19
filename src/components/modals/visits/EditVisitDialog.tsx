@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { VisitForm, VisitFormValues } from '@/components/forms/VisitForm';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ModalLayout } from '@/components/modals/modalLayout';
 import { useToast } from '@/components/ui/use-toast';
 import { updateVisit } from '@/services/visitService';
 import type { Visit, VisitStatus } from '@/types/visit';
@@ -250,26 +250,26 @@ export function EditVisitDialog({ visit, children, onSuccess }: EditVisitDialogP
         });
       }}
     >
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger asChild onClick={handleOpen}>
-          {children}
-        </DialogTrigger>
-        
-        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Editar Visita</DialogTitle>
-            <DialogDescription>
-              Modifica los detalles de la visita programada.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <VisitForm
-            onSubmit={handleSubmit}
-            initialData={initialData}
-            isSubmitting={isPending}
-          />
-        </DialogContent>
-      </Dialog>
+      <div onClick={handleOpen}>
+        {children}
+      </div>
+
+      <ModalLayout
+        isOpen={isOpen}
+        onClose={handleClose}
+        title="Editar Visita"
+        className="w-full max-w-xl"
+        showDefaultButtons={true}
+        formRef={formRef}
+        isSubmitting={isPending}
+        submitButtonText={isPending ? "Actualizando..." : "Actualizar Visita"}
+      >
+        <VisitForm
+          onSubmit={handleSubmit}
+          initialData={initialData}
+          hideButtons={true}
+        />
+      </ModalLayout>
     </DialogErrorBoundary>
   );
 }
