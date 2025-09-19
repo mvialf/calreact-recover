@@ -1,8 +1,6 @@
 import { ProjectType, ProjectEventType, FormattedAddress, ProjectStatus } from '@/types/project';
-import { getProjectFromCache } from '@/services/cache/projectCacheService';
+import { getProjectById } from '@/services/projectService';
 import { eventLogger } from '@/lib/logger';
-import { Firestore } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 
 const logger = eventLogger;
 
@@ -54,14 +52,13 @@ class EventEnrichmentService {
    * Enriquece un evento con datos del proyecto desde cache
    */
   async enrichEvent(
-    event: ProjectEventType, 
-    firestore: Firestore = db
+    event: ProjectEventType
   ): Promise<EnrichedProjectEvent | null> {
     try {
       const startTime = Date.now();
       
-      // Obtener proyecto desde cache
-      const project = await getProjectFromCache(event.projectId, firestore);
+      // Obtener proyecto directamente desde Firestore
+      const project = await getProjectById(event.projectId);
       
       if (project) {
         this.stats.successful++;
@@ -118,8 +115,7 @@ class EventEnrichmentService {
    * Enriquece múltiples eventos de manera eficiente
    */
   async enrichEvents(
-    events: ProjectEventType[],
-    firestore: Firestore = db
+    events: ProjectEventType[]
   ): Promise<EnrichedProjectEvent[]> {
     if (events.length === 0) return [];
 
@@ -127,7 +123,7 @@ class EventEnrichmentService {
     logger.info('Enriqueciendo múltiples eventos', { count: events.length });
 
     // Procesar eventos en paralelo
-    const enrichmentPromises = events.map(event => this.enrichEvent(event, firestore));
+    const enrichmentPromises = events.map(event => this.enrichEvent(event));
     const results = await Promise.allSettled(enrichmentPromises);
     
     // Filtrar resultados exitosos
@@ -282,11 +278,11 @@ export const eventEnrichmentService = new EventEnrichmentService({
 });
 
 // Funciones de utilidad exportadas
-export const enrichEvent = (event: ProjectEventType, firestore?: Firestore) =>
-  eventEnrichmentService.enrichEvent(event, firestore);
+export const enrichEvent = (event: ProjectEventType) =>
+  eventEnrichmentService.enrichEvent(event);
 
-export const enrichEvents = (events: ProjectEventType[], firestore?: Firestore) =>
-  eventEnrichmentService.enrichEvents(events, firestore);
+export const enrichEvents = (events: ProjectEventType[]) =>
+  eventEnrichmentService.enrichEvents(events);
 
 export const composeSimplifiedEvent = (event: ProjectEventType, project: ProjectType) =>
   eventEnrichmentService.composeSimplifiedEvent(event, project);
