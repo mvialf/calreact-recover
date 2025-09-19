@@ -13,7 +13,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-interface InputDateProps {
+interface DateInputProps {
   date: Date | undefined;
   onSelect: (date: Date | undefined) => void;
   className?: string;
@@ -22,14 +22,14 @@ interface InputDateProps {
   disabled?: boolean;
 }
 
-export function InputDate({ 
-  date, 
-  onSelect, 
-  className, 
+export function DateInput({
+  date,
+  onSelect,
+  className,
   calendarProps,
   placeholder = "dd/mm/aaaa",
   disabled = false
-}: InputDateProps) {
+}: DateInputProps) {
   const [open, setOpen] = React.useState(false)
   const [day, setDay] = React.useState("")
   const [month, setMonth] = React.useState("")

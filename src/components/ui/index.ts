@@ -70,6 +70,30 @@ export {
   DialogTrigger,
 } from './dialog';
 
+// ===== SISTEMA DE MODALES AVANZADO =====
+export {
+  Modal,
+  ModalProvider,
+  ModalRoot,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalActions,
+  ModalAction,
+  useModal,
+  useModalState,
+  type ModalSize,
+  type BaseModalProps
+} from './modal';
+
+export {
+  FormModal,
+  ConfirmationModal,
+  InfoModal,
+  type FormModalProps
+} from './modal/FormModal';
+
 export {
   AlertDialog,
   AlertDialogAction,
@@ -135,7 +159,7 @@ export { ScrollArea, ScrollBar } from './scroll-area';
 export { PhoneInput } from './phone-input';
 export { AddressInput } from './addressInput';
 export { MoneyInput } from './money-input';
-export { InputDate } from './date-picker';
+export { DateInput } from './date-input';
 export { Autocomplete } from './autocomplete';
 export { CheckList } from './check-list';
 
