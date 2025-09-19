@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Autocomplete, type AutocompleteItem } from '@/components/ui/autocomplete';
 import { Checkbox } from '@/components/ui/checkbox';
 import { InputDate } from '@/components/ui/date-picker';
 import { AddressInput } from '@/components/ui/addressInput';
@@ -95,6 +96,14 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
     },
   });
 
+  // Convertir clientes a items del autocomplete
+  const clientItems: AutocompleteItem[] = React.useMemo(() => {
+    return clients.map(client => ({
+      value: client.id,
+      label: client.name
+    }));
+  }, [clients]);
+
   // Form setup
   const form = useForm<ProjectFormData>({
     resolver: zodResolver(projectFormSchema),
@@ -146,20 +155,18 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Cliente *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={isLoadingClients ? "Cargando clientes..." : "Seleccionar cliente"} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {clients.map((client) => (
-                          <SelectItem key={client.id} value={client.id}>
-                            {client.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Autocomplete
+                        items={clientItems}
+                        value={field.value}
+                        onSelect={field.onChange}
+                        placeholder={isLoadingClients ? "Cargando clientes..." : "Buscar cliente..."}
+                        emptyText="No se encontraron clientes."
+                        disabled={isSubmitting || isLoadingClients}
+                        isLoading={isLoadingClients}
+                        strictSelection={true}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

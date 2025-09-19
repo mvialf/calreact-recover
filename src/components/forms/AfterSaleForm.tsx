@@ -271,10 +271,10 @@ export function AfterSaleForm({
                       onSelect={handleProjectSelect}
                       placeholder="Buscar proyecto..."
                       emptyText="No se encontraron proyectos."
-                      searchPlaceholder="Buscar por número o cliente..."
                       disabled={isSubmitting || isLoadingProjects}
                       isLoading={isLoadingProjects}
                       renderItem={renderProjectItem}
+                      strictSelection={true}
                     />
                   </FormControl>
                 ) : (

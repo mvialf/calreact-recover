@@ -298,6 +298,7 @@ export function NewProjectEventModal({
               placeholder="Buscar proyecto..."
               renderItem={renderProjectItem}
               disabled={isLoadingProjects}
+              strictSelection={true}
               className="w-full"
             />
           ) : (
