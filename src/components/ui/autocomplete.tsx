@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Check, ChevronsUpDown, Loader2 } from "lucide-react"
+import { Check, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import {
@@ -11,26 +11,13 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
 } from "@/components/ui/command"
-import flags from "react-phone-number-input/flags"
-import { Country } from "react-phone-number-input"
-
-type CountryFlagProps = {
-  countryCode?: Country;
-  label: string;
-  className?: string;
-};
 
 export interface AutocompleteItem {
   value: string;
   label: string;
-  flag?: string;
-  countryCode?: Country;
-  countryName?: string;
-  phoneCode?: string;
   [key: string]: any;
 }
 
@@ -41,13 +28,13 @@ interface AutocompleteProps {
   onInputChange?: (value: string) => void
   placeholder?: string
   emptyText?: string
-  searchPlaceholder?: string
   disabled?: boolean
   isLoading?: boolean
   className?: string
   inputClassName?: string
   popoverClassName?: string
   renderItem?: (item: AutocompleteItem) => React.ReactNode
+  strictSelection?: boolean
 }
 
 export function Autocomplete({
@@ -57,18 +44,19 @@ export function Autocomplete({
   onInputChange,
   placeholder = "Buscar...",
   emptyText = "No se encontraron resultados.",
-  searchPlaceholder = "Buscar...",
   disabled = false,
   isLoading = false,
   className = "",
   inputClassName = "",
   popoverClassName = "",
   renderItem,
+  strictSelection = false,
 }: AutocompleteProps) {
   const [inputValue, setInputValue] = React.useState("")
   const [open, setOpen] = React.useState(false)
   const [selectedItem, setSelectedItem] = React.useState<AutocompleteItem | null>(null)
   const [selectedIndex, setSelectedIndex] = React.useState(0)
+  const [isValidInput, setIsValidInput] = React.useState(true)
   const inputRef = React.useRef<HTMLInputElement>(null)
   const listRef = React.useRef<HTMLDivElement>(null)
 
@@ -77,10 +65,8 @@ export function Autocomplete({
     if (value) {
       const item = items.find(item => item.value === value)
       setSelectedItem(item || null)
-      // Mostrar solo el nombre del país y el código en el input, no la bandera
       if (item) {
-        const labelWithoutFlag = item.label.replace(/^[^\w]*/, '');
-        setInputValue(labelWithoutFlag);
+        setInputValue(item.label);
       } else {
         setInputValue("");
       }
@@ -103,15 +89,46 @@ export function Autocomplete({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
+
+    if (strictSelection) {
+      // Modo estricto: validar contra items disponibles
+      const hasMatchingItem = items.some(item =>
+        item.label.toLowerCase().includes(newValue.toLowerCase())
+      )
+
+      // Solo permitir si hay coincidencia o está vacío
+      if (hasMatchingItem || newValue === '') {
+        setInputValue(newValue)
+        setIsValidInput(true)
+        if (onInputChange) onInputChange(newValue)
+
+        // Abrir popover si hay texto
+        if (newValue.length > 0 && !open) {
+          setOpen(true)
+        }
+
+        // Limpiamos la selección si el input está vacío
+        if (newValue.length === 0) {
+          onSelect("")
+        }
+      } else {
+        // Input inválido - marcar como tal pero no actualizar
+        setIsValidInput(false)
+      }
+      return
+    }
+
+    // Comportamiento normal (texto libre)
     setInputValue(newValue)
+    setIsValidInput(true)
     if (onInputChange) onInputChange(newValue)
-    
+
     // No cerramos automáticamente el popover aquí
     // Solo lo abrimos si hay texto y no está ya abierto
     if (newValue.length > 0 && !open) {
       setOpen(true)
     }
-    
+
     // Limpiamos la selección si el input está vacío
     if (newValue.length === 0) {
       onSelect("")
@@ -123,6 +140,7 @@ export function Autocomplete({
     if (selected) {
       setSelectedItem(selected)
       setInputValue(selected.label)
+      setIsValidInput(true)
       onSelect(selectedValue)
       setOpen(false)
       inputRef.current?.focus()
@@ -158,6 +176,20 @@ export function Autocomplete({
   }
 
   const handleBlur = () => {
+    if (strictSelection && inputValue) {
+      // Verificar si el valor actual corresponde a un item válido
+      const exactMatch = items.find(item =>
+        item.label.toLowerCase() === inputValue.toLowerCase()
+      )
+
+      if (!exactMatch) {
+        // Revertir al último valor válido o vacío
+        const currentSelection = items.find(item => item.value === value)
+        setInputValue(currentSelection ? currentSelection.label : '')
+        setIsValidInput(true)
+      }
+    }
+
     // Pequeño delay para permitir clicks en los items
     setTimeout(() => {
       setOpen(false)
@@ -169,44 +201,35 @@ export function Autocomplete({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverAnchor asChild>
           <div className="relative">
-            <div className="relative w-full">
-              {selectedItem?.countryCode && (
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center h-full">
-                  <CountryFlag 
-                    countryCode={selectedItem.countryCode}
-                    label={selectedItem.countryName || selectedItem.label}
-                    className="h-4 w-6"
-                  />
-                </div>
+            <Input
+              ref={inputRef}
+              type="text"
+              placeholder={placeholder}
+              value={inputValue}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onFocus={() => {
+                if (inputValue.length > 0) {
+                  setOpen(true)
+                }
+              }}
+              onClick={(e) => {
+                // Evitar que el clic en el input cierre el popover
+                e.stopPropagation()
+                if (inputValue.length > 0) {
+                  setOpen(true)
+                }
+              }}
+              onBlur={handleBlur}
+              disabled={disabled || isLoading}
+              className={cn(
+                "w-full pr-10 h-10",
+                strictSelection && !isValidInput && "border-destructive focus:ring-destructive",
+                inputClassName
               )}
-              <Input
-                ref={inputRef}
-                type="text"
-                placeholder={placeholder}
-                value={inputValue}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                onFocus={() => {
-                  if (inputValue.length > 0) {
-                    setOpen(true)
-                  }
-                }}
-                onClick={(e) => {
-                  // Evitar que el clic en el input cierre el popover
-                  e.stopPropagation()
-                  if (inputValue.length > 0) {
-                    setOpen(true)
-                  }
-                }}
-                onBlur={handleBlur}
-                disabled={disabled || isLoading}
-                className={cn(
-                  "w-full pr-10 h-10",
-                  selectedItem?.flag ? "pl-12" : "",
-                  inputClassName
-                )}
-              />
-            </div>
+              aria-invalid={strictSelection && !isValidInput}
+              aria-autocomplete={strictSelection ? "list" : "both"}
+            />
             {(isLoading) && (
               <div className="absolute right-2 top-1/2 -translate-y-1/2">
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -250,18 +273,9 @@ export function Autocomplete({
                       {renderItem ? (
                         renderItem(item)
                       ) : (
-                        <>
-                          {item.countryCode && (
-                            <CountryFlag 
-                              countryCode={item.countryCode}
-                              label={item.countryName || item.label}
-                              className="mr-2 h-4 w-6 flex-shrink-0"
-                            />
-                          )}
-                          <span className="truncate">
-                            {item.label.replace(/^[^\w]*/, '')}
-                          </span>
-                        </>
+                        <span className="truncate">
+                          {item.label}
+                        </span>
                       )}
                     </CommandItem>
                   ))}
@@ -275,14 +289,3 @@ export function Autocomplete({
   )
 }
 
-const CountryFlag = ({ countryCode, label, className = '' }: CountryFlagProps) => {
-  if (!countryCode) return null;
-  
-  const FlagComponent = flags[countryCode as keyof typeof flags];
-  
-  return (
-    <span className={cn("flex items-center justify-center overflow-hidden rounded-sm bg-foreground/20", className)}>
-      {FlagComponent && <FlagComponent title={label} />}
-    </span>
-  );
-};
