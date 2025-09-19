@@ -178,6 +178,89 @@ const useFirebaseOperation = () => {
 };
 ```
 
+## 🏗️ Modal-Form Integration Pattern (ACTUALIZADO)
+
+### Problema de Duplicación Resuelto
+```typescript
+// ❌ EVITAR - Duplicación de botones (PROBLEMA IDENTIFICADO)
+<ModalLayout showDefaultButtons={true}>
+  <ProjectForm showDefaultButtons={true} /> {/* DUPLICACIÓN */}
+</ModalLayout>
+
+// ✅ USAR - Modal-Controlled Pattern (SOLUCIÓN IMPLEMENTADA)
+<ModalLayout formId="project-form" submitButtonText="Crear Proyecto">
+  <ProjectForm formId="project-form" showDefaultButtons={false} />
+</ModalLayout>
+```
+
+### Patrón Estándar para Modales
+```typescript
+// ✅ PATRÓN OBLIGATORIO para nuevos modales
+export function NewEntityDialog() {
+  return (
+    <ModalLayout
+      formId="new-entity-form"           // ← ID único
+      title="Nueva Entidad"
+      submitButtonText="Crear Entidad"
+    >
+      <EntityForm
+        formId="new-entity-form"          // ← Mismo ID
+        showDefaultButtons={false}       // ← Sin duplicación
+        onSubmit={handleCreate}
+      />
+    </ModalLayout>
+  );
+}
+```
+
+### Formularios Optimizados para Modales
+```typescript
+// ✅ PATRÓN para formularios reutilizables
+export function EntityForm({
+  formId = 'entity-form',
+  showDefaultButtons = false,        // ← Default false para modales
+  // ... otras props
+}: EntityFormProps) {
+  return (
+    <Form {...form}>
+      <form id={formId} onSubmit={form.handleSubmit(onSubmit)}>
+        {/* Campos del formulario */}
+
+        {/* Botones solo cuando se requieren */}
+        {showDefaultButtons && (
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button type="submit" disabled={isSubmitting}>
+              {submitButtonText}
+            </Button>
+          </div>
+        )}
+      </form>
+    </Form>
+  );
+}
+```
+
+### Casos de Uso Específicos
+```typescript
+// ✅ Modal simple (caso más común)
+<ModalLayout formId="simple-form">
+  <SimpleForm formId="simple-form" showDefaultButtons={false} />
+</ModalLayout>
+
+// ✅ Formulario standalone (en páginas)
+<SimpleForm showDefaultButtons={true} />
+
+// ✅ Modal complejo (casos especiales)
+<ModalLayout buttonStrategy="none">
+  <CustomContent />
+  <CustomButtons />
+</ModalLayout>
+```
+
+### Documentación Técnica Completa
+- **Arquitectura detallada:** [modal-architecture.md](../../docs/technical/modal-architecture.md)
+- **Plan de implementación:** [modal-refactoring-plan.md](../../docs/technical/modal-refactoring-plan.md)
+
 ## 🧪 Testing Patterns
 
 **Para patrones completos de testing:** [testing.md](../workflow/testing.md)
