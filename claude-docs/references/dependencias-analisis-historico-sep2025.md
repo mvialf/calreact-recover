@@ -1,6 +1,8 @@
-# Análisis de Dependencias "No Utilizadas" - Proyecto Calreact
+# 📚 Análisis Histórico de Dependencias "No Utilizadas" - Proyecto Calreact
 
-**Fecha:** 7 de septiembre de 2025  
+**⚠️ ARCHIVO HISTÓRICO - Solo para referencia**
+**Fecha:** 7 de septiembre de 2025
+**Estado:** DESACTUALIZADO - Muchas dependencias mencionadas fueron eliminadas en migraciones posteriores  
 **Herramienta:** depcheck v1.4.3  
 **Total dependencias analizadas:** 81 paquetes  
 **Marcadas como no utilizadas:** 28 paquetes (34.6%)

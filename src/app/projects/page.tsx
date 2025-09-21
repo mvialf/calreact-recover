@@ -25,7 +25,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { PaymentDialog } from '@/components/payment-dialog';
 import AccountStatementDialog from '@/components/account-statement-dialog';
 import { ProjectClientDisplay } from '@/components/client-display';
-import { NewProjectDialog } from '@/components/modals/projects/NewProjectDialog';
+import { NewProjectDialogV2 } from '@/components/modals/projects/NewProjectDialogV2';
 import { EditProjectDialog } from '@/components/modals/projects/EditProjectDialog';
 import { PageTableLayout, type TableColumn } from '@/components/layout/PageTableLayout';
 
@@ -327,7 +327,7 @@ const ProjectsPage: React.FC = () => {
     <>
       <PageTableLayout
         title="Proyectos"
-        actionButton={<NewProjectDialog />}
+        actionButton={<NewProjectDialogV2 />}
         searchPlaceholder="Buscar por presupuesto, cliente o glosa..."
         searchValue={filter}
         onSearchChange={setFilter}

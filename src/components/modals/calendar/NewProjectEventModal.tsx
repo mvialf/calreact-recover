@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
 
-import { ModalLayout } from '../modalLayout';
+import { FormModal } from '@/components/ui/modal';
 import { getProjects } from '@/services/projectService';
 import { createProjectEvent } from '@/services/projectEventService';
 import { syncSingleProjectClientName } from '@/services/clientSyncService';
@@ -271,16 +271,17 @@ export function NewProjectEventModal({
   };
 
   return (
-    <ModalLayout
+    <FormModal
       isOpen={isOpen}
       title="Crear Evento de Proyecto"
       onClose={onClose}
-      onSubmit={() => {
+      formId="new-project-event-form"
+      onSubmit={async () => {
         formRef.current?.requestSubmit();
-      }} 
-      submitButtonText={(isSubmitting || isInternalSubmitting) ? 'Guardando...' : 'Crear Evento'}
-      isSubmitting={isSubmitting || isLoadingProjects || isInternalSubmitting}
-      className="w-full max-w-xl"
+      }}
+      submitText={(isSubmitting || isInternalSubmitting) ? 'Guardando...' : 'Crear Evento'}
+      size="xl"
+      scrollable={true}
     >
       <div className="space-y-4">
         {/* Autocomplete de Proyectos */}
@@ -352,6 +353,6 @@ export function NewProjectEventModal({
           //disabled={!!selectedProject}  Deshabilitar campos cuando hay proyecto seleccionado
         />
       </div>
-    </ModalLayout>
+    </FormModal>
   );
 }
