@@ -14,13 +14,15 @@ export { Checkbox } from './checkbox';
 export { Switch } from './switch';
 
 // ===== SELECTORES Y DROPDOWNS =====
-export { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+export {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from './select';
+
+export { MultiSelect } from './multi-select';
 
 export {
   Popover,

@@ -21,7 +21,6 @@ export function PhoneInput({
   value = "",
   onChange,
   className,
-  placeholder = "Número de teléfono",
   disabled = false,
   country: propCountry,
   excludeCountryCode = false,
@@ -52,7 +51,7 @@ export function PhoneInput({
     <div className={cn("relative flex items-center", className)}>
       {/* Prefijo del código de país - solo si no está excluido */}
       {!excludeCountryCode && (
-        <div className="absolute left-3 flex h-full items-center text-muted-foreground pointer-events-none">
+        <div className="absolute left-3 flex h-full items-center text-sm">
           {countryCode}
         </div>
       )}
@@ -63,9 +62,8 @@ export function PhoneInput({
         type="tel"
         value={displayValue}
         onChange={handleChange}
-        placeholder={placeholder}
         disabled={disabled}
-        className={cn(excludeCountryCode ? "" : "pl-16")}
+        className={cn(excludeCountryCode ? "" : "pl-12")}
         {...props}
       />
       

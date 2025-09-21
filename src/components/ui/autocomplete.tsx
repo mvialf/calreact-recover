@@ -14,6 +14,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command"
+import { useDebounce } from "@/hooks/usePerformanceOptimizations"
 
 export interface AutocompleteItem {
   value: string;
@@ -35,6 +36,7 @@ interface AutocompleteProps {
   popoverClassName?: string
   renderItem?: (item: AutocompleteItem) => React.ReactNode
   strictSelection?: boolean
+  debounceMs?: number
 }
 
 export function Autocomplete({
@@ -51,6 +53,7 @@ export function Autocomplete({
   popoverClassName = "",
   renderItem,
   strictSelection = false,
+  debounceMs = 0,
 }: AutocompleteProps) {
   const [inputValue, setInputValue] = React.useState("")
   const [open, setOpen] = React.useState(false)
@@ -59,6 +62,9 @@ export function Autocomplete({
   const [isValidInput, setIsValidInput] = React.useState(true)
   const inputRef = React.useRef<HTMLInputElement>(null)
   const listRef = React.useRef<HTMLDivElement>(null)
+
+  // Aplicar debounce solo cuando sea configurado
+  const debouncedInputValue = useDebounce(inputValue, debounceMs)
 
   // Actualizar el valor del input cuando cambia el valor seleccionado
   React.useEffect(() => {
@@ -77,11 +83,13 @@ export function Autocomplete({
   }, [value, items])
 
   const filteredItems = React.useMemo(() => {
-    if (!inputValue) return items
+    // Usar valor con debounce solo cuando esté configurado, sino usar valor inmediato
+    const searchValue = debounceMs > 0 ? debouncedInputValue : inputValue
+    if (!searchValue) return items
     return items.filter(item =>
-      item.label.toLowerCase().includes(inputValue.toLowerCase())
+      item.label.toLowerCase().includes(searchValue.toLowerCase())
     )
-  }, [inputValue, items])
+  }, [debouncedInputValue, inputValue, items, debounceMs])
 
   React.useEffect(() => {
     setSelectedIndex(0)
