@@ -173,9 +173,7 @@ class EventEnrichmentService {
       status: event.status || project.status,
       windowsCount: event.windowsCount ?? project.windowsCount ?? 0,
       squareMeters: event.squareMeters ?? project.squareMeters ?? 0,
-      uninstall: event.uninstall ?? project.uninstall ?? false,
-      uninstallTypes: event.uninstallTypes || project.uninstallTypes || [],
-      uninstallOther: event.uninstallOther || project.uninstallOther || '',
+      uninstallTags: event.uninstallTags || project.uninstallTags || [],
       clientName: event.clientName || project.clientName || 'Cliente pendiente',
       glosa: event.glosa || project.glosa || ''
     };
@@ -253,9 +251,7 @@ class EventEnrichmentService {
       fullAddress: event.fullAddress,
       windowsCount: event.windowsCount || 0,
       squareMeters: event.squareMeters || 0,
-      uninstall: event.uninstall || false,
-      uninstallTypes: event.uninstallTypes || [],
-      uninstallOther: event.uninstallOther || '',
+      uninstallTags: event.uninstallTags || [],
       glosa: event.glosa || '',
       createdAt: new Date(),
       updatedAt: new Date()
@@ -316,8 +312,6 @@ export const extractProjectSpecificData = (project: ProjectType) => ({
   status: project.status,
   windowsCount: project.windowsCount,
   squareMeters: project.squareMeters,
-  uninstall: project.uninstall,
-  uninstallTypes: project.uninstallTypes,
-  uninstallOther: project.uninstallOther,
+  uninstallTags: project.uninstallTags || [],
   glosa: project.glosa
 });

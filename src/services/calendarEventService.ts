@@ -45,7 +45,7 @@ function convertProjectEventToCalendarEvent(projectEvent: ProjectEventType): Eve
       projectEvent.description,
       projectEvent.windowsCount ? `Ventanas: ${projectEvent.windowsCount}` : '',
       projectEvent.squareMeters ? `M²: ${projectEvent.squareMeters}` : '',
-      projectEvent.uninstall ? 'Requiere desinstalación' : '',
+      projectEvent.uninstallTags && projectEvent.uninstallTags.length > 0 ? 'Requiere desinstalación' : '',
       projectEvent.phone ? `Tel: ${projectEvent.phone}` : '',
     ].filter(Boolean).join(' • '),
     color: getProjectColor(),
@@ -61,12 +61,12 @@ function convertProjectEventToCalendarEvent(projectEvent: ProjectEventType): Eve
     // Campos específicos del proyecto para acceso posterior
     windowsCount: projectEvent.windowsCount,
     squareMeters: projectEvent.squareMeters,
-    uninstall: projectEvent.uninstall,
+    uninstallTags: projectEvent.uninstallTags,
     checklist: projectEvent.checklist,
   } as EventType & {
     windowsCount?: number;
-    squareMeters?: number; 
-    uninstall?: boolean;
+    squareMeters?: number;
+    uninstallTags?: any[];
     checklist?: any[];
     glosa?: string;
   };
