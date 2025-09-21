@@ -147,9 +147,7 @@ export function NewProjectEventModal({
         setValue('status', project.status);
         setValue('windowsCount', project.windowsCount || 0);
         setValue('squareMeters', project.squareMeters || 0);
-        setValue('uninstall', project.uninstall || false);
-        setValue('uninstallTypes', project.uninstallTypes || []);
-        setValue('uninstallOther', project.uninstallOther || '');
+        setValue('uninstallTags', project.uninstallTags || []);
         setValue('clientName', project.clientName);
         setValue('checklist', initialData?.checklist || []);
         setValue('eventDate', new Date()); // Fecha por defecto es hoy
@@ -227,9 +225,7 @@ export function NewProjectEventModal({
           } : undefined,
           windowsCount: completeFormData.windowsCount || 0,
           squareMeters: completeFormData.squareMeters || 0,
-          uninstall: completeFormData.uninstall || false,
-          uninstallTypes: completeFormData.uninstallTypes || [],
-          uninstallOther: completeFormData.uninstallOther,
+          uninstallTags: (completeFormData.uninstallTags || []) as any,
           glosa: selectedProject.glosa,
           checklist: completeFormData.checklist || [],
         };

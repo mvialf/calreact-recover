@@ -7,10 +7,12 @@ import { z } from 'zod';
 import { phoneSchema } from '@/utils/validation-schemas';
 import { useQuery } from '@tanstack/react-query';
 import { formatCurrency } from '@/utils/format-helpers';
+import { TagSelector, type Tag } from '@/components/ui/tags';
+import { useUninstallTags } from '@/hooks/useUninstallTags';
 
 // Types and constants
 import type { ProjectStatus } from '@/types/project';
-import { PROJECT_STATUS_OPTIONS, UNINSTALL_TYPE_OPTIONS } from '@/constants/project';
+import { PROJECT_STATUS_OPTIONS } from '@/constants/project';
 import {
   DEFAULT_TAX_RATE,
   DEFAULT_SUBTOTAL,
@@ -31,7 +33,6 @@ import { Autocomplete, type AutocompleteItem } from '@/components/ui/autocomplet
 import { PhoneInput } from '@/components/ui/phone-input';
 import { PercentageInput } from '@/components/ui/percentage-input';
 import { MoneyInput } from '@/components/ui/money-input';
-import { Checkbox } from '@/components/ui/checkbox';
 import { DateInput } from '@/components/ui/date-input';
 import { AddressInput } from '@/components/ui/addressInput';
 import {
@@ -42,6 +43,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { FormContainer, FormGrid } from '@/components/ui/form-container';
 
 
 // Validation schema
@@ -57,9 +59,12 @@ const projectFormSchema = z.object({
   fullAddress: z.any().optional(),
   windowsCount: z.number().min(0).optional(),
   squareMeters: z.number().min(0).optional(),
-  uninstall: z.boolean().optional(),
-  uninstallTypes: z.array(z.string()).optional(),
-  uninstallOther: z.string().optional(),
+  uninstallTags: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    color: z.enum(['yellow', 'sky', 'orange', 'brown', 'complete', 'purple', 'primary', 'secondary', 'destructive']),
+    createdAt: z.date().optional()
+  })).optional(),
   glosa: z.string().optional(),
 });
 
@@ -115,6 +120,14 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
     }));
   }, [clients]);
 
+  // Hook para uninstall tags con Firebase
+  const {
+    availableTags: uninstallTags,
+    createTag: createUninstallTag,
+    editTag: editUninstallTag,
+    deleteTag: deleteUninstallTag,
+  } = useUninstallTags();
+
   // Form setup
   const form = useForm<ProjectFormData>({
     resolver: zodResolver(projectFormSchema),
@@ -130,15 +143,12 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
       fullAddress: null,
       windowsCount: DEFAULT_WINDOWS_COUNT,
       squareMeters: DEFAULT_SQUARE_METERS,
-      uninstall: false,
-      uninstallTypes: [],
-      uninstallOther: '',
+      uninstallTags: [],
       glosa: '',
       ...defaultValues,
     },
   });
 
-  const watchUninstall = form.watch('uninstall');
   const watchSubtotal = form.watch('subtotal');
   const watchTaxRate = form.watch('taxRate');
 
@@ -151,12 +161,13 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
 
   return (
     <Form {...form}>
-      <form id={formId} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <FormContainer>
+        <form id={formId} onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
 
         {/* Fila 1: Cliente + Número de Proyecto */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <FormGrid columns="3-1">
           {/* Cliente - 3/4 del ancho */}
-          <div className="md:col-span-3">
+          <div>
             <FormField
               control={form.control}
               name="clientId"
@@ -182,7 +193,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
           </div>
 
           {/* Número de Proyecto - 1/4 del ancho */}
-          <div className="md:col-span-1">
+          <div>
             <FormField
               control={form.control}
               name="projectNumber"
@@ -200,12 +211,12 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
               )}
             />
           </div>
-        </div>
+        </FormGrid>
 
         {/* Fila 2: Glosa + Teléfono */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <FormGrid columns="2-1">
           {/* Glosa - 2/3 del ancho */}
-          <div className="md:col-span-2">
+          <div>
             <FormField
               control={form.control}
               name="glosa"
@@ -225,7 +236,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
           </div>
 
           {/* Teléfono - 1/3 del ancho */}
-          <div className="md:col-span-1">
+          <div>
             <FormField
               control={form.control}
               name="phone"
@@ -245,29 +256,10 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
               )}
             />
           </div>
-        </div>
+        </FormGrid>
 
         {/* Fila 3: Fecha + Estado */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Fecha - 1/2 del ancho */}
-          <FormField
-            control={form.control}
-            name="date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Fecha de Ingreso *</FormLabel>
-                <FormControl>
-                  <DateInput
-                    date={field.value}
-                    onSelect={field.onChange}
-                    
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
+        <FormGrid columns={2}>
           {/* Estado - 1/2 del ancho */}
           <FormField
             control={form.control}
@@ -293,7 +285,28 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
               </FormItem>
             )}
           />
-        </div>
+
+          {/* Fecha - 1/2 del ancho */}
+          <FormField
+            control={form.control}
+            name="date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Fecha de Ingreso *</FormLabel>
+                <FormControl>
+                  <DateInput
+                    date={field.value}
+                    onSelect={field.onChange}
+                    
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          
+        </FormGrid>
 
         {/* Fila 4: Dirección completa */}
         <FormField
@@ -315,7 +328,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
         />
 
         {/* Fila 5: Subtotal + Tasa Impuesto + Total */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <FormGrid columns={3}>
           <FormField
             control={form.control}
             name="subtotal"
@@ -362,10 +375,10 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
               className="bg-gray-50"
             />
           </div>
-        </div>
+        </FormGrid>
 
         {/* Fila 6: Ventanas + Metros Cuadrados */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormGrid columns={2}>
           <FormField
             control={form.control}
             name="windowsCount"
@@ -406,78 +419,31 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
               </FormItem>
             )}
           />
-        </div>
+        </FormGrid>
 
-        {/* Fila 7: Desinstalación */}
+        {/* Fila 7: Tags de Desinstalación */}
         <div className="space-y-4">
           <FormField
             control={form.control}
-            name="uninstall"
+            name="uninstallTags"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormItem>
                 <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
+                  <TagSelector
+                    selectedTags={field.value || []}
+                    availableTags={uninstallTags}
+                    onTagsChange={field.onChange}
+                    onCreateTag={createUninstallTag}
+                    onEditTag={editUninstallTag}
+                    onDeleteTag={deleteUninstallTag}
+                    placeholder="Seleccionar tags de desinstalación..."
+                    label="Desinstalación"
                   />
                 </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Requiere Desinstalación</FormLabel>
-                </div>
+                <FormMessage />
               </FormItem>
             )}
           />
-
-          {watchUninstall && (
-            <div className="ml-6 space-y-4">
-              <FormField
-                control={form.control}
-                name="uninstallTypes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tipos de Desinstalación</FormLabel>
-                    <div className="space-y-2">
-                      {UNINSTALL_TYPE_OPTIONS.map((option) => (
-                        <div key={option.value} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={option.value}
-                            checked={field.value?.includes(option.value) || false}
-                            onCheckedChange={(checked) => {
-                              const current = field.value || [];
-                              if (checked) {
-                                field.onChange([...current, option.value]);
-                              } else {
-                                field.onChange(current.filter(v => v !== option.value));
-                              }
-                            }}
-                          />
-                          <Label htmlFor={option.value}>{option.label}</Label>
-                        </div>
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="uninstallOther"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Otro (especificar)</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="Especificar otro tipo"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          )}
         </div>
 
         {/* Fila 8: Descripción */}
@@ -490,8 +456,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
               <FormControl>
                 <Textarea
                   {...field}
-                  placeholder="Descripción del proyecto"
-                  rows={3}
+                              
                 />
               </FormControl>
               <FormMessage />
@@ -512,7 +477,8 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
             </Button>
           </div>
         )}
-      </form>
+        </form>
+      </FormContainer>
     </Form>
   );
 };
