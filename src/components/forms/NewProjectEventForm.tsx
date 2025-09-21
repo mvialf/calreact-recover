@@ -115,7 +115,7 @@ export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
         const numValue = Number(value);
         return isNaN(numValue) || !isFinite(numValue) ? 0 : Math.max(0, numValue);
       })(),
-      uninstallTypes: Array.isArray(initialData?.uninstallTypes) ? initialData.uninstallTypes : [],
+      uninstallTags: Array.isArray(initialData?.uninstallTags) ? initialData.uninstallTags : [],
       checklist: Array.isArray(initialData?.checklist) ? initialData.checklist : [],
     },
   });
@@ -148,7 +148,7 @@ export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
         eventDate: initialData.eventDate || undefined,
         windowsCount: Math.floor(windowsCount),
         squareMeters,
-        uninstallTypes: Array.isArray(initialData.uninstallTypes) ? initialData.uninstallTypes : [],
+        uninstallTags: Array.isArray(initialData.uninstallTags) ? initialData.uninstallTags : [],
         checklist: Array.isArray(initialData.checklist) ? initialData.checklist : [],
       });
     }
@@ -322,13 +322,13 @@ export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
 
             <FormField
               control={form.control}
-              name="uninstallTypes"
+              name="uninstallTags"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Tags de Desinstalación</FormLabel>
                   <FormControl>
                     <TagSelector
-                      selectedTags={Array.isArray(field.value) ? field.value.map(convertUninstallTagToTag) : []}
+                      selectedTags={(field.value || []).map(convertUninstallTagToTag)}
                       availableTags={uninstallTags.map(convertUninstallTagToTag)}
                       onTagsChange={field.onChange}
                       onCreateTag={createUninstallTag}

@@ -213,7 +213,7 @@ describe('NewProjectEventForm - UninstallTags Integration', () => {
 
     it('debe manejar tags con color casting en el componente', () => {
       const initialData: Partial<NewProjectEventFormValues> = {
-        uninstallTypes: mockUninstallTags.map(tag => tag.id)
+        uninstallTags: mockUninstallTags
       };
 
       render(
@@ -238,7 +238,7 @@ describe('NewProjectEventForm - UninstallTags Integration', () => {
     it('debe cargar tags de datos iniciales', () => {
       const initialData: Partial<NewProjectEventFormValues> = {
         projectId: 'project-1',
-        uninstallTypes: [mockUninstallTags[0].id, mockUninstallTags[1].id]
+        uninstallTags: [mockUninstallTags[0], mockUninstallTags[1]]
       };
 
       render(
@@ -258,7 +258,7 @@ describe('NewProjectEventForm - UninstallTags Integration', () => {
     it('debe manejar array vacío de tags iniciales', () => {
       const initialData: Partial<NewProjectEventFormValues> = {
         projectId: 'project-1',
-        uninstallTypes: []
+        uninstallTags: []
       };
 
       render(
@@ -320,7 +320,7 @@ describe('NewProjectEventForm - UninstallTags Integration', () => {
 
     it('debe permitir eliminar tags', async () => {
       const initialData: Partial<NewProjectEventFormValues> = {
-        uninstallTypes: [mockUninstallTags[0].id]
+        uninstallTags: [mockUninstallTags[0]]
       };
 
       render(
@@ -397,7 +397,7 @@ describe('NewProjectEventForm - UninstallTags Integration', () => {
         expect(mockOnSubmit).toHaveBeenCalledWith(
           expect.objectContaining({
             status: 'ingresado',
-            uninstallTypes: expect.arrayContaining([
+            uninstallTags: expect.arrayContaining([
               expect.objectContaining({ id: 'tag-1', name: 'Cortina' }),
               expect.objectContaining({ id: 'tag-2', name: 'Persiana' })
             ])
@@ -426,7 +426,7 @@ describe('NewProjectEventForm - UninstallTags Integration', () => {
       await waitFor(() => {
         expect(mockOnSubmit).toHaveBeenCalledWith(
           expect.objectContaining({
-            uninstallTypes: []
+            uninstallTags: []
           })
         );
       });
@@ -451,7 +451,7 @@ describe('NewProjectEventForm - UninstallTags Integration', () => {
 
     it('debe mantener tags durante estados de carga', () => {
       const initialData: Partial<NewProjectEventFormValues> = {
-        uninstallTypes: [mockUninstallTags[0].id]
+        uninstallTags: [mockUninstallTags[0]]
       };
 
       render(

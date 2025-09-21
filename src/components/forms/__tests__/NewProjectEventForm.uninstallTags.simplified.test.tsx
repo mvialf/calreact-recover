@@ -98,7 +98,7 @@ describe('NewProjectEventForm - UninstallTags Structure Validation', () => {
     it('debe manejar initialData con uninstallTags', () => {
       const initialData: Partial<NewProjectEventFormValues> = {
         projectId: 'project-1',
-        uninstallTypes: mockUninstallTags.slice(0, 2).map(tag => tag.id)
+        uninstallTags: mockUninstallTags.slice(0, 2)
       };
 
       render(
@@ -136,7 +136,7 @@ describe('NewProjectEventForm - UninstallTags Structure Validation', () => {
     it('debe manejar array vacío de uninstallTags', () => {
       const initialData: Partial<NewProjectEventFormValues> = {
         projectId: 'project-1',
-        uninstallTypes: []
+        uninstallTags: []
       };
 
       render(
