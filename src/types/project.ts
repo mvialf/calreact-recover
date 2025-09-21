@@ -1,7 +1,6 @@
 // src/types/project.ts
 import type { Timestamp } from 'firebase/firestore';
 import type { ProjectStatusConstant } from '@/constants/project';
-import type { UninstallTag } from './uninstall-tags';
 
 // Re-export lean types for convenience
 export type { 
@@ -67,7 +66,9 @@ export interface ProjectType {
   region?: string; // Legado, para compatibilidad
   windowsCount?: number;
   squareMeters?: number;
-  uninstallTags?: UninstallTag[];
+  uninstall?: boolean;
+  uninstallTypes?: string[];
+  uninstallOther?: string;
   glosa?: string; // Short note or summary, similar to description but often more technical or brief
   isHidden?: boolean; // For soft deletes or hiding projects from lists
   isPaid?: boolean; // New field for the interactive paid switch
@@ -115,7 +116,9 @@ export interface ProjectEventType {
   status: ProjectStatus;
   windowsCount?: number;
   squareMeters?: number;
-  uninstallTags?: UninstallTag[];
+  uninstall?: boolean;
+  uninstallTypes?: string[];
+  uninstallOther?: string;
   clientName?: string; // Copiado del proyecto para facilitar consultas
   glosa?: string; // Short note or summary, similar to description but often more technical or brief
   checklist?: Array<{

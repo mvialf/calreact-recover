@@ -8,7 +8,7 @@
  */
 
 // Re-exportaciones para mantener compatibilidad con código existente
-export { PROJECT_STATUS_OPTIONS, type ProjectStatusConstant } from '@/constants/project';
+export { PROJECT_STATUS_OPTIONS, UNINSTALL_TYPE_OPTIONS, type ProjectStatusConstant } from '@/constants/project';
 export { PAYMENT_METHODS, PAYMENT_TYPES } from '@/constants/payment';
 
 // Función migrada a utils/badge-helpers.ts

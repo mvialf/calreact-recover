@@ -1,6 +1,13 @@
 // src/constants/project.ts
 // Constantes relacionadas con proyectos y su gestión
 
+export const UNINSTALL_TYPE_OPTIONS = [
+  { value: "Aluminio", label: "Aluminio" },
+  { value: "Madera", label: "Madera" },
+  { value: "Fierro", label: "Fierro" },
+  { value: "PVC", label: "PVC" },
+  { value: "Americano", label: "Americano" }
+];
 
 export const PROJECT_STATUS_OPTIONS = [
   { value: 'ingresado', label: 'Ingresado' },

@@ -1,13 +1,12 @@
 /**
  * TIPOS PARA CALENDARIO - ARQUITECTURA ESPECÍFICA POR DOMINIO
- *
+ * 
  * EventType es usado por el sistema de calendario para mostrar eventos
  * de diferentes dominios (ProjectEvents, etc.) de manera unificada.
- *
+ * 
  * Nota: Este tipo no representa una colección Firestore directa,
  * sino una abstracción para la visualización en calendario.
  */
-import type { UninstallTag } from './uninstall-tags';
 export interface EventType {
   id: string;
   name: string;
@@ -28,7 +27,7 @@ export interface EventType {
   phone?: string; // Teléfono de contacto
   windowsCount?: number; // Cantidad de ventanas
   squareMeters?: number; // Metros cuadrados
-  uninstallTags?: UninstallTag[]; // Tags de desinstalación
+  uninstall?: boolean; // Desinstalación
   fullAddress?: {
     textoCompleto?: string; // Dirección completa
     comune?: string; // Comuna

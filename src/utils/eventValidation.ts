@@ -50,8 +50,8 @@ export const validateProjectEventData = (
   }
 
   // Validaciones de desinstalación
-  if (eventData.uninstallTags && eventData.uninstallTags.length === 0) {
-    warnings.push('Se especificaron tags de desinstalación vacíos');
+  if (eventData.uninstall && (!eventData.uninstallTypes || eventData.uninstallTypes.length === 0)) {
+    warnings.push('Se marcó desinstalación pero no se especificaron tipos');
   }
 
   // Validación de información de cliente
@@ -136,10 +136,10 @@ export const sanitizeProjectEventData = (
     ? eventData.eventDate 
     : new Date(eventData.eventDate || Date.now());
 
-  // Normalizar tags de desinstalación
-  const uninstallTags = Array.isArray(eventData.uninstallTags)
-    ? eventData.uninstallTags
-    : (projectData.uninstallTags || []);
+  // Normalizar tipos de desinstalación
+  const uninstallTypes = Array.isArray(eventData.uninstallTypes) 
+    ? eventData.uninstallTypes.filter(type => type && type.trim())
+    : (projectData.uninstallTypes || []);
 
   return {
     projectId: projectData.id,
@@ -150,7 +150,9 @@ export const sanitizeProjectEventData = (
     status: eventData.status || projectData.status,
     windowsCount,
     squareMeters,
-    uninstallTags,
+    uninstall: Boolean(eventData.uninstall ?? projectData.uninstall),
+    uninstallTypes,
+    uninstallOther: eventData.uninstallOther || projectData.uninstallOther || '',
     clientName,
     checklist: eventData.checklist || []
   };
@@ -202,8 +204,8 @@ export const detectEventChanges = (
 
   // Campos importantes a comparar
   const fieldsToCheck: Array<keyof ProjectEventType> = [
-    'eventDate', 'status', 'windowsCount', 'squareMeters',
-    'uninstallTags', 'phone', 'description', 'clientName'
+    'eventDate', 'status', 'windowsCount', 'squareMeters', 
+    'uninstall', 'phone', 'description', 'clientName'
   ];
 
   fieldsToCheck.forEach(field => {

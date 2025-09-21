@@ -372,7 +372,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
             <Input
               value={formatCurrency(total)}
               readOnly
-              className="bg-muted"
+              className="bg-gray-50"
             />
           </div>
         </FormGrid>

@@ -191,12 +191,8 @@ export const commonProjectFields = {
   fullAddress: fullAddressSchema,
   windowsCount: preprocessedInteger("Número de ventanas"),
   squareMeters: preprocessedNumber("Metros cuadrados"),
-  uninstallTags: z.array(z.object({
-    id: z.string(),
-    name: z.string(),
-    color: z.string(),
-    createdAt: z.date().optional()
-  })).optional().default([]),
+  uninstall: z.boolean().default(false),
+  uninstallTypes: z.array(z.string()).optional().default([]),
 };
 
 /**
