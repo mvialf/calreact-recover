@@ -6,10 +6,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { FormModal } from '@/components/ui/modal';
 import { AfterSaleForm, type AfterSaleFormValues } from '@/components/forms/AfterSaleForm';
 import { addAfterSales } from '@/services/afterSalesService';
 import { useToast } from '@/components/ui/use-toast';
-import { ModalLayout } from '@/components/modals/modalLayout';
 import { afterSalesLogger } from '@/lib/logger';
 
 export function NewAfterSaleDialog() {
@@ -17,9 +17,8 @@ export function NewAfterSaleDialog() {
   const router = useRouter();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const formRef = React.useRef<HTMLFormElement>(null);
 
-  // Mutación para crear una nueva postventa
+  // Mutación simplificada para crear nueva postventa
   const createAfterSaleMutation = useMutation({
     mutationFn: async (data: AfterSaleFormValues) => {
       const afterSalesData = {
@@ -40,42 +39,45 @@ export function NewAfterSaleDialog() {
       return await addAfterSales(afterSalesData);
     },
     onSuccess: (newAfterSale) => {
-      // Invalidar las queries relacionadas
       queryClient.invalidateQueries({ queryKey: ['after-sales'] });
       queryClient.invalidateQueries({ queryKey: ['aftersales'] });
-      
-      toast({
-        title: 'Postventa Creada',
-        description: 'La postventa ha sido creada exitosamente.',
-      });
-      
-      setIsOpen(false); // Cerrar el diálogo después de crear la postventa
-      router.refresh(); // Refrescar la página para mostrar la nueva postventa
+      setIsOpen(false);
+      router.refresh();
     },
     onError: (error: Error) => {
       afterSalesLogger.error('Error al crear la postventa', error);
-      toast({
-        title: 'Error al Crear Postventa',
-        description: error.message || 'No se pudo crear la postventa.',
-        variant: 'destructive',
-      });
+      throw error; // Re-throw para que FormModal maneje el error
     },
   });
 
-  // Manejador de envío del formulario
+  // Manejador simplificado de envío del formulario
   const handleFormSubmit = async (formData: AfterSaleFormValues) => {
     try {
       await createAfterSaleMutation.mutateAsync(formData);
     } catch (error) {
-      afterSalesLogger.error('Error al crear la postventa', error);
+      afterSalesLogger.error('Error al enviar formulario', error);
+      throw error; // Re-throw para FormModal
     }
+  };
+
+  // Callbacks para FormModal
+  const handleSuccess = (data: AfterSaleFormValues) => {
+    afterSalesLogger.info('Postventa creada exitosamente', {
+      projectId: data.projectId,
+      description: data.description
+    });
+  };
+
+  const handleError = (error: Error) => {
+    afterSalesLogger.error('Error en NewAfterSaleDialog', error);
   };
 
   return (
     <>
-      <Button 
-        variant="default" 
-        size="sm" 
+      {/* Trigger Button */}
+      <Button
+        variant="default"
+        size="sm"
         className="h-8 gap-1"
         onClick={() => setIsOpen(true)}
       >
@@ -85,25 +87,31 @@ export function NewAfterSaleDialog() {
         </span>
       </Button>
 
-      <ModalLayout
+      {/* Modal con nuevo sistema FormModal */}
+      <FormModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         title="Nueva Postventa"
-        showDefaultButtons={true}
-        formRef={formRef}
-        isSubmitting={createAfterSaleMutation.isPending}
-        submitButtonText="Crear Postventa"
-        className="w-full max-w-xl"
+        size="xl"
+        formId="new-aftersale-form"
+        onSubmit={handleFormSubmit}
+        submitText={createAfterSaleMutation.isPending ? "Creando..." : "Crear Postventa"}
+        cancelText="Cancelar"
+        showCancel={true}
+        description="Complete la información para crear una nueva postventa"
+        scrollable={true}
+        onSuccess={handleSuccess}
+        onError={handleError}
+        preventCloseOnSubmit={false}
+        resetOnClose={true}
       >
-        <div className="space-y-4 py-2">
-          <AfterSaleForm
-            formRef={formRef}
-            onSubmit={handleFormSubmit}
-            hideButtons={true}
-            isSubmitting={createAfterSaleMutation.isPending}
-          />
-        </div>
-      </ModalLayout>
+        {/* Formulario para modal */}
+        <AfterSaleForm
+          onSubmit={handleFormSubmit}
+          isSubmitting={createAfterSaleMutation.isPending}
+          hideButtons={true} // Los botones los maneja FormModal
+        />
+      </FormModal>
     </>
   );
 }

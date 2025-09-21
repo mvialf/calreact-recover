@@ -13,6 +13,23 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
+/**
+ * @deprecated Este componente ha sido reemplazado por FormModal.
+ *
+ * ❌ NO USAR - Sistema Legacy
+ * ✅ USAR EN SU LUGAR: FormModal de @/components/ui/modal
+ *
+ * Motivo de deprecación:
+ * - Duplicación de botones con formularios
+ * - Manejo complejo de refs y estados
+ * - FormModal ofrece mejor integración y UX
+ *
+ * Migración:
+ * import { FormModal } from '@/components/ui/modal';
+ *
+ * Fecha de deprecación: Septiembre 2025
+ * Programado para eliminación: Octubre 2025
+ */
 export interface ModalLayoutProps {
   /**
    * Indica si la modal está abierta o cerrada

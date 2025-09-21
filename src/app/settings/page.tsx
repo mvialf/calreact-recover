@@ -321,8 +321,7 @@ export default function SettingsPage() {
           region: currentProjTyped.region ? String(currentProjTyped.region) : 'RM',
           windowsCount: currentProjTyped.windowsCount ? Number(currentProjTyped.windowsCount) : 0,
           squareMeters: currentProjTyped.squareMeters ? Number(currentProjTyped.squareMeters) : 0,
-          uninstall: typeof currentProjTyped.uninstall === 'boolean' ? currentProjTyped.uninstall : false,
-          uninstallTypes: Array.isArray(currentProjTyped.uninstallTypes) ? currentProjTyped.uninstallTypes.map(String).filter(Boolean) : [],
+          uninstallTags: Array.isArray(currentProjTyped.uninstallTags) ? currentProjTyped.uninstallTags : [],
           isHidden: typeof currentProjTyped.isHidden === 'boolean' ? currentProjTyped.isHidden : false,
         };
         

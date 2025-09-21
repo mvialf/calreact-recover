@@ -1,14 +1,14 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AfterSaleForm, AfterSaleFormValues } from '@/components/forms/AfterSaleForm';
-import { Button } from '@/components/ui/button';
-import { ModalLayout } from '@/components/modals/modalLayout';
+import { FormModal } from '@/components/ui/modal';
 import { useToast } from '@/components/ui/use-toast';
 import { updateAfterSales } from '@/services/afterSalesService';
 import type { AfterSales } from '@/types/afterSales';
 import { DialogErrorBoundary } from '@/components/error-boundary/DialogErrorBoundary';
+import { afterSalesLogger } from '@/lib/logger';
 
 interface EditAfterSaleDialogProps {
   afterSale: AfterSales;
@@ -16,152 +16,99 @@ interface EditAfterSaleDialogProps {
 }
 
 export function EditAfterSaleDialog({ afterSale, children }: EditAfterSaleDialogProps) {
-  // 🔥 TODOS LOS HOOKS AL INICIO - ANTES DE CUALQUIER EARLY RETURN
-  
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const formRef = useRef<HTMLFormElement>(null);
 
-  // Hook useMutation siempre debe ejecutarse
+  // Mutación simplificada para actualizar postventa
   const { mutate, isPending } = useMutation({
     mutationFn: async (data: AfterSaleFormValues) => {
       if (!afterSale?.id) {
         throw new Error('ID de postventa requerido para actualización');
       }
-      
-      try {
-        // Preparar datos para actualización
-        const updateData = {
-          projectId: data.projectId,
-          description: data.description,
-          entryDate: data.date,
-          phone: data.phone,
-          address: data.address,
-          tasks: data.tasks,
-        };
-        
-        await updateAfterSales(afterSale.id, updateData);
-        return updateData;
-      } catch (error) {
 
-        throw error;
-      }
+      const updateData = {
+        projectId: data.projectId,
+        description: data.description,
+        entryDate: data.date,
+        phone: data.phone,
+        address: data.address,
+        tasks: data.tasks,
+      };
+
+      await updateAfterSales(afterSale.id, updateData);
+      return updateData;
     },
     onSuccess: () => {
-      try {
-        // Invalidar queries relacionadas
-        queryClient.invalidateQueries({ queryKey: ['afterSales'] });
-        if (afterSale?.id) {
-          queryClient.invalidateQueries({ queryKey: ['afterSales', afterSale.id] });
-          queryClient.invalidateQueries({ queryKey: ['afterSalesForProject', afterSale.projectId] });
-        }
-        
-        toast({ 
-          title: 'Éxito', 
-          description: 'Postventa actualizada correctamente.',
-          variant: 'default'
-        });
-        setIsOpen(false);
-      } catch (error) {
-
+      queryClient.invalidateQueries({ queryKey: ['afterSales'] });
+      if (afterSale?.id) {
+        queryClient.invalidateQueries({ queryKey: ['afterSales', afterSale.id] });
+        queryClient.invalidateQueries({ queryKey: ['afterSalesForProject', afterSale.projectId] });
       }
+      setIsOpen(false);
     },
     onError: (error) => {
-
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-      toast({ 
-        title: 'Error al actualizar postventa', 
-        description: `Hubo un problema al actualizar la postventa: ${errorMessage}`,
-        variant: 'destructive',
-      });
+      afterSalesLogger.error('Error al actualizar postventa', error);
+      throw error; // Re-throw para que FormModal maneje el error
     },
   });
 
-  const handleSubmit = React.useCallback((data: AfterSaleFormValues) => {
+  // Manejador simplificado de envío del formulario
+  const handleFormSubmit = async (data: AfterSaleFormValues) => {
     try {
-
-      mutate(data);
+      await mutate(data);
     } catch (error) {
-
-      toast({ 
-        title: 'Error', 
-        description: 'Error inesperado al procesar el formulario',
-        variant: 'destructive',
-      });
+      afterSalesLogger.error('Error al enviar formulario', error);
+      throw error; // Re-throw para FormModal
     }
-  }, [mutate, toast]);
+  };
 
-  // Mapeo defensivo para asegurar que ningún campo controlado reciba null o undefined
+  // Mapeo simplificado de datos iniciales
   const initialData: Partial<AfterSaleFormValues> = React.useMemo(() => {
-    try {
-      if (!afterSale) {
-        return {
-          projectId: '',
-          description: '',
-          date: new Date(),
-          phone: '',
-          address: null,
-          tasks: [],
-        };
-      }
-      
-      return {
-        projectId: afterSale.projectId || '',
-        description: afterSale.description || '',
-        date: afterSale.entryDate ? new Date(afterSale.entryDate) : new Date(),
-        phone: (afterSale as any)?.phone || '', // phone puede no estar en el tipo base
-        address: (afterSale as any)?.address || null, // address puede no estar en el tipo base
-        tasks: Array.isArray(afterSale.tasks) ? afterSale.tasks.map(task => ({
-          id: task.id || crypto.randomUUID(),
-          description: task.description || '',
-          isCompleted: Boolean(task.isCompleted),
-          completedAt: task.completedAt ? new Date(task.completedAt) : undefined,
-          createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
-        })) : [],
-      };
-    } catch (error) {
+    if (!afterSale) return {};
 
-      // Retornar datos por defecto seguros
-      return {
-        projectId: '',
-        description: '',
-        date: new Date(),
-        phone: '',
-        address: null,
-        tasks: [],
-      };
-    }
+    return {
+      projectId: afterSale.projectId || '',
+      description: afterSale.description || '',
+      date: afterSale.entryDate ? new Date(afterSale.entryDate) : new Date(),
+      phone: (afterSale as any)?.phone || '',
+      address: (afterSale as any)?.address || null,
+      tasks: Array.isArray(afterSale.tasks) ? afterSale.tasks.map(task => ({
+        id: task.id || crypto.randomUUID(),
+        description: task.description || '',
+        isCompleted: Boolean(task.isCompleted),
+        completedAt: task.completedAt ? new Date(task.completedAt) : undefined,
+        createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
+      })) : [],
+    };
   }, [afterSale]);
 
-  const handleClose = React.useCallback(() => {
-    try {
-      setIsOpen(false);
-    } catch (error) {
+  // Callbacks para manejo del modal
+  const handleClose = () => setIsOpen(false);
+  const handleOpen = () => setIsOpen(true);
 
-    }
-  }, []);
+  // Callbacks para FormModal
+  const handleSuccess = (data: AfterSaleFormValues) => {
+    afterSalesLogger.info('Postventa actualizada exitosamente', {
+      afterSaleId: afterSale.id,
+      description: data.description
+    });
+  };
 
-  const handleOpen = React.useCallback(() => {
-    try {
-      setIsOpen(true);
-    } catch (error) {
+  const handleError = (error: Error) => {
+    afterSalesLogger.error('Error en EditAfterSaleDialog', error);
+  };
 
-    }
-  }, []);
-
-  // 🔥 AHORA SÍ SE PUEDEN HACER EARLY RETURNS
-  
   // Validación defensiva de la postventa
   if (!afterSale || !afterSale.id) {
-
+    afterSalesLogger.error('EditAfterSaleDialog: postventa inválida o sin ID', { afterSale });
     return null;
   }
 
   return (
     <DialogErrorBoundary
       onError={(error, errorInfo) => {
-
+        afterSalesLogger.error('Error en EditAfterSaleDialog', { error, errorInfo });
         toast({
           title: 'Error inesperado',
           description: 'Ha ocurrido un error al cargar el diálogo. Por favor, recarga la página.',
@@ -169,26 +116,37 @@ export function EditAfterSaleDialog({ afterSale, children }: EditAfterSaleDialog
         });
       }}
     >
+      {/* Trigger Button */}
       <div onClick={handleOpen}>
         {children}
       </div>
 
-      <ModalLayout
+      {/* Modal con nuevo sistema FormModal */}
+      <FormModal
         isOpen={isOpen}
         onClose={handleClose}
         title="Editar Postventa"
-        className="w-full max-w-xl"
-        showDefaultButtons={true}
-        formRef={formRef}
-        isSubmitting={isPending}
-        submitButtonText={isPending ? "Actualizando..." : "Actualizar Postventa"}
+        size="xl"
+        formId="edit-aftersale-form"
+        onSubmit={handleFormSubmit}
+        submitText={isPending ? "Actualizando..." : "Actualizar Postventa"}
+        cancelText="Cancelar"
+        showCancel={true}
+        description="Modifique la información de la postventa"
+        scrollable={true}
+        onSuccess={handleSuccess}
+        onError={handleError}
+        preventCloseOnSubmit={false}
+        resetOnClose={false}
       >
+        {/* Formulario con datos iniciales */}
         <AfterSaleForm
-          onSubmit={handleSubmit}
+          onSubmit={handleFormSubmit}
           initialData={initialData}
-          hideButtons={true}
+          isSubmitting={isPending}
+          hideButtons={true} // Los botones los maneja FormModal
         />
-      </ModalLayout>
+      </FormModal>
     </DialogErrorBoundary>
   );
 }

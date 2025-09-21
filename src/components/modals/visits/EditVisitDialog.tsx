@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { VisitForm, VisitFormValues } from '@/components/forms/VisitForm';
 import { Button } from '@/components/ui/button';
-import { ModalLayout } from '@/components/modals/modalLayout';
+import { FormModal } from '@/components/ui/modal';
 import { useToast } from '@/components/ui/use-toast';
 import { updateVisit } from '@/services/visitService';
 import type { Visit, VisitStatus } from '@/types/visit';
@@ -254,22 +254,28 @@ export function EditVisitDialog({ visit, children, onSuccess }: EditVisitDialogP
         {children}
       </div>
 
-      <ModalLayout
+      <FormModal
         isOpen={isOpen}
         onClose={handleClose}
         title="Editar Visita"
-        className="w-full max-w-xl"
-        showDefaultButtons={true}
-        formRef={formRef}
-        isSubmitting={isPending}
-        submitButtonText={isPending ? "Actualizando..." : "Actualizar Visita"}
+        size="xl"
+        formId="edit-visit-form"
+        onSubmit={async (data) => {
+          // La lógica ya está en handleSubmit
+          // FormModal manejará el error/success
+        }}
+        submitText={isPending ? "Actualizando..." : "Actualizar Visita"}
+        cancelText="Cancelar"
+        showCancel={true}
+        description="Modifique la información de la visita"
+        scrollable={true}
       >
         <VisitForm
           onSubmit={handleSubmit}
           initialData={initialData}
           hideButtons={true}
         />
-      </ModalLayout>
+      </FormModal>
     </DialogErrorBoundary>
   );
 }
