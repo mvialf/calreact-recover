@@ -181,7 +181,7 @@ describe('ProjectForm - UninstallTags Integration', () => {
     it('debe permitir eliminar tags seleccionadas', async () => {
       // Empezar con una tag pre-seleccionada
       const defaultValues = {
-        uninstallTags: [mockUninstallTags[0]]
+        uninstallTypes: [mockUninstallTags[0].id]
       };
 
       renderWithQueryClient(
@@ -239,7 +239,7 @@ describe('ProjectForm - UninstallTags Integration', () => {
           expect.objectContaining({
             projectNumber: '2025-001',
             glosa: 'Proyecto test',
-            uninstallTags: expect.arrayContaining([
+            uninstallTypes: expect.arrayContaining([
               expect.objectContaining({ id: 'tag-1', name: 'Cortina' }),
               expect.objectContaining({ id: 'tag-2', name: 'Persiana' })
             ])
@@ -266,7 +266,7 @@ describe('ProjectForm - UninstallTags Integration', () => {
           expect.objectContaining({
             projectNumber: '2025-002',
             glosa: 'Proyecto sin tags',
-            uninstallTags: []
+            uninstallTypes: []
           })
         );
       });
@@ -294,7 +294,7 @@ describe('ProjectForm - UninstallTags Integration', () => {
       const existingProject: Partial<ProjectFormData> = {
         projectNumber: '2025-001',
         glosa: 'Proyecto existente',
-        uninstallTags: [mockUninstallTags[0], mockUninstallTags[1]]
+        uninstallTypes: [mockUninstallTags[0].id, mockUninstallTags[1].id]
       };
 
       renderWithQueryClient(
@@ -311,7 +311,7 @@ describe('ProjectForm - UninstallTags Integration', () => {
       const existingProject: Partial<ProjectFormData> = {
         projectNumber: '2025-001',
         glosa: 'Proyecto existente',
-        uninstallTags: [mockUninstallTags[0]]
+        uninstallTypes: [mockUninstallTags[0].id]
       };
 
       renderWithQueryClient(
@@ -331,7 +331,7 @@ describe('ProjectForm - UninstallTags Integration', () => {
       await waitFor(() => {
         expect(mockOnSubmit).toHaveBeenCalledWith(
           expect.objectContaining({
-            uninstallTags: [
+            uninstallTypes: [
               expect.objectContaining({ id: 'tag-2', name: 'Persiana' })
             ]
           })

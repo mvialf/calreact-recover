@@ -135,7 +135,7 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
           }
         },
         description: project.description ?? '',
-        uninstallTags: Array.isArray(project.uninstallTags) ? project.uninstallTags : [],
+        uninstallTypes: Array.isArray(project.uninstallTypes) ? project.uninstallTypes : [],
       };
     } catch (error) {
       projectLogger.error('Error al mapear datos iniciales', error);

@@ -59,12 +59,7 @@ const projectFormSchema = z.object({
   fullAddress: z.any().optional(),
   windowsCount: z.number().min(0).optional(),
   squareMeters: z.number().min(0).optional(),
-  uninstallTags: z.array(z.object({
-    id: z.string(),
-    name: z.string(),
-    color: z.enum(['yellow', 'sky', 'orange', 'brown', 'complete', 'purple', 'primary', 'secondary', 'destructive']),
-    createdAt: z.date().optional()
-  })).optional(),
+  uninstallTypes: z.array(z.string()).optional(),
   glosa: z.string().optional(),
 });
 
@@ -143,7 +138,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
       fullAddress: null,
       windowsCount: DEFAULT_WINDOWS_COUNT,
       squareMeters: DEFAULT_SQUARE_METERS,
-      uninstallTags: [],
+      uninstallTypes: [],
       glosa: '',
       ...defaultValues,
     },
@@ -425,14 +420,16 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
         <div className="space-y-4">
           <FormField
             control={form.control}
-            name="uninstallTags"
+            name="uninstallTypes"
             render={({ field }) => (
               <FormItem>
                 <FormControl>
                   <TagSelector
-                    selectedTags={field.value || []}
+                    selectedTags={(field.value || []).map(id =>
+                      uninstallTags.find(tag => tag.id === id) || { id, name: id, color: 'primary' as const }
+                    )}
                     availableTags={uninstallTags}
-                    onTagsChange={field.onChange}
+                    onTagsChange={(tags) => field.onChange(tags.map(tag => tag.id))}
                     onCreateTag={createUninstallTag}
                     onEditTag={editUninstallTag}
                     onDeleteTag={deleteUninstallTag}

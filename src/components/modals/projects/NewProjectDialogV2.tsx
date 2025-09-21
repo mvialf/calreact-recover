@@ -93,7 +93,7 @@ export function NewProjectDialogV2() {
         status: formData.status as ProjectStatus,
         subtotal,
         taxRate,
-        uninstallTags: formData.uninstallTags || [],
+        uninstallTypes: formData.uninstallTypes || [],
         ...(formData.fullAddress && {
           fullAddress: {
             textoCompleto: formData.fullAddress.textoCompleto || '',

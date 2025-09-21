@@ -132,7 +132,7 @@ describe('ProjectForm - UninstallTags Structure Validation', () => {
     it('debe cargar datos iniciales con uninstallTags si se proporcionan', () => {
       const defaultValues = {
         projectNumber: '2025-001',
-        uninstallTags: mockUninstallTags.slice(0, 2)
+        uninstallTypes: mockUninstallTags.slice(0, 2).map(tag => tag.id)
       };
 
       renderWithQueryClient(
@@ -147,7 +147,7 @@ describe('ProjectForm - UninstallTags Structure Validation', () => {
     it('debe manejar array vacío de uninstallTags', () => {
       const defaultValues = {
         projectNumber: '2025-002',
-        uninstallTags: []
+        uninstallTypes: []
       };
 
       renderWithQueryClient(
