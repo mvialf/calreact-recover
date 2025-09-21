@@ -121,8 +121,6 @@ export const VALIDATION_RULES = {
     // Si hay teléfono, debe ser válido
     PHONE_IF_PROVIDED: 'phoneSchema',
     
-    // Si hay uninstall = true, debe tener tipos
-    UNINSTALL_TYPES_IF_UNINSTALL: 'uninstallTypes required if uninstall is true',
     
     // Si hay subtotal, debe tener IVA
     TAX_IF_SUBTOTAL: 'taxRate required if subtotal > 0',

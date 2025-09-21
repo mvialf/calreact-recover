@@ -1,5 +1,6 @@
 import type { Timestamp } from 'firebase/firestore';
 import type { ProjectStatus, FormattedAddress } from '@/types/project';
+import type { UninstallTag } from './uninstall-tags';
 
 /**
  * Tipo lean para eventos de proyecto - Solo datos específicos del evento
@@ -87,9 +88,7 @@ export interface ProjectEventHybrid {
     status: ProjectStatus;
     windowsCount?: number;
     squareMeters?: number;
-    uninstall?: boolean;
-    uninstallTypes?: string[];
-    uninstallOther?: string;
+    uninstallTags?: UninstallTag[];
     clientName?: string;
     glosa?: string;
     checklist?: Array<{
@@ -136,9 +135,7 @@ export interface ComposedProjectEvent {
   fullAddress?: FormattedAddress; // project.fullAddress
   windowsCount: number; // project.windowsCount
   squareMeters: number; // project.squareMeters
-  uninstall: boolean; // project.uninstall
-  uninstallTypes: string[]; // project.uninstallTypes
-  uninstallOther: string; // project.uninstallOther
+  uninstallTags: UninstallTag[]; // project.uninstallTags
   glosa?: string; // project.glosa
   
   // === METADATA DE COMPOSICIÓN ===
