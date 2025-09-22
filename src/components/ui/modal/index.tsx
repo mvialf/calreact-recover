@@ -1,3 +1,16 @@
+/**
+ * ⚠️ DEPRECATED SYSTEM - FormModal Architecture
+ *
+ * Status: Preserved after strategic revert (commit 299d80c)
+ * Date deprecated: 2025-09-22
+ * Active system: ModalLayout (src/components/modals/modalLayout.tsx)
+ * Review date: Q2 2026 (March 2026)
+ *
+ * DO NOT USE IN NEW FEATURES
+ * Maintained for potential future re-migration
+ *
+ * @deprecated Use ModalLayout instead for new modals
+ */
 "use client"
 
 // Imports de contexto y hooks

@@ -1,3 +1,8 @@
+/**
+ * @deprecated Hook for FormModal system - No active usage
+ * Associated with deprecated FormModal architecture
+ * Review for removal: Q2 2026
+ */
 "use client"
 
 import { useState, useCallback, useRef } from 'react'

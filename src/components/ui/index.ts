@@ -89,6 +89,7 @@ export {
   type BaseModalProps
 } from './modal';
 
+// @deprecated - FormModal system (preserved, not in active use)
 export {
   FormModal,
   ConfirmationModal,

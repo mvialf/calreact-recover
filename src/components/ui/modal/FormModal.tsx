@@ -1,3 +1,8 @@
+/**
+ * @deprecated FormModal - Use ModalLayout instead
+ * Preserved after revert from commit 299d80c
+ * Review for removal: Q2 2026
+ */
 "use client"
 
 import React, { useCallback } from 'react'

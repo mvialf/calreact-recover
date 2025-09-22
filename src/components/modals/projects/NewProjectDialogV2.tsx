@@ -1,3 +1,8 @@
+/**
+ * @deprecated V2 implementation using FormModal - Not in use
+ * Active version: NewProjectDialog.tsx (uses ModalLayout)
+ * Review for removal: Q2 2026
+ */
 'use client';
 
 import * as React from 'react';
