@@ -4,22 +4,6 @@
 
 ## 📋 Quick Reference Index
 
-### 🎯 Modal Architecture Migration (COMPLETED)
-- **Status:** ✅ Complete | **Date:** 2025-09-21 | **Impact:** High
-- **Branch:** `DEV`
-- **Key achievement:** 100% migración de modales (8/8) completada exitosamente
-- **Benefits:**
-  - ✅ Eliminación completa de duplicación de botones
-  - ✅ Arquitectura unificada con FormModal
-  - ✅ Sistema legacy (ModalLayout) deprecado
-  - ✅ Mejor UX con manejo automático de errores
-  - ✅ Reducción de complejidad técnica
-  - ✅ Patrones consistentes para futuros modales
-- **Modales migrados:** EditProjectDialog, NewAfterSaleDialog, NewVisitDialog, EditAfterSaleDialog, NewProjectEventModal, EditVisitDialog
-- **Sistema:** ModalLayout → FormModal (sistema compound components)
-- **Documentation:** ✅ Documentación actualizada en `/docs/technical/modal-architecture.md`
-- **Timeline:** Completado en 1 día (vs. estimado 2 semanas)
-
 ### 🗺️ Google Places API Migration
 - **Status:** ✅ Complete | **Date:** 2025-09 | **Impact:** High
 - **Branch:** `feature/google-places-migration` 

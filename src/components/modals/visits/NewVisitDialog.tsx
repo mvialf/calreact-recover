@@ -6,10 +6,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { FormModal } from '@/components/ui/modal';
 import { VisitForm, type VisitFormValues } from '@/components/forms/VisitForm';
 import { addVisit, type VisitStatus } from '@/services/visitService';
 import { useToast } from '@/components/ui/use-toast';
+import { ModalLayout } from '@/components/modals/modalLayout';
 import { visitLogger } from '@/lib/logger';
 
 export function NewVisitDialog() {
@@ -17,8 +17,9 @@ export function NewVisitDialog() {
   const router = useRouter();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const formRef = React.useRef<HTMLFormElement>(null);
 
-  // Mutación simplificada para crear nueva visita
+  // Mutación para crear una nueva visita
   const createVisitMutation = useMutation({
     mutationFn: async (data: VisitFormValues) => {
       const visitData = {
@@ -41,48 +42,45 @@ export function NewVisitDialog() {
         ...(data.address && { address: data.address }),
         ...(data.municipality && { municipality: data.municipality }),
       };
-
+      
       return await addVisit(visitData);
     },
     onSuccess: (newVisit) => {
+      // Invalidar las queries relacionadas
       queryClient.invalidateQueries({ queryKey: ['visits'] });
-      setIsOpen(false);
-      router.refresh();
+      
+      toast({
+        title: 'Visita Creada',
+        description: `La visita para ${newVisit.name} ha sido creada exitosamente.`,
+      });
+      
+      setIsOpen(false); // Cerrar el diálogo después de crear la visita
+      router.refresh(); // Refrescar la página para mostrar la nueva visita
     },
     onError: (error: Error) => {
       visitLogger.error('Error al crear la visita', error);
-      throw error; // Re-throw para que FormModal maneje el error
+      toast({
+        title: 'Error al Crear Visita',
+        description: error.message || 'No se pudo crear la visita.',
+        variant: 'destructive',
+      });
     },
   });
 
-  // Manejador simplificado de envío del formulario
+  // Manejador de envío del formulario
   const handleFormSubmit = async (formData: VisitFormValues) => {
     try {
       await createVisitMutation.mutateAsync(formData);
     } catch (error) {
-      visitLogger.error('Error al enviar formulario', error);
-      throw error; // Re-throw para FormModal
+      visitLogger.error('Error al crear la visita', error);
     }
-  };
-
-  // Callbacks para FormModal
-  const handleSuccess = (data: VisitFormValues) => {
-    visitLogger.info('Visita creada exitosamente', {
-      name: data.name,
-      scheduledDate: data.scheduledDate
-    });
-  };
-
-  const handleError = (error: Error) => {
-    visitLogger.error('Error en NewVisitDialog', error);
   };
 
   return (
     <>
-      {/* Trigger Button */}
-      <Button
-        variant="default"
-        size="sm"
+      <Button 
+        variant="default" 
+        size="sm" 
         className="h-8 gap-1"
         onClick={() => setIsOpen(true)}
       >
@@ -92,31 +90,25 @@ export function NewVisitDialog() {
         </span>
       </Button>
 
-      {/* Modal con nuevo sistema FormModal */}
-      <FormModal
+      <ModalLayout
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         title="Nueva Visita"
-        size="xl"
-        formId="new-visit-form"
-        onSubmit={handleFormSubmit}
-        submitText={createVisitMutation.isPending ? "Creando..." : "Crear Visita"}
-        cancelText="Cancelar"
-        showCancel={true}
-        description="Complete la información para crear una nueva visita"
-        scrollable={true}
-        onSuccess={handleSuccess}
-        onError={handleError}
-        preventCloseOnSubmit={false}
-        resetOnClose={true}
+        showDefaultButtons={true}
+        formRef={formRef}
+        isSubmitting={createVisitMutation.isPending}
+        submitButtonText="Crear Visita"
+        className="w-full max-w-xl"
       >
-        {/* Formulario para modal */}
-        <VisitForm
-          onSubmit={handleFormSubmit}
-          isSubmitting={createVisitMutation.isPending}
-          hideButtons={true} // Los botones los maneja FormModal
-        />
-      </FormModal>
+        <div className="space-y-4 py-2">
+          <VisitForm
+            formRef={formRef}
+            onSubmit={handleFormSubmit}
+            hideButtons={true}
+            isSubmitting={createVisitMutation.isPending}
+          />
+        </div>
+      </ModalLayout>
     </>
   );
 }
