@@ -155,7 +155,7 @@ export function NewProjectDialog() {
           <ProjectForm
             onSubmit={handleFormSubmit}
             submitButtonText="Crear Proyecto"
-            showDefaultButtons
+            showDefaultButtons={false}
           />
         </div>
       </ModalLayout>

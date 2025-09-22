@@ -104,7 +104,7 @@ export function NewVisitDialog() {
           <VisitForm
             formRef={formRef}
             onSubmit={handleFormSubmit}
-            hideButtons={true}
+            showDefaultButtons={false}
             isSubmitting={createVisitMutation.isPending}
           />
         </div>

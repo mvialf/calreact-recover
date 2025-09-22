@@ -57,7 +57,7 @@ interface VisitFormProps {
   initialData?: Partial<VisitFormValues>;
   isSubmitting?: boolean;
   formRef?: React.RefObject<HTMLFormElement>;
-  hideButtons?: boolean;
+  showDefaultButtons?: boolean;
   onCancel?: () => void;
 }
 
@@ -66,7 +66,7 @@ export const VisitForm: React.FC<VisitFormProps> = ({
   initialData,
   isSubmitting = false,
   formRef,
-  hideButtons = false,
+  showDefaultButtons = false,
   onCancel,
 }) => {
   const form = useForm<VisitFormValues>({
@@ -258,8 +258,8 @@ export const VisitForm: React.FC<VisitFormProps> = ({
           )}
         />
 
-        {/* Botones - Solo se muestran si hideButtons es false */}
-        {!hideButtons && (
+        {/* Botones - Solo se muestran si showDefaultButtons es true */}
+        {showDefaultButtons && (
           <div className="flex justify-end space-x-4 pt-6">
             <Button
               type="button"

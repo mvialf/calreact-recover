@@ -267,7 +267,7 @@ export function EditVisitDialog({ visit, children, onSuccess }: EditVisitDialogP
         <VisitForm
           onSubmit={handleSubmit}
           initialData={initialData}
-          hideButtons={true}
+          showDefaultButtons={false}
         />
       </ModalLayout>
     </DialogErrorBoundary>

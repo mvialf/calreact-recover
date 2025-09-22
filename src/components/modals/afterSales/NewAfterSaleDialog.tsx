@@ -99,7 +99,7 @@ export function NewAfterSaleDialog() {
           <AfterSaleForm
             formRef={formRef}
             onSubmit={handleFormSubmit}
-            hideButtons={true}
+            showDefaultButtons={false}
             isSubmitting={createAfterSaleMutation.isPending}
           />
         </div>

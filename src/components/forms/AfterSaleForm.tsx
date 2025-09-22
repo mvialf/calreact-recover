@@ -68,7 +68,7 @@ interface AfterSaleFormProps {
   onSubmitSuccess?: () => void;
   formRef?: React.RefObject<HTMLFormElement>;
   onSubmit?: (data: AfterSaleFormValues) => void | Promise<void>;
-  hideButtons?: boolean;
+  showDefaultButtons?: boolean;
 }
 
 export function AfterSaleForm({ 
@@ -77,7 +77,7 @@ export function AfterSaleForm({
   onSubmitSuccess,
   formRef,
   onSubmit,
-  hideButtons = false
+  showDefaultButtons = false
 }: AfterSaleFormProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -430,7 +430,7 @@ export function AfterSaleForm({
             )}
         </div>
 
-        {!hideButtons && (
+        {showDefaultButtons && (
           <div className="flex justify-end space-x-4">
             <Button
               type="button"

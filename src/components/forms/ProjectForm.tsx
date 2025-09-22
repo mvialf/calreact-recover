@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { formatCurrency } from '@/utils/format-helpers';
 import { TagSelector, type Tag } from '@/components/ui/tags';
 import { useUninstallTags } from '@/hooks/useUninstallTags';
+import { cn } from '@/lib/utils';
 
 // Types and constants
 import type { ProjectStatus } from '@/types/project';
@@ -89,7 +90,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
   isSubmitting = false,
   variant = 'standalone',
   formId = 'project-form',
-  showDefaultButtons = true,
+  showDefaultButtons = false,
   submitButtonText = 'Crear Proyecto',
   onCancel,
 }) => {
@@ -372,7 +373,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
             <Input
               value={formatCurrency(total)}
               readOnly
-              className="bg-gray-50"
+              className={cn("bg-gray-50")}
             />
           </div>
         </FormGrid>
@@ -465,7 +466,8 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
         />
 
         {/* Actions - Solo mostrar si es standalone o showDefaultButtons está explícito */}
-        {(variant === 'standalone' || showDefaultButtons) && (
+        {/* Actions - Lógica corregida: Solo mostrar si NO es modal Y showDefaultButtons es true */}
+        {(variant !== 'modal' && showDefaultButtons) && (
           <div className="flex justify-end space-x-2 pt-4">
             {onCancel && (
               <Button type="button" variant="outline" onClick={onCancel}>

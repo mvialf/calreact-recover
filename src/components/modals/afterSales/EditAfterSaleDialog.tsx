@@ -186,7 +186,7 @@ export function EditAfterSaleDialog({ afterSale, children }: EditAfterSaleDialog
         <AfterSaleForm
           onSubmit={handleSubmit}
           initialData={initialData}
-          hideButtons={true}
+          showDefaultButtons={false}
         />
       </ModalLayout>
     </DialogErrorBoundary>
