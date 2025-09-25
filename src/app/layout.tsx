@@ -195,8 +195,8 @@ export default function RootLayout({
                   </div>
                 </Sidebar>
                 
-                <main className="flex-1">
-                  <div className="p-4 sm:p-6 lg:p-8 h-full lg:mt-16">
+                <main className="flex-1 min-w-0 w-full max-w-none">
+                  <div className="p-2 sm:p-3 lg:p-4 h-full lg:mt-16">
                     {children}
                   </div>
                 </main>

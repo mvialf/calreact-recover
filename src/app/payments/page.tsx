@@ -35,7 +35,6 @@ import { DollarSign, Edit, Trash2, GanttChartSquare, Loader2 } from 'lucide-reac
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { normalizeSearchText } from '@/utils/search-utils';
-import { PageTableLayout, type TableColumn } from '@/components/layout/PageTableLayout';
 
 const formatCurrency = (amount: number | undefined | null) => {
   if (amount === undefined || amount === null) return 'N/A';
@@ -172,80 +171,7 @@ export default function PaymentsPage() {
   const isLoading = isLoadingPayments || isLoadingProjects || isLoadingClients;
   const isMutating = deletePaymentMutation.isPending;
 
-  // Definir las columnas de la tabla
-  const columns: TableColumn<EnrichedPayment>[] = [
-    {
-      key: 'projectNumber',
-      label: 'Proyecto',
-      render: (payment) => (
-        <div className="font-medium">
-          <div>{payment.projectNumber}</div>
-          <div className="text-xs text-muted-foreground">{payment.clientName}</div>
-        </div>
-      )
-    },
-    {
-      key: 'amount',
-      label: 'Valor',
-      align: 'right',
-      render: (payment) => formatCurrency(payment.amount)
-    },
-    {
-      key: 'date',
-      label: 'Fecha',
-      render: (payment) => payment.date ? formatDate(payment.date, 'P', { locale: es }) : 'N/A'
-    },
-    {
-      key: 'paymentMethod',
-      label: 'Medio de Pago',
-      render: (payment) => (
-        <div className="flex items-center">
-          {payment.paymentMethod === 'tarjeta de crédito' ? (
-            <>
-              <span>Tarjeta de Crédito</span>
-              {payment.installments && (
-                <Badge className="ml-1 whitespace-nowrap">
-                  {payment.installments}
-                </Badge>
-              )}
-            </>
-          ) : (
-            payment.paymentMethod || 'N/A'
-          )}
-        </div>
-      )
-    },
-    {
-      key: 'paymentType',
-      label: 'Tipo',
-      render: (payment) => payment.paymentType || 'N/A'
-    },
-    {
-      key: 'actions',
-      label: 'Acciones',
-      align: 'right',
-      width: 'w-[100px]',
-      render: (payment) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" disabled={isMutating && paymentToDelete?.id === payment.id} aria-label="Más acciones">
-              {isMutating && paymentToDelete?.id === payment.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <GanttChartSquare className="h-6 w-6" />}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={() => handleEditPayment(payment)} disabled={isMutating}>
-              <Edit className="mr-2 h-4 w-4" />
-              <span>Editar</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => handleDeletePaymentInitiate(payment)} disabled={isMutating} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-              <Trash2 className="mr-2 h-4 w-4" />
-              <span>Eliminar</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    }
-  ];
+  // TODO: Reemplazar con nuevo componente de tabla
 
   if (isErrorPayments) {
     return (
@@ -261,32 +187,25 @@ export default function PaymentsPage() {
 
   return (
     <>
-      <PageTableLayout
-        title="Gestión de Pagos"
-        actionButton={
+      <div className="w-full max-w-none px-4 pb-2 bg-background">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-3xl font-bold text-primary">Gestión de Pagos</h1>
           <Button onClick={() => toast({ title: "Próximamente", description: "El registro de nuevos pagos estará disponible pronto."})} disabled={isLoading}>
             <DollarSign className="mr-2 h-5 w-5" />
             Registrar Pago
           </Button>
-        }
-        searchPlaceholder="Filtrar por proyecto, cliente, tipo..."
-        searchValue={filterText}
-        onSearchChange={setFilterText}
-        columns={columns}
-        data={paginatedPayments}
-        loading={isLoading}
-        emptyStateIcon={<DollarSign className="mx-auto h-12 w-12 text-muted-foreground mb-2" />}
-        emptyStateTitle="No hay pagos registrados."
-        emptyStateSubtitle="Empieza añadiendo pagos a tus proyectos."
-        pagination={{
-          currentPage,
-          itemsPerPage: pageSize,
-          totalItems: filteredPayments.length,
-          onPageChange: setCurrentPage,
-          onPageSizeChange: setPageSize
-        }}
-        rowClassName={(payment) => isMutating && paymentToDelete?.id === payment.id ? 'opacity-50' : ''}
-      />
+        </div>
+
+        <div className="text-center p-8 border rounded-lg">
+          <DollarSign className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
+          <p className="text-muted-foreground">
+            🚧 Tabla temporal eliminada - PageTableLayout removido para reescritura
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Total de pagos: {enrichedPayments?.length || 0}
+          </p>
+        </div>
+      </div>
 
       {paymentToDelete && (
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

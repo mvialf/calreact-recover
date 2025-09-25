@@ -27,10 +27,9 @@ import AccountStatementDialog from '@/components/account-statement-dialog';
 import { ProjectClientDisplay } from '@/components/client-display';
 import { NewProjectDialog } from '@/components/modals/projects/NewProjectDialog';
 import { EditProjectDialog } from '@/components/modals/projects/EditProjectDialog';
-import { PageTableLayout, type TableColumn } from '@/components/layout/PageTableLayout';
 
 // Iconos
-import { GanttChartSquare, Loader2, SquarePen, Trash2, DollarSign, FileText, Eye, EyeOff } from 'lucide-react';
+import { GanttChartSquare, Loader2, SquarePen, Trash2, DollarSign, FileText, Eye, EyeOff, Search } from 'lucide-react';
 
 // Utils
 import { formatCurrency } from '@/utils/format-helpers';
@@ -224,142 +223,46 @@ const ProjectsPage: React.FC = () => {
     return sortedProjects.slice(startIndex, startIndex + itemsPerPage);
   }, [sortedProjects, currentPage, itemsPerPage]);
 
-    // Definir las columnas de la tabla
-  const columns: TableColumn<EnrichedProject>[] = [
-    {
-      key: 'projectNumber',
-      label: 'Proyecto',
-      sortable: true,
-      render: (project) => <ProjectClientDisplay project={project} />
-    },
-    {
-      key: 'createdAt',
-      label: 'Fecha Creación',
-      sortable: true,
-      align: 'center',
-      render: (project) => project.createdAt ? formatDate(new Date(project.createdAt), 'dd/MM/yyyy', { locale: es }) : 'N/A'
-    },
-    {
-      key: 'total',
-      label: 'Monto Total',
-      sortable: true,
-      align: 'right',
-      render: (project) => formatCurrency(project.total ?? 0)
-    },
-    {
-      key: 'status',
-      label: 'Estado',
-      align: 'center',
-      render: (project) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-             <Button variant="secondary" className="p-0 h-auto font-normal" disabled={updateStatusMutation.isPending}>
-                <Badge variant={getStatusBadgeVariant(project.status)} className="cursor-pointer">
-                  {updateStatusMutation.isPending && updateStatusMutation.variables?.projectId === project.id 
-                    ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
-                    : null
-                  }
-                  {project.status}
-                </Badge>
-             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuLabel>Cambiar Estado</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {PROJECT_STATUS_OPTIONS.map(status => (
-              <DropdownMenuItem 
-                key={status.value} 
-                onSelect={() => handleStatusChange(project.id, status.value)}
-                disabled={project.status === status.value}
-              >
-                {status.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
-    {
-      key: 'payments',
-      label: 'Pagos',
-      align: 'right',
-      render: (project) => (
-        <div className="flex items-center justify-end gap-2">
-          <span>{formatCurrency(project.totalPayments ?? 0)}</span>
-          <Badge variant={getPaymentPercentageBadgeVariant(project.totalPaymentPercentage ?? 0)}>
-            {(project.totalPaymentPercentage ?? 0).toFixed(0)}%
-          </Badge>
-        </div>
-      )
-    },
-    {
-      key: 'actions',
-      label: 'Acciones',
-      align: 'center',
-      render: (project) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon2">
-              {(addPaymentMutation.isPending && projectForPayment?.id === project.id) || (deleteProjectMutation.isPending && projectToDelete?.id === project.id) ? <Loader2 className="h-6 w-6 animate-spin" /> : <GanttChartSquare className="h-6 w-6" />}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={(e) => {
-              e.preventDefault();
-              handleOpenEditDialog(project);
-            }}>
-              <SquarePen className="mr-2 h-4 w-4" /> Editar
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => handleOpenPaymentDialog(project)}><DollarSign className="mr-2 h-4 w-4" /> Registrar Pago</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => handleOpenAccountStatementDialog(project)}><FileText className="mr-2 h-4 w-4" /> Estado de Cuenta</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => handleOpenDeleteDialog(project)} className="text-red-500 focus:text-red-500 focus:bg-red-100"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    }
-  ];
+    // TODO: Reemplazar con nuevo componente de tabla
 
   // --- RENDERIZADO ---
   if (isError && error) return <div className="text-red-500 p-4">Error al cargar proyectos: {error.message}</div>;
 
   return (
     <>
-      <PageTableLayout
-        title="Proyectos"
-        actionButton={<NewProjectDialog />}
-        searchPlaceholder="Buscar por presupuesto, cliente o glosa..."
-        searchValue={filter}
-        onSearchChange={setFilter}
-        additionalFilters={
+      <div className="w-full max-w-none px-4 pb-2 bg-background">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-3xl font-bold text-primary">Proyectos</h1>
+          <NewProjectDialog />
+        </div>
+
+        <div className="flex items-center justify-between p-4 border rounded-lg mb-4">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <input
+              placeholder="Buscar por presupuesto, cliente o glosa..."
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="pl-8 w-96 p-2 border rounded"
+            />
+          </div>
           <Button variant="ghost" size="icon2" onClick={() => setHideCompletedAndPaid(!hideCompletedAndPaid)} title={hideCompletedAndPaid ? 'Mostrar proyectos completados y pagados' : 'Ocultar proyectos completados y pagados'}>
             {hideCompletedAndPaid ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
             <span className="sr-only">
               {hideCompletedAndPaid ? 'Mostrar proyectos completados y pagados' : 'Ocultar proyectos completados y pagados'}
             </span>
           </Button>
-        }
-        columns={columns}
-        data={paginatedProjects}
-        loading={isLoading}
-        emptyStateTitle="No se encontraron proyectos que coincidan con los filtros actuales."
-        selectable={true}
-        selectedRows={selectedRows}
-        onSelectRow={handleSelectRow}
-        onSelectAll={handleSelectAll}
-        getRowId={(project) => project.id}
-        sortBy={sortBy}
-        sortOrder={sortOrder}
-        onSort={(field) => handleSort(field as SortableField)}
-        pagination={{
-          currentPage,
-          itemsPerPage,
-          totalItems: sortedProjects.length,
-          onPageChange: setCurrentPage,
-          onPageSizeChange: setItemsPerPage
-        }}
-        rowClassName={(project) => selectedRows.includes(project.id) ? 'selected' : ''}
-      />
+        </div>
+
+        <div className="text-center p-8 border rounded-lg">
+          <p className="text-muted-foreground">
+            🚧 Tabla temporal eliminada - PageTableLayout removido para reescritura
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Total de proyectos: {enrichedProjects?.length || 0}
+          </p>
+        </div>
+      </div>
 
       {/* Diálogos */}
       {isPaymentDialogOpen && projectForPayment && (

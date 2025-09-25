@@ -27,7 +27,6 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Visit, getVisits, deleteVisit, VisitStatus } from '@/services/visitService';
 import { NewVisitDialog, EditVisitDialog } from '@/components/modals/visits';
-import { PageTableLayout, type TableColumn } from '@/components/layout/PageTableLayout';
 import { visitLogger } from '@/lib/logger';
 
 const getStatusVariant = (status: VisitStatus) => {
@@ -178,96 +177,6 @@ export default function VisitsPage() {
     return format(date, 'dd/MM/yyyy', { locale: es });
   };
 
-  // Definir las columnas de la tabla
-  const columns: TableColumn<Visit>[] = [
-    {
-      key: 'name',
-      label: 'Nombre',
-      render: (visit) => <span className="font-medium">{visit.name}</span>
-    },
-    {
-      key: 'phone',
-      label: 'Teléfono',
-      render: (visit) => (
-        <div className="flex items-center">
-          <Phone className="mr-1 h-4 w-4 text-muted-foreground" />
-          {visit.phone}
-        </div>
-      )
-    },
-    {
-      key: 'address',
-      label: 'Dirección',
-      render: (visit) => (
-        <div className="flex items-center">
-          <MapPin className="mr-1 h-4 w-4 text-muted-foreground" />
-          <span className="truncate max-w-[200px]" title={visit.address}>
-            {visit.address}
-          </span>
-        </div>
-      )
-    },
-    {
-      key: 'status',
-      label: 'Estado',
-      render: (visit) => (
-        <Badge className={getStatusVariant(visit.status)}>
-          {visit.status}
-        </Badge>
-      )
-    },
-    {
-      key: 'scheduledDate',
-      label: 'Fecha Programada',
-      render: (visit) => (
-        <div className="flex items-center">
-          <Clock className="mr-1 h-4 w-4 text-muted-foreground" />
-          {formatDate(new Date(visit.scheduledDate))}
-        </div>
-      )
-    },
-    {
-      key: 'actions',
-      label: 'Acciones',
-      align: 'right',
-      render: (visit) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon2">
-              <span className="sr-only">Abrir menú</span>
-              <GanttChartSquare className="h-6 w-6" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleViewDetails(visit.id)}>
-              <Eye className="mr-2 h-4 w-4" />
-              <span>Ver detalles</span>
-            </DropdownMenuItem>
-            <EditVisitDialog 
-              visit={visit}
-              onSuccess={handleEditSuccess}
-            >
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                <Edit className="mr-2 h-4 w-4" />
-                <span>Editar</span>
-              </DropdownMenuItem>
-            </EditVisitDialog>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-red-600 focus:text-red-600"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete(visit);
-              }}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              <span>Eliminar</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    }
-  ];
 
   // Mostrar mensaje de carga
   if (loading) {
@@ -300,30 +209,22 @@ export default function VisitsPage() {
 
   return (
     <>
-      <PageTableLayout
-        title="Visitas"
-        actionButton={<NewVisitDialog />}
-        searchPlaceholder="Buscar visitas..."
-        searchValue={searchTerm}
-        onSearchChange={setSearchTerm}
-        columns={columns}
-        data={paginatedVisits}
-        loading={loading}
-        emptyStateTitle="No se encontraron visitas"
-        emptyStateSubtitle="No hay datos que coincidan con los filtros actuales."
-        selectable={true}
-        selectedRows={selectedRows}
-        onSelectRow={handleSelectRow}
-        onSelectAll={handleSelectAll}
-        getRowId={(visit) => visit.id || ''}
-        pagination={{
-          currentPage,
-          itemsPerPage,
-          totalItems: filteredVisits.length,
-          onPageChange: setCurrentPage,
-          onPageSizeChange: setItemsPerPage
-        }}
-      />
+      <div className="w-full max-w-none px-4 pb-2 bg-background">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-3xl font-bold text-primary">Visitas</h1>
+          <NewVisitDialog />
+        </div>
+
+        <div className="text-center p-8 border rounded-lg">
+          <MapPin className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
+          <p className="text-muted-foreground">
+            🚧 Tabla temporal eliminada - PageTableLayout removido para reescritura
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Total de visitas: {filteredVisits?.length || 0}
+          </p>
+        </div>
+      </div>
 
       {/* Diálogo de confirmación para eliminar */}
       <AlertDialog open={!!visitToDelete} onOpenChange={(open) => !open && setVisitToDelete(null)}>

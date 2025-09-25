@@ -42,7 +42,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { PageTableLayout, type TableColumn } from '@/components/layout/PageTableLayout';
 
 // Estados definidos para postventas
 const AFTERSALES_STATUS_OPTIONS = [
@@ -176,96 +175,25 @@ export default function AfterSalesPage() {
     setSelectedRows(isChecked ? paginatedAfterSales.map(item => item.id) : []);
   };
 
-  // Definir las columnas de la tabla
-  const columns: TableColumn<AfterSales>[] = [
-    {
-      key: 'projectId',
-      label: 'Proyecto',
-      width: 'w-80',
-      render: (afterSale) => {
-        const project = projectsMap[afterSale.projectId];
-        return project ? (
-          <ProjectClientDisplay project={project} />
-        ) : (
-          <span>Proyecto desconocido</span>
-        );
-      }
-    },
-    {
-      key: 'entryDate',
-      label: 'Ingreso',
-      align: 'center',
-      width: 'w-40',
-      render: (afterSale) => afterSale.entryDate ? formatDate(afterSale.entryDate, 'dd/MM/yyyy', { locale: es }) : 'Sin fecha'
-    },
-    {
-      key: 'afterSalesStatus',
-      label: 'Estado',
-      align: 'center',
-      width: 'w-40',
-      render: (afterSale) => (
-        <Badge variant={getAfterSaleStatusBadgeVariant(afterSale.afterSalesStatus || '')}>
-          {afterSale.afterSalesStatus || 'Sin estado'}
-        </Badge>
-      )
-    },
-    {
-      key: 'actions',
-      label: 'Acciones',
-      align: 'center',
-      width: 'w-40',
-      render: (afterSale) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon2">
-              <GanttChartSquare className="h-6 w-6" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleDetailsClick(afterSale)}>
-              <Eye className="mr-2 h-4 w-4" /> Ver detalles
-            </DropdownMenuItem>
-            <EditAfterSaleDialog afterSale={afterSale}>
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                <Wrench className="mr-2 h-4 w-4" /> Editar
-              </DropdownMenuItem>
-            </EditAfterSaleDialog>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleDeleteClick(afterSale)} className="text-destructive">
-              <Trash2 className="mr-2 h-4 w-4" /> Eliminar
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    }
-  ];
 
   return (
     <>
-      <PageTableLayout
-        title="Postventas"
-        actionButton={<NewAfterSaleDialog />}
-        searchPlaceholder="Buscar postventas..."
-        searchValue={searchQuery}
-        onSearchChange={setSearchQuery}
-        columns={columns}
-        data={paginatedAfterSales}
-        loading={isLoadingAfterSales}
-        emptyStateTitle="No se encontraron registros de postventa."
-        emptyStateSubtitle="No hay datos que coincidan con los filtros actuales."
-        selectable={true}
-        selectedRows={selectedRows}
-        onSelectRow={handleSelectRow}
-        onSelectAll={handleSelectAll}
-        getRowId={(afterSale) => afterSale.id}
-        pagination={{
-          currentPage,
-          itemsPerPage,
-          totalItems: filteredAfterSales.length,
-          onPageChange: setCurrentPage,
-          onPageSizeChange: setItemsPerPage
-        }}
-      />
+      <div className="w-full max-w-none px-4 pb-2 bg-background">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-3xl font-bold text-primary">Postventas</h1>
+          <NewAfterSaleDialog />
+        </div>
+
+        <div className="text-center p-8 border rounded-lg">
+          <Wrench className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
+          <p className="text-muted-foreground">
+            🚧 Tabla temporal eliminada - PageTableLayout removido para reescritura
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Total de postventas: {filteredAfterSales?.length || 0}
+          </p>
+        </div>
+      </div>
 
       {/* Modal de Detalles */}
       <Dialog open={isDetailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
