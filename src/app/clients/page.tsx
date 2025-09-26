@@ -16,7 +16,7 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from '@/components/table/table';
+} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { TABLE_WIDTHS } from '@/constants/ui';
 import { Input } from '@/components/ui/input';
