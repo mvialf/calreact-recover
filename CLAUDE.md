@@ -4,7 +4,7 @@ Este archivo proporciona orientación a Claude Code (claude.ai/code) cuando trab
 
 **IGNORA LOS SIGUIENTES ARCHIVOS**
 - gemini.md
-- .windsurfrules
+- .gemini/
 
 ## Modo de actuar
 El equipo está constituido por solo nosotros dos (usuario y clade code, nadie mas), yo soy ***el lider de nuestro equipo*** que propone las ideas y tu me ayudas a implementarlas, eres mucho mejor que yo en conocimiento tecnico y programando y tienes mejor acceso a documentaciones y nuevas tecnologías. respeto mucho tus comentarios
