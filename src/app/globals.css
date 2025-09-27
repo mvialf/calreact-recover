@@ -79,6 +79,42 @@ body {
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 240 5.9% 90%;
     --sidebar-ring: 221.2 83.2% 53.3%;
+
+    /* === TOKENS PARA CENTRALIZACIÓN DE ESTILOS === */
+
+    /* Dialog & Modal Widths */
+    --dialog-width: 425px;
+    --dialog-width-md: 450px;
+    --dialog-width-lg: 480px;
+
+    /* Container & Layout */
+    --container-sm: 33rem;
+    --container-md: 48rem;
+    --container-lg: 64rem;
+    --container-truncate-sm: 200px;
+    --container-truncate-md: 300px;
+    --container-truncate-lg: 400px;
+
+    /* Table Column Widths */
+    --table-col-minimal: 50px;
+    --table-col-actions: 100px;
+    --table-col-small: 150px;
+    --table-col-medium: 200px;
+    --table-col-large: 250px;
+    --table-col-xl: 300px;
+
+    /* Component Specific */
+    --select-width: 120px;
+    --popover-width: 300px;
+    --dropdown-min-width: 8rem;
+    --list-max-height: 300px;
+
+    /* Layout Heights */
+    --header-height: 4rem;
+    --content-offset: 100px;
+
+    /* Typography */
+    --text-xs: 0.8rem;
   }
 
   .dark {

@@ -1,26 +1,27 @@
 /**
  * Constantes para estilos de UI
  * Centraliza valores de dimensiones y clases Tailwind reutilizables
+ * ACTUALIZADO: Ahora usa CSS variables desde globals.css como fuente única de verdad
  */
 
 // Anchos de columnas para tablas
 export const TABLE_WIDTHS = {
-  actions: 'w-[100px]',
-  small: 'w-[150px]',
-  medium: 'w-[200px]',
-  large: 'w-[250px]',
-  extraLarge: 'w-[300px]',
-  minimal: 'w-[50px]',
+  actions: 'w-[var(--table-col-actions)]',
+  small: 'w-[var(--table-col-small)]',
+  medium: 'w-[var(--table-col-medium)]',
+  large: 'w-[var(--table-col-large)]',
+  extraLarge: 'w-[var(--table-col-xl)]',
+  minimal: 'w-[var(--table-col-minimal)]',
 } as const;
 
 // Anchos máximos para contenido truncado
 export const MAX_WIDTHS = {
-  truncateSmall: 'max-w-[200px]',
-  truncateMedium: 'max-w-[300px]',
-  truncateLarge: 'max-w-[400px]',
-  containerSmall: 'max-w-[33rem]',
-  containerMedium: 'max-w-[48rem]',
-  containerLarge: 'max-w-[64rem]',
+  truncateSmall: 'max-w-[var(--container-truncate-sm)]',
+  truncateMedium: 'max-w-[var(--container-truncate-md)]',
+  truncateLarge: 'max-w-[var(--container-truncate-lg)]',
+  containerSmall: 'max-w-[var(--container-sm)]',
+  containerMedium: 'max-w-[var(--container-md)]',
+  containerLarge: 'max-w-[var(--container-lg)]',
 } as const;
 
 // Alturas estándar
