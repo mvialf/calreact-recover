@@ -36,7 +36,7 @@ export function DataTableToolbar<TData>({
   const isFiltered = table.getState().columnFilters.length > 0
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex py-2 px-4 items-center bg-card rounded-lg justify-between">
       <div className="flex flex-1 items-center space-x-2">
         {searchKey && (
           <div className="relative">
