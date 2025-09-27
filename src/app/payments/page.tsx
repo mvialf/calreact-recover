@@ -2,7 +2,7 @@
 // src/app/payments/page.tsx
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useQueryClient as useQueryClientHook, useMutation } from '@tanstack/react-query';
 import type { Payment } from '@/types/payment';
 import type { ProjectType } from '@/types/project';
@@ -11,16 +11,12 @@ import { getAllPayments, deletePayment } from '@/services/paymentService';
 import { EditPaymentDialog } from '@/components/payments/edit-payment-dialog';
 import { getProjects } from '@/services/projectService';
 import { getClients } from '@/services/clientService';
-import { format as formatDate } from '@/lib/calendar-utils';
-import { es } from 'date-fns/locale';
+
+// Componentes DataTable
+import { DataTable } from '@/components/data-table/data-table';
+import { createPaymentsColumns, PAYMENT_METHOD_OPTIONS, PAYMENT_TYPE_OPTIONS } from './columns';
 
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,15 +27,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { DollarSign, Edit, Trash2, GanttChartSquare, Loader2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { DollarSign, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { normalizeSearchText } from '@/utils/search-utils';
-
-const formatCurrency = (amount: number | undefined | null) => {
-  if (amount === undefined || amount === null) return 'N/A';
-  return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(amount);
-};
+import { formatCurrency } from '@/utils/format-utils';
 
 
 interface EnrichedPayment extends Payment {
@@ -51,15 +41,10 @@ export default function PaymentsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClientHook();
 
-  const [filterText, setFilterText] = useState('');
   const [paymentToDelete, setPaymentToDelete] = useState<EnrichedPayment | null>(null);
   const [paymentToEdit, setPaymentToEdit] = useState<EnrichedPayment | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  
-  // Estados para la paginación
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10); // Estandarizado como Projects
 
   const { data: payments = [], isLoading: isLoadingPayments, isError: isErrorPayments, error: errorPayments } = useQuery<Payment[], Error>({
     queryKey: ['payments'],
@@ -76,64 +61,28 @@ export default function PaymentsPage() {
     queryFn: getClients,
   });
 
-  const enrichedPayments = useMemo((): EnrichedPayment[] => {
-    if (isLoadingPayments || isLoadingProjects || isLoadingClients || !payments || !projects || !clients) {
-      return [];
-    }
+  // Crear mapas para acceso rápido en las columnas
+  const projectsMap = useMemo(() => {
+    return projects.reduce((acc, project) => {
+      acc[project.id] = project;
+      return acc;
+    }, {} as Record<string, ProjectType>);
+  }, [projects]);
 
-    const projectMap = new Map(projects.map(p => [p.id, p]));
-    const clientMap = new Map(clients.map(c => [c.id, c.name]));
+  const clientsMap = useMemo(() => {
+    return clients.reduce((acc, client) => {
+      acc[client.id] = client.name;
+      return acc;
+    }, {} as Record<string, string>);
+  }, [clients]);
 
-    return payments.map(payment => {
-      const project = projectMap.get(payment.projectId);
-      let clientNameDisplay = 'Cliente Desconocido';
-      let projectNumberDisplay = 'Proyecto Desconocido';
-
-      if (project) {
-        projectNumberDisplay = project.projectNumber;
-         if (project.glosa) {
-            projectNumberDisplay += ` - ${project.glosa}`;
-        }
-
-        const clientName = clientMap.get(project.clientId);
-        if (clientName) {
-          clientNameDisplay = clientName;
-        } else {
-          clientNameDisplay = `Cliente no encontrado (ID: ${project.clientId})`;
-        }
-      } else {
-        projectNumberDisplay = `Proyecto no encontrado (ID: ${payment.projectId})`;
-      }
-      
-      return {
-        ...payment,
-        clientName: clientNameDisplay,
-        projectNumber: projectNumberDisplay,
-      };
-    });
-  }, [payments, projects, clients, isLoadingPayments, isLoadingProjects, isLoadingClients]);
-
-  const filteredPayments = useMemo(() => {
-    const searchTerm = normalizeSearchText(filterText);
-    return enrichedPayments.filter(payment => {
-      const projectNumber = payment.projectNumber ? normalizeSearchText(payment.projectNumber) : '';
-      const clientName = payment.clientName ? normalizeSearchText(payment.clientName) : '';
-      const paymentType = payment.paymentType ? normalizeSearchText(payment.paymentType) : '';
-      const paymentMethod = payment.paymentMethod ? normalizeSearchText(payment.paymentMethod) : '';
-      
-      return projectNumber.includes(searchTerm) ||
-             clientName.includes(searchTerm) ||
-             paymentType.includes(searchTerm) ||
-             paymentMethod.includes(searchTerm);
-    });
-  }, [enrichedPayments, filterText]);
-
+  // Mutation primero
   const deletePaymentMutation = useMutation({
     mutationFn: deletePayment,
     onSuccess: (_, paymentId) => {
       queryClient.invalidateQueries({ queryKey: ['payments'] });
       queryClient.invalidateQueries({ queryKey: ['projects'] }); // Invalidate projects due to balance change
-      toast({ title: "Pago Eliminado", description: `El pago ha sido eliminado.`, variant: "destructive" });
+      toast({ title: "Pago Eliminado", description: `El pago ha sido eliminado.` });
       setPaymentToDelete(null);
       setIsDeleteDialogOpen(false);
     },
@@ -144,10 +93,15 @@ export default function PaymentsPage() {
     }
   });
 
-
+  // Funciones handler
   const handleDeletePaymentInitiate = (payment: EnrichedPayment) => {
     setPaymentToDelete(payment);
     setIsDeleteDialogOpen(true);
+  };
+
+  const handleEditPayment = (payment: EnrichedPayment) => {
+    setPaymentToEdit(payment);
+    setIsEditDialogOpen(true);
   };
 
   const confirmDeletePayment = () => {
@@ -156,22 +110,25 @@ export default function PaymentsPage() {
     }
   };
 
-  const handleEditPayment = (payment: EnrichedPayment) => {
-    setPaymentToEdit(payment);
-    setIsEditDialogOpen(true);
-  };
+  // Los pagos con tipo EnrichedPayment para compatibilidad
+  const enrichedPayments = useMemo((): EnrichedPayment[] => {
+    if (isLoadingPayments || !payments) {
+      return [];
+    }
+    // Ya no necesitamos enriquecer aquí - las columnas lo harán dinámicamente
+    return payments as EnrichedPayment[];
+  }, [payments, isLoadingPayments]);
 
+  // Columnas para la DataTable
+  const columns = React.useMemo(() => createPaymentsColumns({
+    onEdit: handleEditPayment,
+    onDelete: handleDeletePaymentInitiate,
+    projectsMap,
+    clientsMap,
+  }), [projectsMap, clientsMap]);
 
-  // Calcular pagos paginados
-  const paginatedPayments = useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize;
-    return filteredPayments.slice(startIndex, startIndex + pageSize);
-  }, [filteredPayments, currentPage, pageSize]);
 
   const isLoading = isLoadingPayments || isLoadingProjects || isLoadingClients;
-  const isMutating = deletePaymentMutation.isPending;
-
-  // TODO: Reemplazar con nuevo componente de tabla
 
   if (isErrorPayments) {
     return (
@@ -196,15 +153,26 @@ export default function PaymentsPage() {
           </Button>
         </div>
 
-        <div className="text-center p-8 border rounded-lg">
-          <DollarSign className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
-          <p className="text-muted-foreground">
-            🚧 Tabla temporal eliminada - PageTableLayout removido para reescritura
-          </p>
-          <p className="text-sm text-muted-foreground mt-2">
-            Total de pagos: {enrichedPayments?.length || 0}
-          </p>
-        </div>
+        {/* DataTable */}
+        <DataTable
+          columns={columns}
+          data={enrichedPayments}
+          searchKey="projectId"
+          searchPlaceholder="Buscar por proyecto, cliente, método..."
+          filterableColumns={[
+            {
+              id: "paymentMethod",
+              title: "Método",
+              options: PAYMENT_METHOD_OPTIONS,
+            },
+            {
+              id: "paymentType",
+              title: "Tipo",
+              options: PAYMENT_TYPE_OPTIONS,
+            }
+          ]}
+          enableRowSelection
+        />
       </div>
 
       {paymentToDelete && (
