@@ -70,7 +70,7 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({ isOpen, onClose, p
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[var(--dialog-width)]">
         <DialogHeader>
           <DialogTitle>Registrar Pago</DialogTitle>
           <DialogDescription>

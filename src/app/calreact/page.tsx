@@ -92,7 +92,7 @@ const ToolbarSkeleton = () => (
     </div>
     <div className="flex items-center gap-2 w-full sm:w-auto sm:justify-end">
       <div className="h-10 sm:w-48 w-full bg-muted/70 rounded-md"></div> {/* Filter */}
-      <div className="h-10 sm:w-[120px] w-full bg-muted/70 rounded-md"></div> {/* View Select */}
+      <div className="h-10 sm:w-[var(--select-width)] w-full bg-muted/70 rounded-md"></div> {/* View Select */}
       <div className="h-10 sm:w-32 w-full bg-muted/70 rounded-md"></div> {/* Add Event */}
     </div>
   </div>

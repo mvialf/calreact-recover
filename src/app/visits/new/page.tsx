@@ -55,7 +55,7 @@ export default function NewVisitPage() {
   };
 
   return (
-    <div className="container mx-6 py-6 px-4 sm:px-6 lg:px-8 max-w-[33rem]">
+    <div className="container mx-6 py-6 px-4 sm:px-6 lg:px-8 max-w-[var(--container-sm)]">
       <h1 className="text-3xl font-bold mb-6">Nueva Visita</h1>
       <div className="bg-card rounded-lg border p-6">
         <VisitForm 

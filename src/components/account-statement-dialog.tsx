@@ -72,15 +72,10 @@ export default function AccountStatementDialog({
       // Asegurarse de que las fuentes estén cargadas
       await document.fonts.ready;
 
-      // Generar imagen del contenido con configuración mejorada
+      // Generar imagen del contenido usando API correcta de snapdom v1.3.0
       const canvas = await snapdom.toCanvas(contentRef.current, {
         scale: 2, // Mayor escala para mejor calidad (2x)
-        width: 450, // Ancho fijo para la captura
-        background: '#ffffff', // Fondo blanco
-        style: {
-          width: '450px',
-          margin: '0 auto',
-        },
+        backgroundColor: '#ffffff', // Fondo blanco
       });
 
       const blob = await new Promise<Blob | null>((resolve) => {
@@ -127,7 +122,7 @@ Saldo Pendiente: ${formatCurrency(pendingBalance)}
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className='w-[450px] max-w-full bg-gray-200 overflow-hidden p-0'
+        className='w-[var(--dialog-width-md)] max-w-full bg-muted overflow-hidden p-0'
         aria-describedby='dialog-description'
       >
         <div className='flex justify-between items-center px-4 py-2 bg-card'>

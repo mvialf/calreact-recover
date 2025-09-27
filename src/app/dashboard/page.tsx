@@ -122,7 +122,7 @@ const RecentProjects = ({ projects, loading }: { projects: ProjectType[]; loadin
     <CardHeader>
       <CardTitle>Proyectos Recientes</CardTitle>
     </CardHeader>
-    <CardContent className="overflow-auto" style={{ maxHeight: 'calc(100% - 100px)' }}> {/* Ajustar altura para CardFooter */}
+    <CardContent className="overflow-auto" style={{ maxHeight: 'calc(100% - var(--content-offset))' }}> {/* EXCEPTION: Dynamic calculation for responsive layout */}
       {loading ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
@@ -161,7 +161,7 @@ const ProjectsToCollectList = ({ projects, loading }: { projects: ProjectType[];
     <CardHeader>
       <CardTitle>Proyectos por Cobrar</CardTitle>
     </CardHeader>
-    <CardContent className="overflow-auto" style={{ maxHeight: 'calc(100% - 100px)' }}> 
+    <CardContent className="overflow-auto" style={{ maxHeight: 'calc(100% - var(--content-offset))' }}> {/* EXCEPTION: Dynamic calculation for responsive layout */} 
       {loading ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
