@@ -105,7 +105,9 @@ export const createProjectsColumns = ({
 
       if (!handleStatusChange) {
         return (
-          <Badge variant={variant}>
+          <Badge 
+          variant={variant}
+          className="flex justify-center">
             {statusOption?.label || status}
           </Badge>
         )
@@ -152,30 +154,14 @@ export const createProjectsColumns = ({
     },
   },
   {
-    accessorKey: "totalPaymentPercentage",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="% Pagado" />
-    ),
-    cell: ({ row }) => {
-      const percentage = row.getValue("totalPaymentPercentage") as number
-      const variant = getPaymentPercentageBadgeVariant(percentage)
-
-      return (
-        <Badge variant={variant}>
-          {percentage?.toFixed(1)}%
-        </Badge>
-      )
-    },
-  },
-  {
     accessorKey: "total",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Valor Total" />
+      <DataTableColumnHeader column={column} title="Valor Proyecto" />
     ),
     cell: ({ row }) => {
       const totalValue = row.getValue("total") as number
       return (
-        <div className="font-medium">
+        <div className="font-medium text-right">
           {formatCurrency(totalValue)}
         </div>
       )
@@ -184,13 +170,21 @@ export const createProjectsColumns = ({
   {
     accessorKey: "totalPayments",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Total Pagado" />
+      <DataTableColumnHeader column={column} title="Abonos" />
     ),
     cell: ({ row }) => {
       const totalPaid = row.getValue("totalPayments") as number
+      const percentage = row.original.totalPaymentPercentage
+      const variant = getPaymentPercentageBadgeVariant(percentage)
+
       return (
-        <div className="font-medium text-green-600">
-          {formatCurrency(totalPaid)}
+        <div className="flex justify-end gap-2">
+          <span className="font-medium">
+            {formatCurrency(totalPaid)}
+          </span>
+          <Badge variant={variant} className="text-xs">
+            {percentage?.toFixed(0)}%
+          </Badge>
         </div>
       )
     },
@@ -203,7 +197,7 @@ export const createProjectsColumns = ({
     cell: ({ row }) => {
       const balance = row.getValue("balance") as number
       return (
-        <div className={`font-medium ${balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
+        <div className="font-medium text-right">
           {formatCurrency(balance)}
         </div>
       )
@@ -212,12 +206,12 @@ export const createProjectsColumns = ({
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Fecha Creación" />
+      <DataTableColumnHeader column={column} title="Fecha" />
     ),
     cell: ({ row }) => {
       const createdAt = row.getValue("createdAt") as Date
       return (
-        <div className="text-sm">
+        <div className="text-sm text-center">
           {createdAt ? formatDate(createdAt, 'dd/MM/yyyy', { locale: es }) : 'N/A'}
         </div>
       )

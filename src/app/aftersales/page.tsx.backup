@@ -1,0 +1,240 @@
+"use client";
+import { useState, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { AfterSales } from '@/types/afterSales';
+import type { ProjectType } from '@/types/project';
+import { getProjects } from '@/services/projectService';
+import { toast } from '@/components/ui/use-toast';
+import { format as formatDate } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { ProjectClientDisplay } from '@/components/client-display';
+
+// Importación del servicio afterSalesService con soporte para instancia de Firestore
+import { getAfterSalesForProject, deleteAfterSales } from '@/services/afterSalesService';
+import { afterSalesLogger } from '@/lib/logger';
+
+// Componentes de UI
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { GanttChartSquare, Wrench, Trash2, Eye } from 'lucide-react';
+import { NewAfterSaleDialog, EditAfterSaleDialog } from '@/components/modals/afterSales';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+
+// Estados definidos para postventas
+const AFTERSALES_STATUS_OPTIONS = [
+  { value: 'Ingresada', label: 'Ingresada' },
+  { value: 'Agendada', label: 'Agendada' },
+  { value: 'Reagendar', label: 'Reagendar' },
+  { value: 'Completada', label: 'Completada' },
+];
+
+// Función para obtener la variante del badge según el estado
+const getAfterSaleStatusBadgeVariant = (status: string) => {
+  switch (status) {
+    case 'Ingresada':
+      return 'outline';
+    case 'Agendada':
+      return 'secondary';
+    case 'Reagendar':
+      return 'destructive';
+    case 'Completada':
+      return 'complete';
+    default:
+      return 'default';
+  }
+};
+
+// Adaptación para usar la nueva versión del servicio que acepta instancia de Firestore
+const getAllAfterSales = async () => {
+  // Esta función es provisional y deberá ser actualizada para usar
+  // un contexto de base de datos que proporcione la instancia de Firestore
+  try {
+    // Obtener todos los proyectos primero
+    const projects = await getProjects();
+    
+    // Luego obtener todos los casos de posventa para cada proyecto
+    const afterSalesPromises = projects.map(project => 
+      getAfterSalesForProject(project.id)
+    );
+    
+    const allAfterSalesArrays = await Promise.all(afterSalesPromises);
+    
+    // Combinar todos los resultados en un único array
+    return allAfterSalesArrays.flat();
+  } catch (error) {
+    afterSalesLogger.error("Error al obtener casos de postventa", error);
+    throw error;
+  }
+};
+
+export default function AfterSalesPage() {
+  const queryClient = useQueryClient();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isDeleteAlertOpen, setDeleteAlertOpen] = useState(false);
+  const [isDetailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [selectedAfterSale, setSelectedAfterSale] = useState<AfterSales | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
+
+  const handleDeleteClick = (afterSale: AfterSales) => {
+    setSelectedAfterSale(afterSale);
+    setDeleteAlertOpen(true);
+  };
+
+  const handleDetailsClick = (afterSale: AfterSales) => {
+    setSelectedAfterSale(afterSale);
+    setDetailsDialogOpen(true);
+  };
+  
+  // Obtener todas las postventas
+  const { data: afterSalesData = [], isLoading: isLoadingAfterSales } = useQuery({
+    queryKey: ['afterSales'],
+    queryFn: () => getAllAfterSales(),
+  });
+
+  // Obtener todos los proyectos para mostrar nombres
+  const { data: projectsData = [] } = useQuery({
+    queryKey: ['projects'],
+    queryFn: () => getProjects(),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (afterSalesId: string) => deleteAfterSales(afterSalesId),
+    onSuccess: () => {
+      toast({ title: 'Postventa eliminada', description: 'El registro ha sido eliminado con éxito.' });
+      queryClient.invalidateQueries({ queryKey: ['afterSales'] });
+    },
+    onError: (error) => {
+      toast({ title: 'Error al eliminar', description: 'No se pudo eliminar el registro.', variant: 'destructive' });
+      afterSalesLogger.error('Error deleting after-sale', error);
+    },
+    onSettled: () => {
+      setDeleteAlertOpen(false);
+      setSelectedAfterSale(null);
+    },
+  });
+
+  // Crear un mapa de proyectos por ID para acceso rápido
+  const projectsMap = useMemo(() => {
+    return projectsData.reduce((acc, project) => {
+      acc[project.id] = project;
+      return acc;
+    }, {} as Record<string, ProjectType>);
+  }, [projectsData]);
+
+  // Filtrar los datos según el término de búsqueda
+  const filteredAfterSales = useMemo(() => {
+    return afterSalesData.filter(item => {
+      const projectName = projectsMap[item.projectId]?.clientName || projectsMap[item.projectId]?.description || '';
+      const searchTerm = searchQuery.toLowerCase();
+      
+      return (
+        projectName.toLowerCase().includes(searchTerm) ||
+        (item.description || '').toLowerCase().includes(searchTerm) ||
+        (item.afterSalesStatus || '').toLowerCase().includes(searchTerm)
+      );
+    });
+  }, [afterSalesData, projectsMap, searchQuery]);
+
+  // Paginación
+  const paginatedAfterSales = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredAfterSales.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredAfterSales, currentPage, itemsPerPage]);
+
+  // Selección de filas
+  const handleSelectRow = (id: string) => {
+    setSelectedRows(prev => prev.includes(id) ? prev.filter(rowId => rowId !== id) : [...prev, id]);
+  };
+
+  const handleSelectAll = (isChecked: boolean) => {
+    setSelectedRows(isChecked ? paginatedAfterSales.map(item => item.id) : []);
+  };
+
+
+  return (
+    <>
+      <div className="w-full max-w-none px-4 pb-2 bg-background">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-3xl font-bold text-primary">Postventas</h1>
+          <NewAfterSaleDialog />
+        </div>
+
+        <div className="text-center p-8 border rounded-lg">
+          <Wrench className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
+          <p className="text-muted-foreground">
+            🚧 Tabla temporal eliminada - PageTableLayout removido para reescritura
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Total de postventas: {filteredAfterSales?.length || 0}
+          </p>
+        </div>
+      </div>
+
+      {/* Modal de Detalles */}
+      <Dialog open={isDetailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Detalles de la Postventa</DialogTitle>
+            <DialogDescription>
+              {selectedAfterSale && projectsMap[selectedAfterSale.projectId]?.clientName}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedAfterSale && (
+            <div className="space-y-4">
+              <div><strong>Proyecto:</strong> {projectsMap[selectedAfterSale.projectId]?.description}</div>
+              <div><strong>Fecha de Ingreso:</strong> {selectedAfterSale.entryDate ? formatDate(selectedAfterSale.entryDate, 'PPP', { locale: es }) : 'N/A'}</div>
+              <div><strong>Estado:</strong> {selectedAfterSale.afterSalesStatus}</div>
+              <div className="pt-2"><strong>Descripción:</strong><p className="text-sm text-muted-foreground">{selectedAfterSale.description}</p></div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Alerta de Eliminación */}
+      <AlertDialog open={isDeleteAlertOpen} onOpenChange={setDeleteAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente el registro de postventa.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => selectedAfterSale && deleteMutation.mutate(selectedAfterSale.id)}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}

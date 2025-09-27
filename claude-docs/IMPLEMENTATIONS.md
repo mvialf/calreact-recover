@@ -39,7 +39,7 @@
 - **Documentation:** [data-table-migration.md](../../docs/technical/data-table-migration.md) | [data-table-next-steps.md](../../docs/technical/data-table-next-steps.md)
 
 ### 🗂️ PageTableLayout Complete Removal
-- **Status:** ✅ Complete | **Date:** 2025-09 | **Impact:** High
+- **Status:** ✅ Complete & Archived | **Date:** 2025-09 | **Impact:** High
 - **Branch:** `refactor/remove-pagetablelayout`
 - **Key commits:** `09e80f2`
 - **Quick diff:** `git show 09e80f2` | `git diff HEAD~1 --stat`
@@ -51,7 +51,7 @@
   - 4 páginas principales preparadas para nueva implementación
 - **Archivos afectados:** projects, payments, aftersales, visits pages
 - **Implementación:** ✅ Completada - PageTableLayout.tsx eliminado, UI temporal funcional → **SUPERSEDED** por Data Table Migration
-- **Documentation:** [pagetablelayout-removal.md](../../docs/technical/pagetablelayout-removal.md) | [pagetablelayout-next-steps.md](../../docs/technical/pagetablelayout-next-steps.md)
+- **Documentation:** ✅ Archivada en `/docs/technical/migrations/archived/pagetablelayout-2025-process/` (proceso completado)
 
 ### 📚 Documentation Reorganization
 - **Status:** ✅ Complete | **Date:** 2025-09-10 | **Impact:** Medium

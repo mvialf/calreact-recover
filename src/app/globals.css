@@ -96,12 +96,15 @@ body {
     --container-truncate-lg: 400px;
 
     /* Table Column Widths */
-    --table-col-minimal: 50px;
-    --table-col-actions: 100px;
-    --table-col-small: 150px;
-    --table-col-medium: 200px;
-    --table-col-large: 250px;
-    --table-col-xl: 300px;
+    --table-col-minimal: 3rem;
+    --table-col-actions: 6rem;
+    --table-col-small: 9rem;
+    --table-col-medium: 12rem;
+    --table-col-large: 15rem;
+    --table-col-xl: 18rem;
+    --table-col-2xl: 21rem;
+    --table-col-3xl: 24rem;
+    --table-col-4xl: 27rem;
 
     /* Component Specific */
     --select-width: 120px;
