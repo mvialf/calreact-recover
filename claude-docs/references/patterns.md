@@ -127,6 +127,57 @@ try {
 }
 ```
 
+## 🎨 Centralización de Estilos (OBLIGATORIO)
+
+### Fuente Única de Verdad
+Los estilos (colores, espaciado, fuentes) deben provenir **únicamente** de:
+- `tailwind.config.js` - Extensiones de tema personalizadas
+- `src/app/globals.css` - Variables CSS globales (52 tokens disponibles)
+
+```typescript
+// ✅ USAR SIEMPRE - Tokens del design system
+className="bg-primary text-primary-foreground"
+className="text-muted-foreground text-sm"
+className="border border-border rounded-md"
+
+// ❌ PROHIBIDO - Valores hardcodeados
+className="bg-[#3b82f6] text-[14px] top-[13px]"
+className="border-[#e5e7eb] rounded-[6px]"
+style={{ backgroundColor: '#3b82f6', fontSize: '14px' }}
+```
+
+### Excepciones Permitidas (con justificación)
+```typescript
+// ✅ Componentes Shadcn/ui generados (mantener como están)
+// Los componentes de shadcn/ui pueden incluir valores hardcodeados internos
+
+// ✅ Cálculos dinámicos específicos
+style={{ maxHeight: 'calc(100vh - 200px)' }} // Dynamic viewport calculation
+style={{ transform: `translateX(${position}px)` }} // Dynamic positioning
+
+// ✅ Valores únicos no reutilizables (con comentario explicativo)
+/* EXCEPTION: One-time positioning for specific modal overlay */
+className="top-[13px] left-[50%]"
+
+/* EXCEPTION: Component-specific z-index for layering */
+style={{ zIndex: 9999 }}
+```
+
+### Proceso Obligatorio para Nuevos Valores
+1. **¿Existe token similar?** → Usar existente de `globals.css` o Tailwind
+2. **¿Se reutilizará en 2+ lugares?** → Añadir a `globals.css` como variable CSS
+3. **¿Es cálculo dinámico?** → Documentar y usar `style` attribute
+4. **¿Es única vez no reutilizable?** → Justificar con comentario explicativo
+
+```css
+/* Ejemplo: Añadir nuevos tokens a globals.css */
+:root {
+  --spacing-custom: 1.75rem;
+  --header-height: 4rem;
+  --sidebar-width: 16rem;
+}
+```
+
 ## 🎨 UI Components (Shadcn/ui)
 
 ### Importaciones Estándar
