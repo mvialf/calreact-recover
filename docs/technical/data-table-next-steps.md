@@ -1,8 +1,26 @@
 # 🚀 Data Table Migration - Próximos Pasos
 
 **Fecha:** Septiembre 2025
-**Estado:** Fase 1 completada - Roadmap para Fases 2 y 3
+**Estado:** Fase 1 completada - Roadmap para Fases 2 y 3 con Metodología Anti-Errores
 **Prioridad:** Alta (eliminar código duplicado restante)
+
+---
+
+## 🛡️ METODOLOGÍA ANTI-ERRORES IMPLEMENTADA
+
+**⚠️ IMPORTANTE:** Antes de migrar cualquier página, USAR la metodología desarrollada tras corregir errores de projects:
+
+### 🔧 Herramientas Disponibles:
+- **`scripts/migration/analyze-page-functionality.sh`** - Análisis automático pre-migración
+- **`scripts/migration/validate-migration-step.sh`** - Validación continua durante migración
+- **`scripts/migration/final-migration-validation.sh`** - Validación final completa
+- **`docs/technical/migration-templates/`** - Templates de inventario y checklist
+
+### 📚 Documentación de Proceso:
+- **`migration-checklist.md`** - Proceso completo paso a paso
+- **`pre-migration-inventory-template.md`** - Template de análisis funcional
+
+**🎯 ENFOQUE:** Funcionalidad-First (no datos-first) para prevenir pérdida de funcionalidades críticas.
 
 ---
 
@@ -10,10 +28,12 @@
 
 ### 🎯 **Fase 2: Migración de Páginas Principales (Próxima)**
 
-#### 1️⃣ **Payments Page** - Prioridad: Alta
+#### 1️⃣ **Payments Page** - Prioridad: Alta (CASO PILOTO)
 **Archivo:** `/src/app/payments/page.tsx`
-**Tiempo estimado:** 2-3 horas
+**Tiempo estimado:** 3-4 horas (incluyendo metodología anti-errores)
 **Complejidad:** Media
+
+**🧪 CASO PILOTO:** Esta será la primera migración usando la nueva metodología anti-errores.
 
 **Estado actual:**
 - 📊 Tabla manual con lógica duplicada
@@ -21,7 +41,36 @@
 - ✏️ EditPaymentDialog integrado
 - 📅 Filtros por rango de fechas
 
-**Pasos específicos:**
+**🛡️ PROCESO CON METODOLOGÍA ANTI-ERRORES:**
+
+**PASO 1: Análisis Pre-Migración (OBLIGATORIO)**
+```bash
+# 1. Ejecutar análisis automático
+./scripts/migration/analyze-page-functionality.sh src/app/payments/
+
+# 2. Completar inventario detallado
+cp docs/technical/migration-templates/pre-migration-inventory-template.md \
+   docs/technical/pre-migration-inventory-payments.md
+
+# 3. Crear backup
+cp src/app/payments/page.tsx src/app/payments/page.tsx.backup
+```
+
+**PASO 2: Migración con Gates de Validación**
+```bash
+# Gate 1: Estructura básica
+./scripts/migration/validate-migration-step.sh \
+  src/app/payments/page.tsx.backup src/app/payments/page.tsx
+
+# Gate 2: Funcionalidades interactivas
+./scripts/migration/validate-migration-step.sh \
+  src/app/payments/page.tsx.backup src/app/payments/page.tsx
+
+# Gate 3: Validación final
+./scripts/migration/final-migration-validation.sh payments
+```
+
+**Pasos técnicos específicos:**
 1. **Crear columnas:** `src/app/payments/columns.tsx`
 ```typescript
 export const createPaymentsColumns = ({

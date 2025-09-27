@@ -38,6 +38,7 @@ interface DataTableProps<TData, TValue> {
   }[]
   onRowSelectionChange?: (selectedRows: TData[]) => void
   enableRowSelection?: boolean
+  meta?: any
 }
 
 export function DataTable<TData, TValue>({
@@ -48,6 +49,7 @@ export function DataTable<TData, TValue>({
   filterableColumns = [],
   onRowSelectionChange,
   enableRowSelection = false,
+  meta,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -72,6 +74,7 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    meta,
   })
 
   // Callback cuando cambia la selección de filas

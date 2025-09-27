@@ -70,44 +70,22 @@ export const createProjectsColumns = ({
   {
     accessorKey: "projectNumber",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="N° Proyecto" />
-    ),
-    cell: ({ row }) => {
-      const projectNumber = row.getValue("projectNumber") as string
-      return (
-        <div className="font-medium">
-          {projectNumber}
-        </div>
-      )
-    },
-  },
-  {
-    accessorKey: "glosa",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Descripción" />
-    ),
-    cell: ({ row }) => {
-      const glosa = row.getValue("glosa") as string
-      return (
-        <div className="max-w-[300px] truncate font-medium">
-          {glosa || "Sin descripción"}
-        </div>
-      )
-    },
-  },
-  {
-    accessorKey: "clientName",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Cliente" />
+      <DataTableColumnHeader column={column} title="Proyecto" />
     ),
     cell: ({ row }) => {
       const project = row.original
       return <ProjectClientDisplay project={project} />
     },
-    filterFn: (row, id, value) => {
+    filterFn: (row, _id, value) => {
       const project = row.original
+      const projectNumber = project.projectNumber || ''
       const clientName = project.clientName || ''
-      return clientName.toLowerCase().includes(value.toLowerCase())
+      const glosa = project.glosa || ''
+      const searchTerm = value.toLowerCase()
+
+      return projectNumber.toLowerCase().includes(searchTerm) ||
+             clientName.toLowerCase().includes(searchTerm) ||
+             glosa.toLowerCase().includes(searchTerm)
     },
   },
   {
@@ -115,15 +93,58 @@ export const createProjectsColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Estado" />
     ),
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
       const status = row.getValue("status") as string
       const statusOption = PROJECT_STATUS_OPTIONS.find(opt => opt.value === status)
       const variant = getStatusBadgeVariant(status)
+      const project = row.original
+
+      // Obtener funciones del meta de la tabla
+      const handleStatusChange = (table.options.meta as any)?.handleStatusChange
+      const updateStatusMutation = (table.options.meta as any)?.updateStatusMutation
+
+      if (!handleStatusChange) {
+        return (
+          <Badge variant={variant}>
+            {statusOption?.label || status}
+          </Badge>
+        )
+      }
 
       return (
-        <Badge variant={variant}>
-          {statusOption?.label || status}
-        </Badge>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="secondary"
+              className="p-0 h-auto font-normal"
+              disabled={updateStatusMutation?.isPending}
+            >
+              <Badge variant={variant} className="cursor-pointer">
+                {updateStatusMutation?.isPending && updateStatusMutation?.variables?.projectId === project.id
+                  ? "Actualizando..."
+                  : (statusOption?.label || status)
+                }
+              </Badge>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>Cambiar Estado</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {PROJECT_STATUS_OPTIONS.map((option) => (
+              <DropdownMenuItem
+                key={option.value}
+                onClick={() => handleStatusChange(project.id, option.value)}
+                disabled={option.value === status || updateStatusMutation?.isPending}
+              >
+                <Badge variant={getStatusBadgeVariant(option.value)} className="mr-2">
+                  {option.label}
+                </Badge>
+                {option.label}
+                {option.value === status && " (Actual)"}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       )
     },
     filterFn: (row, id, value) => {

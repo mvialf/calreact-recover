@@ -115,6 +115,10 @@ const ProjectsPage: React.FC = () => {
     setIsAccountStatementOpen(true);
   };
 
+  const handleStatusChange = (projectId: string, status: ProjectStatusConstant) => {
+    updateStatusMutation.mutate({ projectId, status });
+  };
+
   const handleConfirmDelete = () => {
     if (projectToDelete) {
       deleteProjectMutation.mutate(projectToDelete.id);
@@ -244,6 +248,10 @@ const ProjectsPage: React.FC = () => {
         ]}
         onRowSelectionChange={setSelectedProjects}
         enableRowSelection
+        meta={{
+          handleStatusChange,
+          updateStatusMutation,
+        }}
       />
 
       {/* Diálogos */}
