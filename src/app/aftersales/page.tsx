@@ -1,40 +1,27 @@
 "use client";
-import { useState, useMemo } from 'react';
+
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { AfterSales } from '@/types/afterSales';
-import type { ProjectType } from '@/types/project';
-import { getProjects } from '@/services/projectService';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { format as formatDate } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ProjectClientDisplay } from '@/components/client-display';
 
-// Importación del servicio afterSalesService con soporte para instancia de Firestore
+// Tipos
+import type { AfterSales } from '@/types/afterSales';
+import type { ProjectType } from '@/types/project';
+
+// Servicios
+import { getProjects } from '@/services/projectService';
+
 import { getAfterSalesForProject, deleteAfterSales } from '@/services/afterSalesService';
 import { afterSalesLogger } from '@/lib/logger';
 
-// Componentes de UI
+// Componentes
+import { DataTable } from '@/components/data-table';
+import { createAfterSalesColumns, AFTERSALES_STATUS_OPTIONS } from './columns';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { GanttChartSquare, Wrench, Trash2, Eye } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { NewAfterSaleDialog, EditAfterSaleDialog } from '@/components/modals/afterSales';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import {
   Dialog,
   DialogContent,
@@ -43,29 +30,9 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 
-// Estados definidos para postventas
-const AFTERSALES_STATUS_OPTIONS = [
-  { value: 'Ingresada', label: 'Ingresada' },
-  { value: 'Agendada', label: 'Agendada' },
-  { value: 'Reagendar', label: 'Reagendar' },
-  { value: 'Completada', label: 'Completada' },
-];
+// Iconos
+import { Wrench, Loader2 } from 'lucide-react';
 
-// Función para obtener la variante del badge según el estado
-const getAfterSaleStatusBadgeVariant = (status: string) => {
-  switch (status) {
-    case 'Ingresada':
-      return 'outline';
-    case 'Agendada':
-      return 'secondary';
-    case 'Reagendar':
-      return 'destructive';
-    case 'Completada':
-      return 'complete';
-    default:
-      return 'default';
-  }
-};
 
 // Adaptación para usar la nueva versión del servicio que acepta instancia de Firestore
 const getAllAfterSales = async () => {
@@ -90,28 +57,31 @@ const getAllAfterSales = async () => {
   }
 };
 
-export default function AfterSalesPage() {
+const AfterSalesPage: React.FC = () => {
   const queryClient = useQueryClient();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedAfterSales, setSelectedAfterSales] = useState<AfterSales[]>([]);
   const [isDeleteAlertOpen, setDeleteAlertOpen] = useState(false);
   const [isDetailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [selectedAfterSale, setSelectedAfterSale] = useState<AfterSales | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const [afterSaleToEdit, setAfterSaleToEdit] = useState<AfterSales | null>(null);
 
-  const handleDeleteClick = (afterSale: AfterSales) => {
+  // Manejadores de eventos
+  const handleEdit = (afterSale: AfterSales) => {
+    setAfterSaleToEdit(afterSale);
+  };
+
+  const handleDelete = (afterSale: AfterSales) => {
     setSelectedAfterSale(afterSale);
     setDeleteAlertOpen(true);
   };
 
-  const handleDetailsClick = (afterSale: AfterSales) => {
+  const handleViewDetails = (afterSale: AfterSales) => {
     setSelectedAfterSale(afterSale);
     setDetailsDialogOpen(true);
   };
   
   // Obtener todas las postventas
-  const { data: afterSalesData = [], isLoading: isLoadingAfterSales } = useQuery({
+  const { data: afterSalesData = [], isLoading: isLoadingAfterSales, isError, error } = useQuery({
     queryKey: ['afterSales'],
     queryFn: () => getAllAfterSales(),
   });
@@ -125,18 +95,22 @@ export default function AfterSalesPage() {
   const deleteMutation = useMutation({
     mutationFn: (afterSalesId: string) => deleteAfterSales(afterSalesId),
     onSuccess: () => {
-      toast({ title: 'Postventa eliminada', description: 'El registro ha sido eliminado con éxito.' });
+      toast.success('Postventa eliminada con éxito');
       queryClient.invalidateQueries({ queryKey: ['afterSales'] });
-    },
-    onError: (error) => {
-      toast({ title: 'Error al eliminar', description: 'No se pudo eliminar el registro.', variant: 'destructive' });
-      afterSalesLogger.error('Error deleting after-sale', error);
-    },
-    onSettled: () => {
       setDeleteAlertOpen(false);
       setSelectedAfterSale(null);
     },
+    onError: (error: Error) => {
+      toast.error(`Error al eliminar: ${error.message}`);
+      afterSalesLogger.error('Error deleting after-sale', error);
+    },
   });
+
+  const handleConfirmDelete = () => {
+    if (selectedAfterSale) {
+      deleteMutation.mutate(selectedAfterSale.id);
+    }
+  };
 
   // Crear un mapa de proyectos por ID para acceso rápido
   const projectsMap = useMemo(() => {
@@ -146,56 +120,83 @@ export default function AfterSalesPage() {
     }, {} as Record<string, ProjectType>);
   }, [projectsData]);
 
-  // Filtrar los datos según el término de búsqueda
-  const filteredAfterSales = useMemo(() => {
-    return afterSalesData.filter(item => {
-      const projectName = projectsMap[item.projectId]?.clientName || projectsMap[item.projectId]?.description || '';
-      const searchTerm = searchQuery.toLowerCase();
-      
-      return (
-        projectName.toLowerCase().includes(searchTerm) ||
-        (item.description || '').toLowerCase().includes(searchTerm) ||
-        (item.afterSalesStatus || '').toLowerCase().includes(searchTerm)
-      );
-    });
-  }, [afterSalesData, projectsMap, searchQuery]);
+  // Efecto para abrir automáticamente el diálogo cuando afterSaleToEdit cambie
+  React.useEffect(() => {
+    if (afterSaleToEdit) {
+      const timer = setTimeout(() => {
+        const editButton = document.querySelector(`[data-edit-trigger="${afterSaleToEdit.id}"]`) as HTMLButtonElement;
+        if (editButton) {
+          editButton.click();
+        }
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [afterSaleToEdit]);
 
-  // Paginación
-  const paginatedAfterSales = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredAfterSales.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredAfterSales, currentPage, itemsPerPage]);
+  // Columnas para la DataTable
+  const columns = React.useMemo(() => createAfterSalesColumns({
+    onEdit: handleEdit,
+    onDelete: handleDelete,
+    onViewDetails: handleViewDetails,
+    projectsMap,
+  }), [projectsMap]);
 
-  // Selección de filas
-  const handleSelectRow = (id: string) => {
-    setSelectedRows(prev => prev.includes(id) ? prev.filter(rowId => rowId !== id) : [...prev, id]);
-  };
+  // Opciones para filtros
+  const statusFilterOptions = AFTERSALES_STATUS_OPTIONS.map(option => ({
+    label: option.label,
+    value: option.value,
+  }));
+  if (isLoadingAfterSales) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Cargando postventas...</span>
+      </div>
+    );
+  }
 
-  const handleSelectAll = (isChecked: boolean) => {
-    setSelectedRows(isChecked ? paginatedAfterSales.map(item => item.id) : []);
-  };
-
+  if (isError) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-destructive">Error al cargar las postventas: {error?.message}</p>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <div className="w-full max-w-none px-4 pb-2 bg-background">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-bold text-primary">Postventas</h1>
-          <NewAfterSaleDialog />
-        </div>
-
-        <div className="text-center p-8 border rounded-lg">
-          <Wrench className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight flex items-center">
+            <Wrench className="w-8 h-8 mr-3 text-primary" />
+            Postventas
+          </h1>
           <p className="text-muted-foreground">
-            🚧 Tabla temporal eliminada - PageTableLayout removido para reescritura
-          </p>
-          <p className="text-sm text-muted-foreground mt-2">
-            Total de postventas: {filteredAfterSales?.length || 0}
+            Gestiona todos los servicios de postventa desde aquí
           </p>
         </div>
+        <NewAfterSaleDialog />
       </div>
 
-      {/* Modal de Detalles */}
+      {/* DataTable */}
+      <DataTable
+        columns={columns}
+        data={afterSalesData}
+        searchKey="projectId"
+        searchPlaceholder="Buscar por proyecto..."
+        filterableColumns={[
+          {
+            id: "afterSalesStatus",
+            title: "Estado",
+            options: statusFilterOptions,
+          }
+        ]}
+        onRowSelectionChange={setSelectedAfterSales}
+        enableRowSelection
+      />
+
+      {/* Diálogos */}
       <Dialog open={isDetailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -215,19 +216,19 @@ export default function AfterSalesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Alerta de Eliminación */}
       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setDeleteAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará permanentemente el registro de postventa.
+              Esta acción no se puede deshacer. Esto eliminará permanentemente el registro de postventa
+              {selectedAfterSale && ` para el proyecto "${projectsMap[selectedAfterSale.projectId]?.projectNumber || 'desconocido'}"`}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => selectedAfterSale && deleteMutation.mutate(selectedAfterSale.id)}
+              onClick={handleConfirmDelete}
               disabled={deleteMutation.isPending}
             >
               {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
@@ -235,6 +236,17 @@ export default function AfterSalesPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+
+      {afterSaleToEdit && (
+        <EditAfterSaleDialog afterSale={afterSaleToEdit}>
+          <button
+            data-edit-trigger={afterSaleToEdit.id}
+            style={{ display: 'none' }}
+          />
+        </EditAfterSaleDialog>
+      )}
+    </div>
   );
-}
+};
+
+export default AfterSalesPage;
