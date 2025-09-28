@@ -172,9 +172,7 @@ const AfterSalesPage: React.FC = () => {
             <Wrench className="w-8 h-8 mr-3 text-primary" />
             Postventas
           </h1>
-          <p className="text-muted-foreground">
-            Gestiona todos los servicios de postventa desde aquí
-          </p>
+          
         </div>
         <NewAfterSaleDialog />
       </div>

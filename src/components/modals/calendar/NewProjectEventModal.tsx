@@ -13,7 +13,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Autocomplete, type AutocompleteItem } from '@/components/ui/autocomplete';
-import { ProjectClientDisplay } from '@/components/client-display';
+import { ProjectSummary } from '@/components/summary';
 import { X, CheckCircle, AlertCircle } from 'lucide-react';
 
 // Importar el nuevo formulario
@@ -90,7 +90,7 @@ export function NewProjectEventModal({
   const renderProjectItem = React.useCallback((item: AutocompleteItem) => {
     if (item.project) {
       return (
-        <ProjectClientDisplay 
+        <ProjectSummary
           project={item.project}
           className="w-full"
         />
@@ -300,7 +300,7 @@ export function NewProjectEventModal({
           ) : (
             <div className="space-y-2">
               <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
-                <ProjectClientDisplay 
+                <ProjectSummary
                   project={selectedProject}
                   className="flex-1"
                 />

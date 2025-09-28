@@ -28,7 +28,7 @@ import { DateInput } from "@/components/ui/date-input";
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { ProjectClientDisplay } from "@/components/client-display";
+import { ProjectSummary } from "@/components/summary";
 
 // Icons
 import { Loader2, Calendar, Plus, Trash2, ListTodo, X } from "lucide-react";
@@ -120,7 +120,7 @@ export function AfterSaleForm({
   const renderProjectItem = React.useCallback((item: AutocompleteItem) => {
     if (item.project) {
       return (
-        <ProjectClientDisplay 
+        <ProjectSummary
           project={item.project}
           className="flex-1"
         />
@@ -281,7 +281,7 @@ export function AfterSaleForm({
                   <Card className="bg-muted/50">
                     <CardContent className="pt-4">
                       <div className="flex items-center justify-between">
-                        <ProjectClientDisplay 
+                        <ProjectSummary
                           project={selectedProject}
                           className="text-foreground"
                         />

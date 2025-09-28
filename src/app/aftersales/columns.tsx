@@ -22,7 +22,7 @@ import { format as formatDate } from 'date-fns'
 import { es } from 'date-fns/locale'
 
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header"
-import { ProjectClientDisplay } from '@/components/client-display'
+import { ProjectSummary } from '@/components/summary'
 import type { AfterSales } from '@/types/afterSales'
 import type { ProjectType } from '@/types/project'
 
@@ -105,7 +105,7 @@ export const createAfterSalesColumns = ({
 
       return (
         <div className="space-y-1">
-          <ProjectClientDisplay
+          <ProjectSummary
             project={{
               projectNumber: project.projectNumber,
               clientName: project.clientName,

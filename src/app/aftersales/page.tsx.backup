@@ -7,7 +7,7 @@ import { getProjects } from '@/services/projectService';
 import { toast } from '@/components/ui/use-toast';
 import { format as formatDate } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ProjectClientDisplay } from '@/components/client-display';
+import { ProjectSummary } from '@/components/summary';
 
 // Importación del servicio afterSalesService con soporte para instancia de Firestore
 import { getAfterSalesForProject, deleteAfterSales } from '@/services/afterSalesService';

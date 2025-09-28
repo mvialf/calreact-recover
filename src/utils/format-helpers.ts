@@ -100,15 +100,3 @@ export function truncateText(
   return text.substring(0, maxLength) + ellipsis;
 }
 
-/**
- * Formatea la visualización del nombre del cliente junto con información adicional
- * @param project - Objeto del proyecto que contiene la información del cliente
- * @returns String con el nombre del cliente y glosa si está disponible
- */
-export function formatClientDisplay(project: Pick<ProjectType, 'clientName' | 'glosa'>): string {
-  let display = project.clientName || 'Cliente no encontrado';
-  if (project.glosa) {
-    display += ` - ${project.glosa}`;
-  }
-  return display;
-}

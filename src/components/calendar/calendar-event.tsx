@@ -8,7 +8,7 @@ import { isValid } from 'date-fns';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { cn } from '@/lib/utils';
 import type React from 'react';
-import { ProjectClientDisplay } from '@/components/client-display';
+import { ProjectSummary } from '@/components/summary';
 import { eventLogger } from '@/lib/logger';
 
 interface CalendarEventProps {
@@ -200,7 +200,7 @@ export function CalendarEvent({
     >
       {event.type === 'Proyecto' ? (
         <div className="space-y-1">
-          <ProjectClientDisplay 
+          <ProjectSummary
             project={{
               projectNumber: event.projectNumber,
               clientName: event.clientName,

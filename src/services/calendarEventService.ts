@@ -25,7 +25,7 @@ import { eventLogger } from '@/lib/logger';
  * Convierte un ProjectEventType a EventType para compatibilidad con el calendario
  */
 function convertProjectEventToCalendarEvent(projectEvent: ProjectEventType): EventType {
-  // Generar nombre usando la misma lógica que ClientDisplay en calendar-event.tsx
+  // Generar nombre usando la misma lógica que ProjectSummary en calendar-event.tsx
   const getEventName = (): string => {
     // Usar clientName o glosa como fallback
     return projectEvent.clientName?.trim() || projectEvent.glosa?.trim() || 'Cliente no especificado';

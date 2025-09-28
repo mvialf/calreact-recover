@@ -23,7 +23,7 @@ import { format as formatDate } from 'date-fns'
 import { es } from 'date-fns/locale'
 
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header"
-import { ProjectClientDisplay } from '@/components/client-display'
+import { ProjectSummary } from '@/components/summary'
 import { formatCurrency } from '@/utils/format-helpers'
 import {
   getPaymentPercentageBadgeVariant,
@@ -74,7 +74,7 @@ export const createProjectsColumns = ({
     ),
     cell: ({ row }) => {
       const project = row.original
-      return <ProjectClientDisplay project={project} />
+      return <ProjectSummary project={project} />
     },
     filterFn: (row, _id, value) => {
       const project = row.original
