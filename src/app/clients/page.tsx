@@ -1,25 +1,13 @@
 
 // src/app/clients/page.tsx
 "use client";
-import { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Client } from '@/types/client';
 import { getClients, addClient, updateClient, deleteClient } from '@/services/clientService';
 
-
-import { Card, CardContent } from '@/components/ui/card';
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { TABLE_WIDTHS } from '@/constants/ui';
-import { Input } from '@/components/ui/input';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,36 +18,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { SquarePen, Trash2, PlusCircle, Users, Loader2, GanttChartSquare, DollarSign, FileText } from 'lucide-react';
+import { PlusCircle, Users, Loader2 } from 'lucide-react';
 import ClientModal from '@/components/client-modal';
 import { useToast } from '@/components/ui/use-toast';
-import { normalizeSearchText } from '@/utils/search-utils';
 
-// Skeleton for table rows
-const ClientRowSkeleton = () => (
-  <TableRow>
-    <TableCell><div className="h-5 w-32 bg-muted rounded animate-pulse"></div></TableCell>
-    <TableCell><div className="h-5 w-24 bg-muted rounded animate-pulse"></div></TableCell>
-    <TableCell><div className="h-5 w-40 bg-muted rounded animate-pulse"></div></TableCell>
-    <TableCell className="text-right">
-      <div className="h-8 w-8 bg-muted rounded-full inline-block animate-pulse"></div>
-    </TableCell>
-  </TableRow>
-);
+// Componentes DataTable
+import { DataTable } from '@/components/data-table/data-table';
+import { createClientsColumns } from './columns';
 
 export default function ClientsPage() {
   const { toast } = useToast();
   const queryClientHook = useQueryClient();
   const router = useRouter();
 
-  const [filterText, setFilterText] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | undefined>(undefined);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -138,6 +109,24 @@ export default function ClientsPage() {
     }
   };
 
+  // Handlers específicos para DataTable
+  const handleRegisterPayment = React.useCallback((clientId: string) => {
+    router.push(`/clients/newPayment/${clientId}`);
+  }, [router]);
+
+  const handleAccountStatement = React.useCallback(() => {
+    toast({
+      title: "Próximamente",
+      description: "La función de estado de cuenta para clientes estará disponible pronto."
+    });
+  }, [toast]);
+
+  // Función para determinar si una fila está en estado de mutación
+  const isRowMutating = React.useCallback((client: Client) => {
+    const isCurrentRowEditing = updateClientMutation.isPending && updateClientMutation.variables?.clientId === client.id;
+    const isCurrentRowDeleting = deleteClientMutation.isPending && clientToDelete?.id === client.id;
+    return isCurrentRowEditing || isCurrentRowDeleting;
+  }, [updateClientMutation.isPending, updateClientMutation.variables?.clientId, deleteClientMutation.isPending, clientToDelete?.id]);
 
   const handleSaveClient = (savedClient: Client) => {
     if (savedClient.id) {
@@ -149,18 +138,19 @@ export default function ClientsPage() {
     }
   };
 
-  const filteredClients = clients.filter(client => {
-    const searchTerm = normalizeSearchText(filterText);
-    const clientName = normalizeSearchText(client.name);
-    const clientEmail = client.email ? normalizeSearchText(client.email) : '';
-    
-    return clientName.includes(searchTerm) || 
-           (client.email && clientEmail.includes(searchTerm));
-  });
+  // Crear columnas para la DataTable
+  const columns = React.useMemo(() => createClientsColumns({
+    onEdit: handleOpenModal,
+    onDelete: handleDeleteClientInitiate,
+    onRegisterPayment: handleRegisterPayment,
+    onAccountStatement: handleAccountStatement,
+    isRowMutating,
+  }), [handleRegisterPayment, handleAccountStatement, isRowMutating]);
+
 
   if (isError) {
     return (
-      <div className="flex flex-col h-full p-4 md:p-6 lg:p-8 items-center justify-center text-destructive">
+      <div className="flex flex-col h-full items-center justify-center text-destructive">
         <h1 className="text-2xl font-bold mb-2">Error al cargar clientes</h1>
         <p>{error?.message || "Ha ocurrido un error desconocido."}</p>
         <Button onClick={() => queryClientHook.refetchQueries({ queryKey: ['clients'] })} className="mt-4">
@@ -174,7 +164,7 @@ export default function ClientsPage() {
 
 
   return (
-    <div className="flex flex-col h-full p-4 md:p-6 lg:p-8">
+    <div className="flex flex-col h-full ">
       <header className="flex items-center justify-between gap-4 mb-6 md:mb-8">
         <div className="flex items-center gap-4">
           
@@ -189,108 +179,24 @@ export default function ClientsPage() {
         </Button>
       </header>
       <main className="flex-grow">
-        <Card className="shadow-lg">
-          <div className="flex items-center justify-between p-4 border-b">
-            <Input 
-              placeholder="Filtrar clientes por nombre o email..." 
-              value={filterText} 
-              onChange={(e) => setFilterText(e.target.value)} 
-              className="max-w-sm"
+        <div className="w-full max-w-none  pb-2 bg-background">
+          {isLoading || clients.length > 0 ? (
+            /* DataTable */
+            <DataTable
+              columns={columns}
+              data={clients}
+              searchKey="name"
+              searchPlaceholder="Buscar clientes por nombre o email..."
+              enableRowSelection
             />
-          </div>
-          <CardContent className="pt-6">
-            {isLoading ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className={TABLE_WIDTHS.large}>Nombre</TableHead>
-                    <TableHead className={TABLE_WIDTHS.small}>Teléfono</TableHead>
-                    <TableHead>Correo Electrónico</TableHead>
-                    <TableHead className={`text-right ${TABLE_WIDTHS.actions}`}>Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <ClientRowSkeleton />
-                  <ClientRowSkeleton />
-                  <ClientRowSkeleton />
-                </TableBody>
-              </Table>
-            ) : filteredClients.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className={TABLE_WIDTHS.large}>Nombre</TableHead>
-                    <TableHead className={TABLE_WIDTHS.small}>Teléfono</TableHead>
-                    <TableHead>Correo Electrónico</TableHead>
-                    <TableHead className={`text-right ${TABLE_WIDTHS.actions}`}>Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredClients.map((client) => {
-                    const isCurrentRowEditing = updateClientMutation.isPending && updateClientMutation.variables?.clientId === client.id;
-                    const isCurrentRowDeleting = deleteClientMutation.isPending && clientToDelete?.id === client.id;
-                    const isCurrentRowMutating = isCurrentRowEditing || isCurrentRowDeleting;
-
-                    return (
-                      <TableRow 
-                        key={client.id} 
-                        className={isCurrentRowMutating ? 'opacity-50' : ''}
-                      >
-                        <TableCell className="font-medium">{client.name}</TableCell>
-                        <TableCell>{client.phone}</TableCell>
-                        <TableCell>{client.email}</TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" disabled={isCurrentRowMutating} aria-label="Más acciones para el cliente">
-                                {isCurrentRowMutating ? <Loader2 className="h-4 w-4 animate-spin" /> : <GanttChartSquare className="h-4 w-4" />}
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem 
-                                onSelect={() => router.push(`/clients/newPayment/${client.id}`)}
-                                disabled={isCurrentRowMutating}
-                              >
-                                <DollarSign className="mr-2 h-4 w-4" />
-                                <span>Registrar Pago</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onSelect={() => toast({ title: "Próximamente", description: "La función de estado de cuenta para clientes estará disponible pronto." })}
-                                disabled={isCurrentRowMutating}
-                              >
-                                <FileText className="mr-2 h-4 w-4" />
-                                <span>Estado de cuenta</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onSelect={() => handleOpenModal(client)} disabled={isCurrentRowMutating}>
-                                <SquarePen className="mr-2 h-4 w-4" />
-                                <span>Editar cliente</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onSelect={() => handleDeleteClientInitiate(client)} 
-                                className="text-destructive focus:bg-destructive/10 focus:text-destructive"
-                                disabled={isCurrentRowDeleting || isCurrentRowEditing} // Disable if editing or already deleting
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                <span>Eliminar cliente</span>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            ) : (
-              <div className="text-center py-10 text-muted-foreground">
-                <Users className="mx-auto h-12 w-12 mb-4" />
-                <p className="text-lg font-semibold">No hay clientes registrados.</p>
-                <p className="text-sm">Empieza añadiendo tu primer cliente.</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          ) : (
+            <div className="text-center py-10 text-muted-foreground">
+              <Users className="mx-auto h-12 w-12 mb-4" />
+              <p className="text-lg font-semibold">No hay clientes registrados.</p>
+              <p className="text-sm">Empieza añadiendo tu primer cliente.</p>
+            </div>
+          )}
+        </div>
       </main>
       <ClientModal isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSaveClient} clientData={selectedClient} />
       
