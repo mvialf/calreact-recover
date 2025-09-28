@@ -99,7 +99,7 @@ const ToolbarSkeleton = () => (
 );
 
 const CalendarViewSkeleton = () => (
-  <div className="flex-grow overflow-auto p-0 sm:p-2 md:p-4 animate-pulse">
+  <div className="flex-grow p-0 sm:p-2 md:p-4 animate-pulse">
     <div className="h-full w-full bg-muted/70 rounded-lg"></div> {/* Calendar area */}
   </div>
 );
@@ -376,14 +376,14 @@ export default function CalReactAppPage() {
 
   if (!isClient || currentDate === undefined || isLoadingEvents) {
     return (
-      <div className="flex flex-col h-screen bg-background text-foreground p-0 sm:p-4">
-        <header className="p-4 text-center sm:text-left flex items-center gap-4">
+      <div className="flex flex-col h-screen bg-background text-foreground">
+        <header className="text-center sm:text-left flex items-center gap-4">
             <div>
               <h1 className="text-3xl font-bold text-primary">CalReact</h1>
               <p className="text-muted-foreground">Aplicación de Calendario Avanzada</p>
             </div>
         </header>
-        <main className="flex-grow flex flex-col overflow-hidden p-0 sm:p-4 rounded-lg shadow-2xl bg-card">
+        <main className="flex-grow flex flex-col overflow-hidden rounded-lg shadow-2xl bg-card">
           <ToolbarSkeleton />
           <CalendarViewSkeleton />
         </main>
@@ -393,34 +393,36 @@ export default function CalReactAppPage() {
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <div className="flex flex-col h-screen bg-background text-foreground p-0 sm:p-4">
-        <header className="p-4 text-center sm:text-left flex items-center gap-4">
+      <div className="flex flex-col h-screen bg-background text-foreground">
+        <header className="py-4 text-center sm:text-left flex items-center gap-4">
           
-          <h1 className="text-3xl font-bold text-primary">CalReact</h1>
+          <h1 className="text-3xl font-bold">CalReact</h1>
         </header>
         
-        <main className="flex-grow  overflow-hidden p-2 sm:p-4 rounded-lg shadow-2xl bg-background">
-          <CalendarToolbar 
-            currentDate={currentDate}
-            currentView={currentView}
-            filterTerm={filterTerm}
-            onDateChange={handleDateChange}
-            onViewChange={handleViewChange}
-            onFilterChange={handleFilterChange}
-            onAddEvent={handleAddEventClick}
-            onToday={handleToday}
-          />
-          <div className="flex-grow overflow-auto p-0 sm:p-2 md:p-4">
-            <CalendarView
+        <main className="flex-grow overflow-hidden rounded-lg shadow-2xl bg-background">
+          <div className="flex flex-col space-y-4 h-full">
+            <CalendarToolbar
               currentDate={currentDate}
-              events={filteredEvents}
               currentView={currentView}
-              onEventClick={handleEventClick}
-              onEventResize={handleEventResize}
-              enableDragAndDrop={true} 
-              enableResizing={true} 
-              weekStartsOn={1} 
+              filterTerm={filterTerm}
+              onDateChange={handleDateChange}
+              onViewChange={handleViewChange}
+              onFilterChange={handleFilterChange}
+              onAddEvent={handleAddEventClick}
+              onToday={handleToday}
             />
+            <div className="flex-grow">
+              <CalendarView
+                currentDate={currentDate}
+                events={filteredEvents}
+                currentView={currentView}
+                onEventClick={handleEventClick}
+                onEventResize={handleEventResize}
+                enableDragAndDrop={true}
+                enableResizing={true}
+                weekStartsOn={1}
+              />
+            </div>
           </div>
         </main>
 
