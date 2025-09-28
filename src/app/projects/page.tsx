@@ -214,10 +214,7 @@ const ProjectsPage: React.FC = () => {
             <GanttChartSquare className="w-8 h-8 mr-3 text-primary" />
             Proyectos
           </h1>
-          <p className="text-muted-foreground">
-            Gestiona todos tus proyectos desde aquí
-          </p>
-        </div>
+         </div>
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <Switch

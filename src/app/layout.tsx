@@ -161,7 +161,7 @@ export default function RootLayout({
                       </Link>
                     </div>
                     
-                    <nav className="flex-1 px-4">
+                    <nav className="flex-1 px-4 pt-4">
                       <ul className="space-y-2">
                         {navItems.map((item) => {
                           const isActive =
@@ -196,7 +196,7 @@ export default function RootLayout({
                 </Sidebar>
                 
                 <main className="flex-1 min-w-0 w-full max-w-none">
-                  <div className="p-2 sm:p-3 lg:p-4 h-full lg:mt-16">
+                  <div className="p-2 sm:p-3 lg:py-6 lg:px-10 h-full lg:mt-16">
                     {children}
                   </div>
                 </main>
