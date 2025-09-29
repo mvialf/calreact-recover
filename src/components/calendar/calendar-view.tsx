@@ -32,7 +32,7 @@ export function CalendarView({
 }: CalendarViewProps) {
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full w-full flex flex-col">
       {currentView === 'month' && (
         <MonthView
           currentDate={currentDate}

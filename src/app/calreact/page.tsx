@@ -5,20 +5,6 @@ import type { EventType, ViewOption } from '@/types/event';
 import { CalendarView } from '@/components/calendar/calendar-view';
 import { EventModal } from '@/components/calendar/event-modal';
 import { CalendarToolbar } from '@/components/calendar/calendar-toolbar';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
-import {
-  FolderOpen,
-  CalendarDays,
-  Settings,
-  Users,
-  DollarSign,
-  LayoutDashboard,
-  Wrench,
-  Home,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { HeaderNav } from '@/components/ui/headernav';
 import { db } from '@/lib/firebase/client'; // Importar la instancia db configurada
 import { getAllCalendarEvents } from '@/services/calendarEventService';
 import { updateProjectEvent } from '@/services/projectEventService';
@@ -37,49 +23,6 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core';
 
-const navItems = [
-  { 
-    href: '/dashboard', 
-    icon: LayoutDashboard, 
-    label: 'Panel Principal', 
-    altPaths: ['/'] 
-  },
-  { 
-    href: '/projects', 
-    icon: FolderOpen, 
-    label: 'Proyectos' 
-  },
-  { 
-    href: '/calreact', 
-    icon: CalendarDays, 
-    label: 'Calendario' 
-  },
-  { 
-    href: '/aftersales', 
-    icon: Wrench, 
-    label: 'Postventas' 
-  },
-  { 
-    href: '/visits', 
-    icon: Home, 
-    label: 'Visitas' 
-  },
-  { 
-    href: '/payments', 
-    icon: DollarSign, 
-    label: 'Pagos' 
-  },
-  { 
-    href: '/clients', 
-    icon: Users, 
-    label: 'Clientes' 
-  },
-  { 
-    href: '/settings', 
-    icon: Settings, 
-    label: 'Configuración' 
-  },
-];
 
 // Skeleton components for loading state
 const ToolbarSkeleton = () => (
@@ -105,7 +48,6 @@ const CalendarViewSkeleton = () => (
 );
 
 export default function CalReactAppPage() {
-  const pathname = usePathname();
   // NOTA: En producción, reemplazar con sistema de autenticación real
   // Ej: const userId = useAuth().currentUser?.uid || "anonymous";
   const userId = "mockUserId"; // Placeholder para desarrollo
@@ -376,14 +318,14 @@ export default function CalReactAppPage() {
 
   if (!isClient || currentDate === undefined || isLoadingEvents) {
     return (
-      <div className="flex flex-col h-screen bg-background text-foreground">
+      <div className="w-full max-w-none px-4 pb-2 bg-background">
         <header className="text-center sm:text-left flex items-center gap-4">
             <div>
               <h1 className="text-3xl font-bold text-primary">CalReact</h1>
               <p className="text-muted-foreground">Aplicación de Calendario Avanzada</p>
             </div>
         </header>
-        <main className="flex-grow flex flex-col overflow-hidden rounded-lg shadow-2xl bg-card">
+        <main className="h-full flex flex-col overflow-hidden rounded-lg shadow-lg bg-card">
           <ToolbarSkeleton />
           <CalendarViewSkeleton />
         </main>
@@ -393,14 +335,14 @@ export default function CalReactAppPage() {
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <div className="flex flex-col h-screen bg-background text-foreground">
-        <header className="py-4 text-center sm:text-left flex items-center gap-4">
-          
+      <div className="w-full max-w-none bg-background">
+        <header className="py-4 px-4 text-center sm:text-left flex items-center gap-4">
+
           <h1 className="text-3xl font-bold">CalReact</h1>
         </header>
-        
-        <main className="flex-grow overflow-hidden rounded-lg shadow-2xl bg-background">
-          <div className="flex flex-col space-y-4 h-full">
+
+        <main className="h-full w-full rounded-lg shadow-lg bg-background">
+          <div className="flex flex-col space-y-4 h-full w-full">
             <CalendarToolbar
               currentDate={currentDate}
               currentView={currentView}
@@ -411,7 +353,7 @@ export default function CalReactAppPage() {
               onAddEvent={handleAddEventClick}
               onToday={handleToday}
             />
-            <div className="flex-grow">
+            <div className="flex-grow w-full">
               <CalendarView
                 currentDate={currentDate}
                 events={filteredEvents}
