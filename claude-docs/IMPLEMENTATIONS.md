@@ -152,6 +152,10 @@
 - **Implementación:** ✅ Completada - 11 archivos movidos a `/docs/technical/migrations/archived/google-places-2025-process/`
 
 ## 🔮 Upcoming Implementations
+- [🔄] **Calendar Event Architecture Refactoring** - Fase 1/4 completada (25%) - Registry Pattern implementado (prioridad media-alta)
+  - ✅ Fase 1: event-renderers/ estructura creada (Sep 29, 2025) - 3 archivos, 0 errores
+  - ⏳ Fase 2-4: Pendientes (CalendarEventCard, migración vistas, limpieza)
+  - 📖 Ver `/docs/technical/calendar-event-INDEX.md` para estado completo y detalles
 - [ ] **Data Table Migration Fase 2** - Migrar payments, aftersales, visits, clients, installments páginas (prioridad alta)
 - [ ] **Data Table Advanced Features** - Export CSV, bulk actions, column presets (prioridad media)
 - [ ] **Performance optimization phase 2** - Bundle optimization avanzado
