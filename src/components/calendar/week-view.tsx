@@ -2,7 +2,7 @@
 "use client";
 
 import type { EventType } from '@/types/event';
-import { CalendarEvent } from './calendar-event';
+import { CalendarEventCard } from './CalendarEventCard';
 import { 
   getDaysInWeek, 
   format, 
@@ -59,7 +59,7 @@ function DayColumn({
       {dayEvents.length > 0 ? (
         dayEvents.map(event => (
           <div key={event.id} className="w-full">
-            <CalendarEvent
+            <CalendarEventCard
               event={event}
               onClick={onEventClick}
               view="week"
@@ -115,7 +115,7 @@ export function WeekView({
   };
 
   return (
-    <div className="flex flex-col h-full bg-card rounded-lg shadow-md border border-border overflow-hidden">
+    <div className="flex flex-col w-full bg-card rounded-lg shadow-md border border-border">
       {/* Header: Day Names */}
       <div className="grid grid-cols-7 border-b border-border sticky top-0 bg-card z-10">
         {days.map(day => (
@@ -135,7 +135,7 @@ export function WeekView({
       </div>
 
       {/* Body: Day Columns with Events List */}
-      <div className="grid grid-cols-7 flex-grow overflow-auto">
+      <div className="grid grid-cols-7">
         {days.map(day => {
           const dayEvents = getEventsForDay(day);
           

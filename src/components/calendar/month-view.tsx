@@ -3,7 +3,7 @@
 
 import { useDroppable } from '@dnd-kit/core';
 import type { EventType } from '@/types/event';
-import { CalendarEvent } from './calendar-event';
+import { CalendarEventCard } from './CalendarEventCard';
 import { 
   getDaysInMonth, 
   isSameMonth, 
@@ -67,7 +67,7 @@ export function MonthView({
         ref={setNodeRef}
         key={index}
         className={cn(
-          "border-r border-b border-border p-1.5 flex flex-col relative cursor-pointer transition-colors duration-150",
+          "border-r border-b border-border p-1.5 flex flex-col relative cursor-pointer transition-colors duration-150 min-h-0 w-full",
           !isSameMonth(day, currentDate) && "bg-muted/30 text-muted-foreground/60",
           isToday(day) && "bg-primary/10",
           isOver && "bg-accent/20",
@@ -85,7 +85,7 @@ export function MonthView({
         </span>
         <div className="flex-grow space-y-0.5"> 
           {dayEvents.slice(0, 3).map(event => ( 
-            <CalendarEvent 
+            <CalendarEventCard 
               key={event.id} 
               event={event} 
               onClick={onEventClick} 
@@ -105,15 +105,15 @@ export function MonthView({
   };
 
   return (
-    <div className="flex flex-col bg-card rounded-lg shadow-md border border-border">
-      <div className="grid grid-cols-7 border-b border-border">
+    <div className="flex flex-col size-full">
+      <div className="grid grid-cols-7 w-full border-b border-border">
         {dayNames.map(dayName => (
           <div key={dayName} className="p-2 text-center font-medium text-sm text-muted-foreground">
             {dayName}
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7">
+      <div className="grid grid-cols-7 flex-1 w-full">
         {weeks.flat().map((day, index) => (
           <DayCell 
             key={index} 

@@ -2,7 +2,7 @@
 "use client";
 
 import type { EventType } from '@/types/event';
-import { CalendarEvent } from './calendar-event';
+import { CalendarEventCard } from './CalendarEventCard';
 import { 
   format, 
   isToday, 
@@ -35,7 +35,7 @@ export function DayView({
   }).sort((a,b) => a.startDate.getTime() - b.startDate.getTime());
 
   return (
-    <div className="flex flex-col h-full bg-card rounded-lg shadow-md border border-border overflow-hidden">
+    <div className="flex flex-col w-full bg-card rounded-lg shadow-md border border-border">
       {/* Header: Day Name and Date */}
       <div className="p-2 text-center font-medium text-sm border-b border-border sticky top-0 bg-card z-10">
         <div className={cn(isToday(currentDate) ? "text-primary" : "text-muted-foreground")}>
@@ -53,7 +53,7 @@ export function DayView({
         {dayEvents.length > 0 ? (
           dayEvents.map(event => (
             <div key={event.id} className="w-full">
-              <CalendarEvent
+              <CalendarEventCard
                 event={event}
                 onClick={onEventClick}
                 view="day"
