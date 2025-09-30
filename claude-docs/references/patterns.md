@@ -24,6 +24,71 @@ import { projectCacheService } from '@/services/cache/projectCacheService';
 import { eventEnrichmentService } from '@/services/eventEnrichmentService';
 ```
 
+## 📅 Calendar Event Rendering Pattern (IMPLEMENTADO - Sept 2025)
+
+### Registry Pattern para Renderizado de Eventos
+```typescript
+// ✅ PATRÓN OBLIGATORIO - Registry Pattern con CalendarEventCard
+
+// 1. Uso del componente (auto-selecciona renderer correcto)
+import { CalendarEventCard } from '@/components/calendar/CalendarEventCard';
+
+<CalendarEventCard
+  event={event}         // EventType con campo 'type'
+  view="month"          // 'month' | 'week' | 'day'
+  onClick={handleClick}
+  enableDragAndDrop={true}
+/>
+
+// 2. Estructura del Registry (event-renderers/index.ts)
+export const EVENT_RENDERERS = {
+  'project': ProjectEventRenderer,
+  'visit': VisitEventRenderer,      // Extensión futura
+  'afterSales': AfterSalesRenderer  // Extensión futura
+} as const;
+
+// 3. Crear nuevo renderer (type-safe)
+export const NewEventRenderer: EventRenderer = ({
+  event,
+  view,
+  onClick
+}) => {
+  return (
+    <div onClick={() => onClick?.(event)}>
+      {/* Renderizado específico del tipo */}
+    </div>
+  );
+};
+```
+
+### Beneficios del Registry Pattern
+- **Open/Closed Principle**: Extensible sin modificar código existente
+- **Type-Safety**: TypeScript garantiza implementación correcta
+- **Mantenibilidad**: Cada tipo en su propio archivo
+- **Escalabilidad**: Agregar tipos sin tocar componente base
+
+### Arquitectura de Archivos
+```
+src/components/calendar/
+├── CalendarEventCard.tsx         # ← Componente principal (punto de entrada)
+├── event-renderers/
+│   ├── index.ts                  # ← Registry central
+│   ├── types.ts                  # ← Tipos compartidos
+│   ├── ProjectEventRenderer.tsx  # ← Renderer específico
+│   ├── VisitEventRenderer.tsx    # ← Futura extensión
+│   └── AfterSalesRenderer.tsx    # ← Futura extensión
+```
+
+### ❌ Anti-Pattern Eliminado (Legacy)
+```typescript
+// ❌ NO USAR - Componente legacy eliminado (Sept 2025)
+import { CalendarEvent } from '@/components/calendar/calendar-event';
+
+// El componente calendar-event.tsx fue eliminado completamente.
+// Migración completada en commit dacf602 (Fase 1-3)
+// Limpieza final en commit [Fase 4]
+```
+
 ## 🔥 Servicios Firebase (Patrón Establecido)
 
 ### Utilidades Centralizadas Obligatorias
