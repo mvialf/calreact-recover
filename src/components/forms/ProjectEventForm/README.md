@@ -454,6 +454,80 @@ import { NewProjectEventLeanForm } from '@/components/forms/NewProjectEventLeanF
 import { ProjectEventForm } from '@/components/forms/ProjectEventForm';
 ```
 
+## 🚀 Performance Best Practices
+
+### Bundle Size Optimization
+
+#### Componentes y Tamaños Estimados
+
+| Componente | Tamaño Estimado | Lazy Load | Cuándo Usar |
+|------------|-----------------|-----------|-------------|
+| `BaseFields` | ~2KB | ❌ No necesario | Siempre se usa |
+| `FullFields` | ~8KB | ❌ No necesario | Core del formulario |
+| `ChecklistSection` | ~12KB | ✅ **Recomendado** | Solo cuando se necesita |
+| `ProjectInfo` | ~3KB | ❌ No necesario | Información del proyecto |
+| `OverrideFields` | ~4KB | ❌ No necesario | Modo lean |
+
+#### Lazy Loading ChecklistSection (Recomendado)
+
+Si **no todos los formularios usan checklist**, lazy load en el consumidor:
+
+```tsx
+// ✅ RECOMENDADO - NewProjectEventModal.tsx
+import { lazy, Suspense } from 'react';
+import { ProjectEventForm, LoadingSkeleton } from '@/components/forms/ProjectEventForm';
+
+// Lazy load ChecklistSection solo cuando se necesita
+const LazyChecklist = lazy(() =>
+  import('@/components/forms/ProjectEventForm').then(mod => ({
+    default: mod.ProjectEventForm.ChecklistSection
+  }))
+);
+
+function NewProjectEventModal() {
+  const [showChecklist, setShowChecklist] = useState(false);
+
+  return (
+    <ProjectEventForm.Container mode="lean" onSubmit={handleSubmit}>
+      <ProjectEventForm.BaseFields />
+      <ProjectEventForm.OverrideFields />
+
+      {showChecklist && (
+        <Suspense fallback={<LoadingSkeleton />}>
+          <LazyChecklist />
+        </Suspense>
+      )}
+    </ProjectEventForm.Container>
+  );
+}
+```
+
+#### Cuándo Lazy Load vs Import Estático
+
+**Lazy Load cuando:**
+- Componente >10KB
+- No se usa en todos los casos
+- Está "below the fold" (no visible inicialmente)
+- Tiene dependencias pesadas (ej: 8 iconos Lucide)
+
+**Import Estático cuando:**
+- Componente <5KB
+- Siempre se renderiza
+- Es crítico para UX inicial
+- Ya está en route bundle
+
+#### Next.js Automatic Optimizations
+
+Next.js 15 ya optimiza:
+- ✅ Code splitting por route
+- ✅ Tree shaking de imports no usados
+- ✅ Dynamic imports con `next/dynamic`
+
+**No necesitas lazy load si:**
+- Componente está en diferente route (ya separado)
+- Componente es pequeño (<5KB)
+- Se usa en >80% de los casos
+
 ## 📝 Notas de Desarrollo
 
 ### Limitaciones Conocidas
@@ -498,4 +572,4 @@ import { ProjectEventForm } from '@/components/forms/ProjectEventForm';
 
 **Generado:** Septiembre 2025
 **Autor:** Plan de optimización aprobado
-**Status:** ✅ Fase 3 completada - Performance Optimizations implementadas
+**Status:** ✅ Fase 4 completada - Bundle Optimization implementado
