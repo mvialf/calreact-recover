@@ -22,7 +22,8 @@ import { PlusCircle, Users, Loader2 } from 'lucide-react';
 import ClientModal from '@/components/client-modal';
 import { useToast } from '@/components/ui/use-toast';
 
-// Componentes DataTable
+// Componentes Layout y DataTable
+import { AppLayout } from '@/components/layout';
 import { DataTable } from '@/components/data-table/data-table';
 import { createClientsColumns } from './columns';
 
@@ -164,25 +165,24 @@ export default function ClientsPage() {
 
 
   return (
-    <div className="flex flex-col h-full ">
-      <header className="flex items-center justify-between gap-4 mb-6 md:mb-8">
-        <div className="flex items-center gap-4">
-          
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-primary">Gestión de Clientes</h1>
-            <p className="text-muted-foreground">Administra la información de tus clientes.</p>
-          </div>
-        </div>
+    <AppLayout
+      pageTitle="Gestión de Clientes"
+      pageDescription="Administra la información de tus clientes"
+      pageIcon={Users}
+      breadcrumbs={[
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Clientes' }
+      ]}
+      headerActions={
         <Button onClick={() => handleOpenModal()} disabled={isMutating && addClientMutation.isPending && !selectedClient}>
           {isMutating && addClientMutation.isPending && !selectedClient ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <PlusCircle className="mr-2 h-5 w-5" />}
           Nuevo Cliente
         </Button>
-      </header>
-      <main className="flex-grow">
-        <div className="w-full max-w-none  pb-2 bg-background">
-          {isLoading || clients.length > 0 ? (
-            /* DataTable */
-            <DataTable
+      }
+    >
+      {isLoading || clients.length > 0 ? (
+        /* DataTable */
+        <DataTable
               columns={columns}
               data={clients}
               searchKey="name"
@@ -196,8 +196,7 @@ export default function ClientsPage() {
               <p className="text-sm">Empieza añadiendo tu primer cliente.</p>
             </div>
           )}
-        </div>
-      </main>
+
       <ClientModal isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSaveClient} clientData={selectedClient} />
       
       {clientToDelete && (
@@ -224,6 +223,6 @@ export default function ClientsPage() {
           </AlertDialogContent>
         </AlertDialog>
       )}
-    </div>
+    </AppLayout>
   );
 }

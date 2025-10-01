@@ -1,22 +1,24 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Briefcase, 
-  Users, 
-  DollarSign, 
-  CalendarDays, 
+import {
+  Briefcase,
+  Users,
+  DollarSign,
+  CalendarDays,
   ArrowUpCircle,
-  ArrowDownCircle, 
+  ArrowDownCircle,
   Clock,
   CircleDot,
   LineChart,
-  Loader2
+  Loader2,
+  LayoutDashboard
 } from 'lucide-react';
 
 // Importación del nuevo componente reutilizable
 import DashboardProjectItem from '@/components/dashboard/dashboard-project-item';
 import { utilityLogger } from '@/lib/logger';
+import { AppLayout } from '@/components/layout';
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -301,20 +303,20 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="container mx-auto px-4 pb-2 bg-background">
-      <header className="text-center sm:text-left flex items-center gap-4">
-        <h1 className="text-3xl font-bold text-primary pb-4">Dashboard</h1>
-      </header>
-      
-      <main className="flex-grow overflow-auto">
-        {data.isLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {/* Tarjetas de estadísticas */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+    <AppLayout
+      pageTitle="Dashboard"
+      pageDescription="Vista general del sistema"
+      pageIcon={LayoutDashboard}
+      breadcrumbs={[{ label: 'Dashboard' }]}
+    >
+      {data.isLoading ? (
+        <div className="flex items-center justify-center h-full">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {/* Tarjetas de estadísticas */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <StatCard 
                 title="Proyectos Totales" 
                 value={data.totalProjects}
@@ -362,7 +364,6 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
-      </main>
-    </div>
+    </AppLayout>
   );
 }

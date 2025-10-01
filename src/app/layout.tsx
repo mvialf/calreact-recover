@@ -3,28 +3,13 @@
 'use client';
 
 import { Geist, Geist_Mono } from 'next/font/google';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
-import {
-  FolderOpen,
-  CalendarDays,
-  Settings,
-  Users,
-  Loader2,
-  DollarSign,
-  LayoutDashboard,
-  Wrench,
-  Home,
-} from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { utilityLogger } from '@/lib/logger';
 import { ThemeProvider } from 'next-themes';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { HeaderNav } from '@/components/ui/headernav';
-import { Sidebar, SidebarProvider } from '@/components/ui/sidebar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cn } from '@/lib/utils';
 import { AppConfigProvider } from '@/contexts/AppConfigContext';
 import { GlobalErrorBoundary } from '@/components/error-boundary/GlobalErrorBoundary';
 
@@ -46,56 +31,12 @@ export const metadata: Metadata = {
 };
 */
 
-const navItems = [
-  { 
-    href: '/dashboard', 
-    icon: LayoutDashboard, 
-    label: 'Panel Principal', 
-    altPaths: ['/'] 
-  },
-  { 
-    href: '/projects', 
-    icon: FolderOpen, 
-    label: 'Proyectos' 
-  },
-  { 
-    href: '/calreact', 
-    icon: CalendarDays, 
-    label: 'Calendario' 
-  },
-  { 
-    href: '/aftersales', 
-    icon: Wrench, 
-    label: 'Postventas' 
-  },
-  { 
-    href: '/visits', 
-    icon: Home, 
-    label: 'Visitas' 
-  },
-  { 
-    href: '/payments', 
-    icon: DollarSign, 
-    label: 'Pagos' 
-  },
-  { 
-    href: '/clients', 
-    icon: Users, 
-    label: 'Clientes' 
-  },
-  { 
-    href: '/settings', 
-    icon: Settings, 
-    label: 'Configuración' 
-  },
-];
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
   const [queryClient] = useState(() => new QueryClient());
   const [isMounted, setIsMounted] = useState(false);
 
@@ -143,66 +84,8 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               <AppConfigProvider>
-                <SidebarProvider>
-                  <HeaderNav />
-                  <div className="flex h-screen">
-                    <Sidebar>
-                  <div className="flex flex-col h-full">
-                    <div className="p-4">
-                      <Link 
-                        href="/" 
-                        className="flex items-center gap-2" 
-                        title="CalReact Home"
-                      >
-                        <CalendarDays className="h-7 w-7 text-primary flex-shrink-0" />
-                        <h2 className="text-2xl font-bold text-primary">
-                          CalReact
-                        </h2>
-                      </Link>
-                    </div>
-                    
-                    <nav className="flex-1 px-4 pt-4">
-                      <ul className="space-y-2">
-                        {navItems.map((item) => {
-                          const isActive =
-                            pathname === item.href ||
-                            (item.href !== '/' && pathname?.startsWith(item.href)) ||
-                            (item.altPaths && item.altPaths.includes(pathname));
-                          
-                          return (
-                            <li key={item.href}>
-                              <Link
-                                href={item.href}
-                                className={cn(
-                                  'flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground',
-                                  isActive && 'bg-accent text-accent-foreground'
-                                )}
-                              >
-                                <item.icon className="h-5 w-5" />
-                                <span>{item.label}</span>
-                              </Link>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </nav>
-                    
-                    <div className="p-4 mt-auto">
-                      <p className="text-xs text-muted-foreground">
-                        &copy; 2025 CalReact App
-                      </p>
-                    </div>
-                  </div>
-                </Sidebar>
-                
-                <main className="flex-1 min-w-0 w-full max-w-none">
-                  <div className="p-2 sm:p-3 lg:py-6 lg:px-10 h-full lg:mt-16">
-                    {children}
-                  </div>
-                </main>
-                  </div>
-                </SidebarProvider>
-              <Toaster />
+                {children}
+                <Toaster />
               </AppConfigProvider>
             </ThemeProvider>
           </QueryClientProvider>

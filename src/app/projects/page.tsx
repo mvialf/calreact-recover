@@ -16,6 +16,7 @@ import { updateProject, deleteProject } from '@/services/projectService';
 import { addPayment } from '@/services/paymentService';
 
 // Componentes
+import { AppLayout } from '@/components/layout';
 import { DataTable } from '@/components/data-table';
 import { createProjectsColumns } from './columns';
 import { Button } from '@/components/ui/button';
@@ -206,16 +207,16 @@ const ProjectsPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center">
-            <GanttChartSquare className="w-8 h-8 mr-3 text-primary" />
-            Proyectos
-          </h1>
-         </div>
-        <div className="flex items-center space-x-4">
+    <AppLayout
+      pageTitle="Proyectos"
+      pageDescription="Gestión de proyectos activos y completados"
+      pageIcon={GanttChartSquare}
+      breadcrumbs={[
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Proyectos' }
+      ]}
+      headerActions={
+        <>
           <div className="flex items-center space-x-2">
             <Switch
               id="hide-completed-paid"
@@ -227,9 +228,9 @@ const ProjectsPage: React.FC = () => {
             </Label>
           </div>
           <NewProjectDialog />
-        </div>
-      </div>
-
+        </>
+      }
+    >
       {/* DataTable */}
       <DataTable
         columns={columns}
@@ -294,7 +295,7 @@ const ProjectsPage: React.FC = () => {
           />
         </EditProjectDialog>
       )}
-    </div>
+    </AppLayout>
   );
 };
 

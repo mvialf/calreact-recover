@@ -26,11 +26,12 @@ import type { ProjectImportData } from '@/types/project';
 import type { PaymentImportData as PaymentImportDataType } from '@/types/payment';
 import { PAYMENT_METHODS, PAYMENT_TYPES } from '@/constants/payment';
 import type { ProjectStatus } from '@/types/project';
-import { Loader2, HelpCircle } from 'lucide-react';
+import { Loader2, HelpCircle, Settings } from 'lucide-react';
 import { FileDndInput } from '@/components/ui/file-dnd-input';
 import { settingsLogger } from '@/lib/logger';
 import { CopyableCodeBlock } from '@/components/ui/copyable-code-block';
 import { GeneralSettings } from '@/components/settings/GeneralSettings';
+import { AppLayout } from '@/components/layout';
 
 const clientJsonSchemaExample = `
 [
@@ -508,21 +509,32 @@ export default function SettingsPage() {
 
   if (!mounted) {
     return (
-      <div className="flex flex-col h-full p-4 md:p-6 lg:p-8 items-center justify-center">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
+      <AppLayout
+        pageTitle="Configuración"
+        pageDescription="Administra tus preferencias y datos de la aplicación"
+        pageIcon={Settings}
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Configuración' }
+        ]}
+      >
+        <div className="flex items-center justify-center h-full">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="flex flex-col h-full p-4 md:p-6 lg:p-8">
-      <header className="flex items-center gap-4 mb-6 md:mb-8">
-        
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-primary">Configuración</h1>
-          <p className="text-muted-foreground">Administra tus preferencias y datos de la aplicación.</p>
-        </div>
-      </header>
+    <AppLayout
+      pageTitle="Configuración"
+      pageDescription="Administra tus preferencias y datos de la aplicación"
+      pageIcon={Settings}
+      breadcrumbs={[
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Configuración' }
+      ]}
+    >
       <main className="flex-grow">
         <Tabs defaultValue="general" className="w-full space-y-6">
           <TabsList className="grid w-full grid-cols-2 md:w-1/2 lg:w-1/3">
@@ -685,6 +697,6 @@ export default function SettingsPage() {
         </DialogContent>
       </Dialog>
 
-    </div>
+    </AppLayout>
   );
 }

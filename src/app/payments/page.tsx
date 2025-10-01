@@ -12,7 +12,8 @@ import { EditPaymentDialog } from '@/components/payments/edit-payment-dialog';
 import { getProjects } from '@/services/projectService';
 import { getClients } from '@/services/clientService';
 
-// Componentes DataTable
+// Componentes Layout y DataTable
+import { AppLayout } from '@/components/layout';
 import { DataTable } from '@/components/data-table/data-table';
 import { createPaymentsColumns, PAYMENT_METHOD_OPTIONS, PAYMENT_TYPE_OPTIONS } from './columns';
 
@@ -143,18 +144,23 @@ export default function PaymentsPage() {
   }
 
   return (
-    <>
-      <div className="w-full max-w-none px-4 pb-2 bg-background">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-bold text-primary">Gestión de Pagos</h1>
-          <Button onClick={() => toast({ title: "Próximamente", description: "El registro de nuevos pagos estará disponible pronto."})} disabled={isLoading}>
-            <DollarSign className="mr-2 h-5 w-5" />
-            Registrar Pago
-          </Button>
-        </div>
-
-        {/* DataTable */}
-        <DataTable
+    <AppLayout
+      pageTitle="Gestión de Pagos"
+      pageDescription="Registro y seguimiento de pagos de proyectos"
+      pageIcon={DollarSign}
+      breadcrumbs={[
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Pagos' }
+      ]}
+      headerActions={
+        <Button onClick={() => toast({ title: "Próximamente", description: "El registro de nuevos pagos estará disponible pronto."})} disabled={isLoading}>
+          <DollarSign className="mr-2 h-5 w-5" />
+          Registrar Pago
+        </Button>
+      }
+    >
+      {/* DataTable */}
+      <DataTable
           columns={columns}
           data={enrichedPayments}
           searchKey="projectId"
@@ -173,7 +179,6 @@ export default function PaymentsPage() {
           ]}
           enableRowSelection
         />
-      </div>
 
       {paymentToDelete && (
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -208,6 +213,6 @@ export default function PaymentsPage() {
           payment={paymentToEdit}
         />
       )}
-    </>
+    </AppLayout>
   );
 }

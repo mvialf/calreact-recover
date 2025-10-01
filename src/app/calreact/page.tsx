@@ -5,23 +5,22 @@ import type { EventType, ViewOption } from '@/types/event';
 import { CalendarView } from '@/components/calendar/calendar-view';
 import { EventModal } from '@/components/calendar/event-modal';
 import { CalendarToolbar } from '@/components/calendar/calendar-toolbar';
+import { AppLayout } from '@/components/layout';
 import { db } from '@/lib/firebase/client'; // Importar la instancia db configurada
 import { getAllCalendarEvents } from '@/services/calendarEventService';
 import { updateProjectEvent } from '@/services/projectEventService';
 import { useToast } from '@/components/ui/use-toast';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import { normalizeSearchText } from '@/utils/search-utils';
 import { startOfDay, endOfDay, isSameDay, parseISO } from '@/lib/calendar-utils';
 import { eventLogger } from '@/lib/logger';
-
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from '@dnd-kit/core';
+import { CalendarDays, Plus, Briefcase, Wrench, Users } from 'lucide-react';
 
 
 // Skeleton components for loading state
@@ -61,11 +60,6 @@ export default function CalReactAppPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<EventType | Partial<Omit<EventType, 'id'>> | null>(null);
   const { toast } = useToast();
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor)
-  );
 
   // Efecto para inicialización del cliente y fecha actual (solo se ejecuta una vez)
   useEffect(() => {
@@ -169,104 +163,72 @@ export default function CalReactAppPage() {
     setIsModalOpen(true);
   };
 
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    // Verificar si se soltó sobre un área válida y no es el mismo elemento
-    if (!over || !over.data.current || active.id === over.id) {
-      return;
-    }
-
-    // Obtener el evento directamente de los datos del elemento arrastrado
-    const draggedEventData = active.data.current?.event;
-    if (!draggedEventData) {
-      eventLogger.error("No se encontraron datos del evento arrastrado", { activeId: active.id });
-      return;
-    }
-
-    // Reconstruir el evento original con los datos del arrastre
-    const originalEvent: EventType = {
-      ...draggedEventData,
-      startDate: new Date(draggedEventData.startDate),
-      endDate: new Date(draggedEventData.endDate),
-      name: draggedEventData.name || 'Sin título',
-      description: draggedEventData.description || '',
-      color: draggedEventData.color || 'hsl(var(--primary))',
-    };
-
-    // Verificar si se soltó sobre una celda de día
-    if (over.data.current.accepts?.includes('event')) {
-      const droppedOnDate = over.data.current.date as Date;
-      
-      if (!(droppedOnDate instanceof Date) || isNaN(droppedOnDate.getTime())) {
-        eventLogger.error("Fecha de destino inválida", { droppedOnDate });
-        return;
-      }
-      
-      // Calcular la diferencia en días entre la fecha original y la nueva fecha
-      const dayDiff = Math.floor((droppedOnDate.getTime() - originalEvent.startDate.getTime()) / (1000 * 60 * 60 * 24));
-      
-      // Crear nuevas fechas manteniendo la hora original
-      const newStartDate = new Date(originalEvent.startDate);
-      newStartDate.setDate(newStartDate.getDate() + dayDiff);
-      
-      const newEndDate = new Date(originalEvent.endDate);
-      newEndDate.setDate(newEndDate.getDate() + dayDiff);
-      
-      // Verificar que las fechas resultantes sean válidas
-      if (isNaN(newStartDate.getTime()) || isNaN(newEndDate.getTime())) {
-        eventLogger.error("Fechas resultantes inválidas", { newStartDate, newEndDate });
-        return;
-      }
-      
-      const eventIdToUpdate = active.id as string;
-
-      try {
-        // Detectar si es un evento de proyecto por el tipo o referenceId
-        const isProjectEvent = originalEvent.type === 'Proyecto' || originalEvent.referenceId;
-        
-        if (isProjectEvent && originalEvent.referenceId) {
-          // Usar API de ProjectEvents para actualizar
-
-          
-          await updateProjectEvent(eventIdToUpdate, {
-            eventDate: newStartDate
-          }, db);
-          
-          // Refrescar eventos del calendario
-          await refreshCalendarEvents();
-          
-          toast({ 
-            title: "Evento de Proyecto Actualizado", 
-            description: `El evento se ha movido al ${newStartDate.toLocaleDateString()}.` 
-          });
-        } else {
-          // Para eventos genéricos (futuros), mostrar mensaje
-          toast({ 
-            title: "Función no disponible", 
-            description: "Solo los eventos de proyecto pueden moverse en el calendario.", 
-            variant: "destructive" 
-          });
-        }
-      } catch (error) {
-        eventLogger.error("Error al actualizar evento (drag and drop)", error);
-        toast({ 
-          title: "Error al Actualizar", 
-          description: "No se pudo cambiar la fecha del evento.", 
-          variant: "destructive" 
-        });
-      }
-    }
-  };
-
   const handleEventResize = async (eventId: string, newStartDate: Date, newEndDate: Date) => {
     // Deshabilitar redimensionado para eventos de proyecto
     // Los eventos de proyecto deben editarse desde su interfaz específica
-    toast({ 
-      title: "Edición no disponible", 
-      description: "Los eventos de proyecto deben editarse desde su interfaz específica.", 
-      variant: "destructive" 
+    toast({
+      title: "Edición no disponible",
+      description: "Los eventos de proyecto deben editarse desde su interfaz específica.",
+      variant: "destructive"
     });
+  };
+
+  /**
+   * Handler para mover eventos mediante drag & drop
+   * Actualiza el evento en Firebase y en el estado local
+   */
+  const handleEventDrop = async (eventId: string, newStartDate: Date, newEndDate: Date) => {
+    try {
+      // Buscar el evento a actualizar
+      const eventToUpdate = events.find(e => e.id === eventId);
+      if (!eventToUpdate) {
+        eventLogger.warn('Evento no encontrado para actualizar', { eventId });
+        return;
+      }
+
+      // Calcular duración original del evento
+      const duration = eventToUpdate.endDate.getTime() - eventToUpdate.startDate.getTime();
+
+      // Ajustar fecha de fin manteniendo la duración
+      const adjustedEndDate = new Date(newStartDate.getTime() + duration);
+
+      eventLogger.info('Moviendo evento', {
+        eventId,
+        oldStart: eventToUpdate.startDate,
+        newStart: newStartDate,
+        duration
+      });
+
+      // Actualizar en Firebase (solo eventos de tipo Proyecto)
+      if (eventToUpdate.type === 'Proyecto') {
+        await updateProjectEvent(eventId, {
+          eventDate: newStartDate  // ProjectEventType usa eventDate, no startDate
+        }, db);
+      }
+
+      // Actualizar estado local inmediatamente para mejor UX
+      setEvents(prev => prev.map(e =>
+        e.id === eventId
+          ? { ...e, startDate: newStartDate, endDate: adjustedEndDate }
+          : e
+      ));
+
+      // ✅ No mostrar toast para drag & drop - el feedback visual es suficiente
+      // Solo logueamos para debugging
+      eventLogger.info('Evento movido exitosamente', {
+        eventId,
+        newStart: newStartDate,
+        newEnd: adjustedEndDate
+      });
+
+    } catch (error) {
+      eventLogger.error('Error al mover evento', error);
+      toast({
+        title: "Error al mover evento",
+        description: "No se pudo actualizar el evento. Intenta nuevamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleModalClose = () => {
@@ -318,68 +280,91 @@ export default function CalReactAppPage() {
 
   if (!isClient || currentDate === undefined || isLoadingEvents) {
     return (
-      <div className="w-full max-w-none px-4 pb-2 bg-background">
-        <header className="text-center sm:text-left flex items-center gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-primary">CalReact</h1>
-              <p className="text-muted-foreground">Aplicación de Calendario Avanzada</p>
-            </div>
-        </header>
-        <main className="h-full flex flex-col overflow-hidden rounded-lg shadow-lg bg-card">
+      <AppLayout
+        pageTitle="Calendario"
+        pageIcon={CalendarDays}
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Calendario' }
+        ]}
+        headerActions={
+          <Button disabled className="bg-primary/50">
+            <Plus className="mr-2 h-5 w-5" /> Añadir Evento
+          </Button>
+        }
+      >
+        <div className="mb-4">
           <ToolbarSkeleton />
-          <CalendarViewSkeleton />
-        </main>
-      </div>
+        </div>
+        <CalendarViewSkeleton />
+      </AppLayout>
     );
   }
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <div className="w-full max-w-none bg-background">
-        <header className="py-4 px-4 text-center sm:text-left flex items-center gap-4">
-
-          <h1 className="text-3xl font-bold">CalReact</h1>
-        </header>
-
-        <main className="h-full w-full rounded-lg shadow-lg bg-background">
-          <div className="flex flex-col space-y-4 h-full w-full">
-            <CalendarToolbar
-              currentDate={currentDate}
-              currentView={currentView}
-              filterTerm={filterTerm}
-              onDateChange={handleDateChange}
-              onViewChange={handleViewChange}
-              onFilterChange={handleFilterChange}
-              onAddEvent={handleAddEventClick}
-              onToday={handleToday}
-            />
-            <div className="flex-grow w-full">
-              <CalendarView
-                currentDate={currentDate}
-                events={filteredEvents}
-                currentView={currentView}
-                onEventClick={handleEventClick}
-                onEventResize={handleEventResize}
-                enableDragAndDrop={true}
-                enableResizing={true}
-                weekStartsOn={1}
-              />
-            </div>
-          </div>
-        </main>
-
-        {isModalOpen && (
-          <EventModal
-            isOpen={isModalOpen}
-            eventData={selectedEvent}
-            onClose={handleModalClose}
-            onSave={handleModalSave}
-            onDelete={selectedEvent && 'id' in selectedEvent ? handleModalDelete : undefined}
-            preSelectedType={selectedEvent?.type as 'Proyecto' | 'Postventa' | 'Visita' | undefined}
-            onEventCreated={refreshCalendarEvents}
-          />
-        )}
+    <AppLayout
+      pageTitle="Calendario"
+      pageIcon={CalendarDays}
+      breadcrumbs={[
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Calendario' }
+      ]}
+      headerActions={
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Plus className="mr-2 h-5 w-5" /> Añadir Evento
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleAddEventClick('Proyecto')}>
+              <Briefcase className="mr-2 h-4 w-4" /> Proyecto
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleAddEventClick('Postventa')}>
+              <Wrench className="mr-2 h-4 w-4" /> Postventa
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleAddEventClick('Visita')}>
+              <Users className="mr-2 h-4 w-4" /> Visita
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      }
+    >
+      <div className="mb-4">
+        <CalendarToolbar
+          currentDate={currentDate}
+          currentView={currentView}
+          filterTerm={filterTerm}
+          onDateChange={handleDateChange}
+          onViewChange={handleViewChange}
+          onFilterChange={handleFilterChange}
+          onToday={handleToday}
+        />
       </div>
-    </DndContext>
+
+      <CalendarView
+        currentDate={currentDate}
+        events={filteredEvents}
+        currentView={currentView}
+        onEventClick={handleEventClick}
+        onEventDrop={handleEventDrop}
+        onEventResize={handleEventResize}
+        enableDragAndDrop={true}
+        enableResizing={true}
+        weekStartsOn={1}
+      />
+
+      {isModalOpen && (
+        <EventModal
+          isOpen={isModalOpen}
+          eventData={selectedEvent}
+          onClose={handleModalClose}
+          onSave={handleModalSave}
+          onDelete={selectedEvent && 'id' in selectedEvent ? handleModalDelete : undefined}
+          preSelectedType={selectedEvent?.type as 'Proyecto' | 'Postventa' | 'Visita' | undefined}
+          onEventCreated={refreshCalendarEvents}
+        />
+      )}
+    </AppLayout>
   );
 }

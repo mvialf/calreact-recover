@@ -17,6 +17,7 @@ import { getAfterSalesForProject, deleteAfterSales } from '@/services/afterSales
 import { afterSalesLogger } from '@/lib/logger';
 
 // Componentes
+import { AppLayout } from '@/components/layout';
 import { DataTable } from '@/components/data-table';
 import { createAfterSalesColumns, AFTERSALES_STATUS_OPTIONS } from './columns';
 import { Button } from '@/components/ui/button';
@@ -164,19 +165,16 @@ const AfterSalesPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center">
-            <Wrench className="w-8 h-8 mr-3 text-primary" />
-            Postventas
-          </h1>
-          
-        </div>
-        <NewAfterSaleDialog />
-      </div>
-
+    <AppLayout
+      pageTitle="Postventas"
+      pageDescription="Gestión de servicios postventa y mantenimiento"
+      pageIcon={Wrench}
+      breadcrumbs={[
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Postventas' }
+      ]}
+      headerActions={<NewAfterSaleDialog />}
+    >
       {/* DataTable */}
       <DataTable
         columns={columns}
@@ -243,7 +241,7 @@ const AfterSalesPage: React.FC = () => {
           />
         </EditAfterSaleDialog>
       )}
-    </div>
+    </AppLayout>
   );
 };
 

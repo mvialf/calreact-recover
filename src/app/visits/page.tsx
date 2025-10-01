@@ -18,7 +18,8 @@ import { Visit, getVisits, deleteVisit } from '@/services/visitService';
 import { NewVisitDialog, EditVisitDialog } from '@/components/modals/visits';
 import { visitLogger } from '@/lib/logger';
 
-// Componentes DataTable
+// Componentes Layout y DataTable
+import { AppLayout } from '@/components/layout';
 import { DataTable } from '@/components/data-table/data-table';
 import { createVisitsColumns, VISIT_STATUS_OPTIONS } from './columns';
 
@@ -157,15 +158,18 @@ export default function VisitsPage() {
   }
 
   return (
-    <>
-      <div className="w-full max-w-none px-4 pb-2 bg-background">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-bold text-primary">Visitas</h1>
-          <NewVisitDialog />
-        </div>
-
-        {/* DataTable */}
-        <DataTable
+    <AppLayout
+      pageTitle="Visitas"
+      pageDescription="Gestión de visitas y seguimiento"
+      pageIcon={MapPin}
+      breadcrumbs={[
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Visitas' }
+      ]}
+      headerActions={<NewVisitDialog />}
+    >
+      {/* DataTable */}
+      <DataTable
           columns={columns}
           data={visits}
           searchKey="name"
@@ -179,7 +183,6 @@ export default function VisitsPage() {
           ]}
           enableRowSelection
         />
-      </div>
 
       {/* Diálogo de confirmación para eliminar */}
       <AlertDialog open={!!visitToDelete} onOpenChange={(open) => !open && setVisitToDelete(null)}>
@@ -214,7 +217,7 @@ export default function VisitsPage() {
           />
         </EditVisitDialog>
       )}
-    </>
+    </AppLayout>
   );
 }
 
