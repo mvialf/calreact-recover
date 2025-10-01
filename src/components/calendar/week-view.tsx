@@ -3,58 +3,72 @@
 
 import type { EventType } from '@/types/event';
 import { CalendarEventCard } from './CalendarEventCard';
-import { 
-  getDaysInWeek, 
-  format, 
-  isToday, 
+import {
+  getDaysInWeek,
+  format,
+  isToday,
   startOfDay,
   endOfDay
 } from '@/lib/calendar-utils';
 import { cn } from '@/lib/utils';
-import { useDroppable } from '@dnd-kit/core';
+import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 
 interface WeekViewProps {
   currentDate: Date;
   events: EventType[];
   onEventClick: (event: EventType) => void;
+  onMoveEvent?: (eventId: string, newDate: Date) => void;
   weekStartsOn?: 0 | 1;
   enableDragAndDrop?: boolean;
   enableResizing?: boolean;
 }
 
 // Componente auxiliar para cada columna de día
-function DayColumn({ 
-  day, 
-  dayEvents, 
-  onEventClick, 
-  enableDragAndDrop, 
-  enableResizing 
+function DayColumn({
+  day,
+  dayEvents,
+  onEventClick,
+  onMoveEvent,
+  enableDragAndDrop,
+  enableResizing,
+  handleDragOver,
+  handleDragLeave,
+  handleDrop,
 }: {
   day: Date;
   dayEvents: EventType[];
   onEventClick: (event: EventType) => void;
+  onMoveEvent?: (eventId: string, newDate: Date) => void;
   enableDragAndDrop?: boolean;
   enableResizing?: boolean;
+  handleDragOver: (e: React.DragEvent, targetId?: string) => void;
+  handleDragLeave: (e: React.DragEvent) => void;
+  handleDrop: (e: React.DragEvent, targetDate: string, onMoveEvent: (itemId: string, targetDate: string) => void) => void;
 }) {
-  // 🔥 Hook useDroppable FUERA del callback del map
-  const { setNodeRef, isOver } = useDroppable({
-    id: day.toISOString(),
-    data: {
-      type: 'day-column',
-      accepts: ['event'],
-      date: day
-    },
-    disabled: !enableDragAndDrop,
-  });
+  const dayISOString = day.toISOString();
+
+  const handleColumnDrop = (e: React.DragEvent) => {
+    if (onMoveEvent) {
+      const moveEventWrapper = (itemId: string, targetDate: string) => {
+        onMoveEvent(itemId, new Date(targetDate));
+      };
+      handleDrop(e, dayISOString, moveEventWrapper);
+    }
+  };
+
+  const handleColumnDragOver = (e: React.DragEvent) => {
+    handleDragOver(e, dayISOString);
+  };
 
   return (
-    <div 
-      ref={setNodeRef}
+    <div
       className={cn(
         "border-r border-border last:border-r-0 p-1.5 space-y-1.5 overflow-y-auto min-h-[calc(100vh-220px)] transition-colors relative",
-        isToday(day) && "bg-primary/5",
-        isOver && enableDragAndDrop && "bg-secondary/30 ring-2 ring-primary/30" // Resaltar cuando se está arrastrando algo encima
+        isToday(day) && "bg-primary/5"
       )}
+      onDragOver={handleColumnDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleColumnDrop}
     >
       {dayEvents.length > 0 ? (
         dayEvents.map(event => (
@@ -71,11 +85,11 @@ function DayColumn({
       ) : (
         <div className="text-center text-xs text-muted-foreground pt-2">Vacío</div>
       )}
-      
+
       {/* Área invisible para que todo el espacio sea droppable, no solo donde hay eventos */}
       {enableDragAndDrop && (
-        <div 
-          className="absolute inset-0 pointer-events-none" 
+        <div
+          className="absolute inset-0 pointer-events-none"
           aria-hidden="true"
         />
       )}
@@ -87,10 +101,14 @@ export function WeekView({
   currentDate,
   events,
   onEventClick,
+  onMoveEvent,
   weekStartsOn = 0,
   enableDragAndDrop,
   enableResizing,
 }: WeekViewProps) {
+  // 🎯 Hook simplificado - solo maneja eventos de DROP
+  const { handleDragOver, handleDragLeave, handleDrop } = useDragAndDrop();
+
   const days = getDaysInWeek(currentDate, weekStartsOn);
 
   const getEventsForDay = (day: Date) => {
@@ -138,16 +156,19 @@ export function WeekView({
       <div className="grid grid-cols-7">
         {days.map(day => {
           const dayEvents = getEventsForDay(day);
-          
-          // 🔥 AHORA USA EL COMPONENTE SEPARADO QUE MANEJA SU PROPIO HOOK
+
           return (
-            <DayColumn 
+            <DayColumn
               key={day.toISOString()}
               day={day}
               dayEvents={dayEvents}
               onEventClick={onEventClick}
+              onMoveEvent={onMoveEvent}
               enableDragAndDrop={enableDragAndDrop}
               enableResizing={enableResizing}
+              handleDragOver={handleDragOver}
+              handleDragLeave={handleDragLeave}
+              handleDrop={handleDrop}
             />
           );
         })}

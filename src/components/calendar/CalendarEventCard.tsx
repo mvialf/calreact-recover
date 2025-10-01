@@ -4,11 +4,10 @@ import { useMemo } from 'react';
 import type { EventType } from '@/types/event';
 import { isSameDay } from '@/lib/calendar-utils';
 import { isValid } from 'date-fns';
-import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { cn } from '@/lib/utils';
 import type React from 'react';
 import { eventLogger } from '@/lib/logger';
-import { EVENT_RENDERERS, DefaultEventRenderer } from './event-renderers';
+import { EVENT_RENDERERS, DefaultEventRenderer} from './event-renderers';
 
 interface CalendarEventCardProps {
   event: EventType;
@@ -55,46 +54,6 @@ export function CalendarEventCard({
   // Hook para validar evento
   const event = useValidatedEvent(originalEvent);
 
-  // Hook para preparar datos del evento para arrastre
-  const eventData = useMemo(() => {
-    if (!event) return null;
-    return {
-      type: 'event',
-      event: {
-        ...event,
-        // Asegurarse de que las fechas sean serializables
-        startDate: event.startDate.toISOString(),
-        endDate: event.endDate.toISOString(),
-        // Incluir todos los campos necesarios
-        name: event.name,
-        description: event.description,
-        color: event.color,
-        // Asegurarse de incluir cualquier otro campo necesario
-        ...(event as any) // Esto asegura que no perdamos ningún campo
-      }
-    };
-  }, [event]);
-
-  // Hook para configurar draggable
-  const {attributes, listeners, setNodeRef: setDraggableRef, transform, isDragging} = useDraggable({
-    id: event?.id || 'invalid-event',
-    data: eventData || undefined,
-    disabled: !enableDragAndDrop || !event,
-  });
-
-  // Hook para configurar droppable
-  const {setNodeRef: setDroppableRef, isOver} = useDroppable({
-    id: event?.id ? `droppable-event-${event.id}` : 'invalid-droppable',
-    data: {
-      type: 'event-target',
-      accepts: ['event'],
-      eventId: event?.id || '',
-      date: event?.startDate || new Date(),
-      targetEvent: event
-    },
-    disabled: !enableDragAndDrop || !event,
-  });
-
   // Hook para verificar si es multi-día
   const isMultiDay = useMemo(() => {
     if (!event) return false;
@@ -114,10 +73,32 @@ export function CalendarEventCard({
     return null;
   }
 
-  // Combinar los refs para que el elemento sea tanto draggable como droppable
-  const setNodeRef = (node: HTMLElement | null) => {
-    setDraggableRef(node);
-    setDroppableRef(node);
+  /**
+   * Handler de drag start - AUTO-CONTENIDO
+   * Configura dataTransfer con el ID del evento (HTML5 nativo)
+   */
+  const handleDragStart = (e: React.DragEvent) => {
+    // 🔥 CRÍTICO: Configurar dataTransfer (requisito HTML5 API)
+    e.dataTransfer.setData("text/plain", event.id);
+    e.dataTransfer.effectAllowed = "move";
+
+    // Agregar clase visual para feedback
+    const target = e.target as HTMLElement;
+    target.classList.add("dragging");
+
+    eventLogger.debug('Drag started', { eventId: event.id, eventName: event.name });
+  };
+
+  /**
+   * Handler de drag end - AUTO-CONTENIDO
+   * Limpia el estado visual después del drag
+   */
+  const handleDragEnd = (e: React.DragEvent) => {
+    // Remover clase visual
+    const target = e.target as HTMLElement;
+    target.classList.remove("dragging");
+
+    eventLogger.debug('Drag ended', { eventId: event.id });
   };
 
   // Determinar el color según el tipo de evento
@@ -140,13 +121,8 @@ export function CalendarEventCard({
 
   // Estilos para el evento
   const style = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     borderLeftColor: getEventColor(),
-    zIndex: isDragging ? 1000 : (isOver ? 999 : 'auto'),
-    opacity: isDragging ? 0.8 : 1,
-    transition: isDragging ? 'none' : 'transform 200ms ease',
     cursor: enableDragAndDrop ? 'grab' : 'pointer',
-    boxShadow: isOver ? '0 0 0 2px hsl(var(--primary))' : undefined,
   };
 
   const handleClick = (e: React.MouseEvent) => {
@@ -184,22 +160,22 @@ export function CalendarEventCard({
 
   return (
     <div
-      ref={setNodeRef}
+      draggable={enableDragAndDrop && !!event}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
       style={style}
-      {...listeners}
-      {...attributes}
       className={cn(
         "bg-card dark:bg-[hsl(240,5%,12%)] text-card-foreground",
         "border border-border/60",
         "border-l-4",
         "p-1.5 rounded-md text-xs overflow-hidden shadow-sm hover:shadow-md relative",
-        isDragging ? "shadow-2xl" : "hover:shadow-md",
-        isOver ? "ring-2 ring-primary ring-offset-1" : ""
+        enableDragAndDrop && "cursor-grab active:cursor-grabbing"
       )}
       onClick={handleClick}
       title={getTooltipText()}
       data-calendar-event="true" // CRÍTICO: Para detección de clicks en componente padre
     >
+      {/* 🎯 REGISTRY PATTERN PRESERVADO 100% */}
       <Renderer event={event} view={view} />
     </div>
   );

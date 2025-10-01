@@ -1,42 +1,47 @@
 
 "use client";
 
-import { useDroppable } from '@dnd-kit/core';
 import type { EventType } from '@/types/event';
 import { CalendarEventCard } from './CalendarEventCard';
-import { 
-  getDaysInMonth, 
-  isSameMonth, 
-  isToday, 
+import {
+  getDaysInMonth,
+  isSameMonth,
+  isToday,
   format,
   startOfDay,
   endOfDay
 } from '@/lib/calendar-utils';
 import { cn } from '@/lib/utils';
+import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 
 interface MonthViewProps {
   currentDate: Date;
   events: EventType[];
   onEventClick: (event: EventType) => void;
+  onMoveEvent?: (eventId: string, newDate: Date) => void;
   weekStartsOn?: 0 | 1;
   enableDragAndDrop?: boolean;
   enableResizing?: boolean;
 }
 
-export function MonthView({ 
-  currentDate, 
-  events, 
-  onEventClick, 
+export function MonthView({
+  currentDate,
+  events,
+  onEventClick,
+  onMoveEvent,
   weekStartsOn = 0, // Default to Sunday
   enableDragAndDrop,
   enableResizing,
 }: MonthViewProps) {
+  // 🎯 Hook simplificado - solo maneja eventos de DROP
+  const { handleDragOver, handleDragLeave, handleDrop } = useDragAndDrop();
+
   const weeks = getDaysInMonth(currentDate, weekStartsOn);
-  
+
   // Day names in Spanish, considering weekStartsOn
   let dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
   if (weekStartsOn === 1) { // Monday start
-    dayNames.push(dayNames.shift()!); 
+    dayNames.push(dayNames.shift()!);
   }
 
 
@@ -54,26 +59,34 @@ export function MonthView({
 
   // Componente para cada celda de día con soporte para soltar
   const DayCell = ({ day, dayEvents, index }: { day: Date; dayEvents: EventType[]; index: number }) => {
-    const { setNodeRef, isOver } = useDroppable({
-      id: day.toISOString(),
-      data: {
-        accepts: ['event'],
-        date: day
-      },
-    });
+    const dayISOString = day.toISOString();
+
+    const handleCellDrop = (e: React.DragEvent) => {
+      if (onMoveEvent) {
+        // Convertir el itemId a una función que espera (itemId, targetDate)
+        const moveEventWrapper = (itemId: string, targetDate: string) => {
+          onMoveEvent(itemId, new Date(targetDate));
+        };
+        handleDrop(e, dayISOString, moveEventWrapper);
+      }
+    };
+
+    const handleCellDragOver = (e: React.DragEvent) => {
+      handleDragOver(e, dayISOString);
+    };
 
     return (
       <div
-        ref={setNodeRef}
         key={index}
         className={cn(
-          "border-r border-b border-border p-1.5 flex flex-col relative cursor-pointer transition-colors duration-150 min-h-0 w-full",
+          "border-r border-b border-border p-1.5 flex flex-col bg-card relative cursor-pointer transition-colors duration-150 min-h-0 w-full",
           !isSameMonth(day, currentDate) && "bg-muted/30 text-muted-foreground/60",
           isToday(day) && "bg-primary/10",
-          isOver && "bg-accent/20",
           (index + 1) % 7 === 0 && "border-r-0" // No right border for last column
         )}
-
+        onDragOver={handleCellDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleCellDrop}
       >
         <span
           className={cn(
@@ -83,12 +96,12 @@ export function MonthView({
         >
           {format(day, 'd')}
         </span>
-        <div className="flex-grow space-y-0.5"> 
-          {dayEvents.slice(0, 3).map(event => ( 
-            <CalendarEventCard 
-              key={event.id} 
-              event={event} 
-              onClick={onEventClick} 
+        <div className="flex-grow space-y-0.5">
+          {dayEvents.slice(0, 3).map(event => (
+            <CalendarEventCard
+              key={event.id}
+              event={event}
+              onClick={onEventClick}
               view="month"
               enableDragAndDrop={enableDragAndDrop}
               enableResizing={enableResizing}

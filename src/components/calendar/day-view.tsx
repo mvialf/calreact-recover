@@ -3,18 +3,20 @@
 
 import type { EventType } from '@/types/event';
 import { CalendarEventCard } from './CalendarEventCard';
-import { 
-  format, 
-  isToday, 
+import {
+  format,
+  isToday,
   startOfDay,
   endOfDay
 } from '@/lib/calendar-utils';
 import { cn } from '@/lib/utils';
+import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 
 interface DayViewProps {
   currentDate: Date;
   events: EventType[];
   onEventClick: (event: EventType) => void;
+  onMoveEvent?: (eventId: string, newDate: Date) => void;
   enableDragAndDrop?: boolean;
   enableResizing?: boolean;
 }
@@ -23,16 +25,34 @@ export function DayView({
   currentDate,
   events,
   onEventClick,
+  onMoveEvent,
   enableDragAndDrop,
   enableResizing,
 }: DayViewProps) {
-  
+  // 🎯 Hook simplificado - solo maneja eventos de DROP
+  const { handleDragOver, handleDragLeave, handleDrop } = useDragAndDrop();
+
   const dayEvents = events.filter(event => {
       const eventStartDay = startOfDay(event.startDate);
       const eventEndDay = startOfDay(event.endDate); // Compare start of day for multi-day events
       const currentViewDayStart = startOfDay(currentDate);
       return (eventStartDay <= currentViewDayStart && eventEndDay >= currentViewDayStart);
   }).sort((a,b) => a.startDate.getTime() - b.startDate.getTime());
+
+  const dayISOString = currentDate.toISOString();
+
+  const handleContainerDrop = (e: React.DragEvent) => {
+    if (onMoveEvent) {
+      const moveEventWrapper = (itemId: string, targetDate: string) => {
+        onMoveEvent(itemId, new Date(targetDate));
+      };
+      handleDrop(e, dayISOString, moveEventWrapper);
+    }
+  };
+
+  const handleContainerDragOver = (e: React.DragEvent) => {
+    handleDragOver(e, dayISOString);
+  };
 
   return (
     <div className="flex flex-col w-full bg-card rounded-lg shadow-md border border-border">
@@ -47,8 +67,13 @@ export function DayView({
       </div>
 
       {/* Body: Events List */}
-      <div 
-        className="flex-grow overflow-auto p-2 space-y-2 transition-colors"
+      <div
+        className={cn(
+          "flex-grow overflow-auto p-2 space-y-2 transition-colors relative"
+        )}
+        onDragOver={handleContainerDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleContainerDrop}
       >
         {dayEvents.length > 0 ? (
           dayEvents.map(event => (

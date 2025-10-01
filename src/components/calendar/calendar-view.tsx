@@ -6,6 +6,7 @@ import { MonthView } from './month-view';
 import { WeekView } from './week-view';
 import { DayView } from './day-view';
 import { startOfDay } from '@/lib/calendar-utils';
+import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 
 interface CalendarViewProps {
   currentDate: Date;
@@ -31,13 +32,28 @@ export function CalendarView({
   weekStartsOn = 0,
 }: CalendarViewProps) {
 
+  // 🎯 Adapter: convertir onEventDrop (3 params) a onMoveEvent (2 params)
+  // Las vistas calculan la duración del evento internamente
+  const handleMoveEvent = (eventId: string, newStartDate: Date) => {
+    if (onEventDrop) {
+      // Buscar el evento para obtener su duración
+      const event = events.find(e => e.id === eventId);
+      if (event) {
+        const duration = event.endDate.getTime() - event.startDate.getTime();
+        const newEndDate = new Date(newStartDate.getTime() + duration);
+        onEventDrop(eventId, newStartDate, newEndDate);
+      }
+    }
+  };
+
   return (
-    <div className="h-full w-full flex flex-col">
+    <div className="size-full flex flex-col">
       {currentView === 'month' && (
         <MonthView
           currentDate={currentDate}
           events={events}
           onEventClick={onEventClick}
+          onMoveEvent={handleMoveEvent}
           weekStartsOn={weekStartsOn}
           enableDragAndDrop={enableDragAndDrop}
           enableResizing={enableResizing}
@@ -48,6 +64,7 @@ export function CalendarView({
           currentDate={currentDate}
           events={events}
           onEventClick={onEventClick}
+          onMoveEvent={handleMoveEvent}
           weekStartsOn={weekStartsOn}
           enableDragAndDrop={enableDragAndDrop}
           enableResizing={enableResizing}
@@ -58,6 +75,7 @@ export function CalendarView({
           currentDate={currentDate}
           events={events}
           onEventClick={onEventClick}
+          onMoveEvent={handleMoveEvent}
           enableDragAndDrop={enableDragAndDrop}
           enableResizing={enableResizing}
         />
