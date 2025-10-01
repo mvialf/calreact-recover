@@ -14,6 +14,7 @@ import { PROJECT_STATUS_OPTIONS } from '@/constants/project';
 import { useProjectEventFormContext } from './Container';
 import { useNumericInput } from '@/hooks/useNumericInput';
 import type { BaseFormComponentProps } from './types';
+import { LoadingSkeleton } from './LoadingSkeleton';
 
 // Lazy load componentes pesados
 const AddressInput = lazy(() =>
@@ -101,7 +102,7 @@ export const FullFields: React.FC<BaseFormComponentProps> = ({ className }) => {
           <FormItem>
             <FormLabel>Dirección</FormLabel>
             <FormControl>
-              <Suspense fallback={<Input placeholder="Cargando..." disabled />}>
+              <Suspense fallback={<LoadingSkeleton />}>
                 <AddressInput
                   value={field.value}
                   onSelect={field.onChange}
