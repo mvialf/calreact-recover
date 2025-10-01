@@ -19,9 +19,6 @@ import type { BaseFormComponentProps } from './types';
 const AddressInput = lazy(() =>
   import('@/components/ui/addressInput').then(mod => ({ default: mod.AddressInput }))
 );
-const TagSelector = lazy(() =>
-  import('@/components/ui/tag-selector').then(mod => ({ default: mod.TagSelector }))
-);
 
 export const FullFields: React.FC<BaseFormComponentProps> = ({ className }) => {
   const { form, disabled } = useProjectEventFormContext();
