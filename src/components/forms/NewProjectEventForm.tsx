@@ -258,6 +258,7 @@ export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
                   onSelect={field.onChange}
                   placeholder="Ingrese la dirección del proyecto"
                   disabled={disabled}
+                  countryCode={initialData?.fullAddress?.componentes?.pais}
                 />
               </FormControl>
               <FormMessage />

@@ -233,6 +233,7 @@ export const VisitForm: React.FC<VisitFormProps> = ({
                   onPlaceSelected={handleAddressSelect}
                   value={field.value ?? null}
                   placeholder="Buscar dirección..."
+                  countryCode={initialData?.fullAddress?.componentes?.pais}
                 />
               </FormControl>
               <FormMessage />

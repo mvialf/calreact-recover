@@ -3,8 +3,10 @@
 import React from "react"
 import { Loader2, MapPin, X, MoreVertical, Building, Copy, Map, Share2, MapPinOff } from "lucide-react" // TODO: Implementar estados de error geolocalización con MapPinOff
 import { useLoadScript } from "@react-google-maps/api"
+import { Country } from "react-phone-number-input"
 import { extractAddressComponents } from "@/utils/address-utils"
 import { cn } from "@/lib/utils"
+import { useAppConfig } from "@/contexts/AppConfigContext"
 import { Input } from "@/components/ui/input"
 import {
   Popover,
@@ -78,6 +80,12 @@ export interface AddressInputProps {
    */
   disabled?: boolean;
   /**
+   * Código de país para restringir búsquedas (ISO 3166-1 alpha-2)
+   * Si no se proporciona, usa la configuración global del usuario (AppConfig.defaultCountry)
+   * @example 'CL', 'ES', 'AR', 'MX'
+   */
+  countryCode?: string;
+  /**
    * Si el input está cargando desde una fuente externa
    */
   externalLoading?: boolean;
@@ -92,6 +100,7 @@ export function AddressInput({
   inputClassName = "",
   disabled = false,
   externalLoading = false,
+  countryCode,
 }: AddressInputProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -100,6 +109,18 @@ export function AddressInput({
   const [selectedAddress, setSelectedAddress] = React.useState<FormattedAddress | null>(value || null);
   const [additionalInfo, setAdditionalInfo] = React.useState(value?.informacionAdicional || "");
   const [apiStatus, setApiStatus] = React.useState<'loading' | 'ready' | 'error'>('loading');
+
+  // ✅ ARQUITECTURA HÍBRIDA: Configuración de país con prioridad inteligente
+  const { config: appConfig } = useAppConfig();
+
+  // Calcular país efectivo con orden de prioridad:
+  // 1. countryCode prop (override explícito)
+  // 2. appConfig.defaultCountry (configuración usuario desde GeneralSettings)
+  // 3. 'CL' (fallback)
+  const effectiveCountry = React.useMemo(() => {
+    const country = countryCode || appConfig.defaultCountry || 'CL';
+    return country.toLowerCase(); // Google Maps API usa lowercase
+  }, [countryCode, appConfig.defaultCountry]);
 
   // Obtener configuración optimizada
   const config = React.useMemo(() => {
@@ -173,27 +194,29 @@ export function AddressInput({
       
       try {
         setApiStatus('loading');
-        
+
+        // ✅ Usar país efectivo desde configuración híbrida
         const adapter = new PlacesServiceAdapter({
-          componentRestrictions: { country: 'es' },
+          componentRestrictions: { country: effectiveCountry },
           types: ['establishment'],
-          sessionToken: true
+          sessionToken: true,
+          region: effectiveCountry, // Sesgo de resultados hacia la región configurada
         });
-        
+
         await adapter.initialize();
         placesAdapterRef.current = adapter;
         setApiStatus('ready');
-        
-        uiLogger.info(`Places API inicializada: ${adapter.getAPIVersion()}`);
-        
+
+        uiLogger.info(`Places API inicializada: ${adapter.getAPIVersion()} (país: ${effectiveCountry.toUpperCase()})`);
+
       } catch (error) {
         setApiStatus('error');
         uiLogger.error('Error al inicializar Places API:', error);
       }
     };
-    
+
     initializePlacesAPI();
-  }, [isLoaded]);
+  }, [isLoaded, effectiveCountry]);
 
   // ✅ MIGRACIÓN: Buscar sugerencias con nuevo adaptador
   const searchAddresses = React.useCallback(async (query: string) => {

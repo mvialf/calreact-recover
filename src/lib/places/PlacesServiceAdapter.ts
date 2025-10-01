@@ -22,13 +22,13 @@ export interface PlacesAdapterConfig {
   language?: string;
 }
 
-// Configuración por defecto
+// Configuración por defecto (alineada con AppConfigContext.defaultCountry)
 const DEFAULT_CONFIG: Required<PlacesAdapterConfig> = {
-  componentRestrictions: { country: 'es' },
+  componentRestrictions: { country: 'cl' }, // Chile por defecto, consistente con AppConfig
   types: ['establishment'],
   sessionToken: true,
-  region: 'es',
-  language: 'es'
+  region: 'cl',
+  language: 'es' // Mantener español como idioma
 };
 
 export class PlacesServiceAdapter {

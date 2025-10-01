@@ -321,6 +321,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
                   value={field.value}
                   onSelect={field.onChange}
                   placeholder="Ingrese la dirección del proyecto"
+                  countryCode={defaultValues?.fullAddress?.componentes?.pais}
                 />
               </FormControl>
               <FormMessage />
