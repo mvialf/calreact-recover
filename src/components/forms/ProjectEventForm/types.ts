@@ -10,6 +10,9 @@ import type {
   ProjectEventFormValues,
 } from '@/schemas/project-event.schemas';
 
+// Re-export para tests
+export type { ProjectEventFormValues };
+
 /**
  * Modo de operación del formulario
  */

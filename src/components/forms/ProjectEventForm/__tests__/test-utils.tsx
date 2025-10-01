@@ -39,8 +39,9 @@ export const createMockFullFormValues = (overrides: Partial<ProjectEventFormValu
   description: 'Full description for testing',
   phone: '+34 600 000 000',
   fullAddress: {
-    formatted_address: 'Calle Test 123, Madrid, España',
-    place_id: 'ChIJtest123',
+    textoCompleto: 'Calle Test 123, Madrid, España',
+    placeId: 'ChIJtest123',
+    coordenadas: { latitude: 40.4168, longitude: -3.7038 },
   },
   status: 'ingresado',
   windowsCount: 5,
