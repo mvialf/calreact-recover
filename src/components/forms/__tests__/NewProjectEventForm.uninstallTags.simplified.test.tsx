@@ -19,9 +19,7 @@ jest.mock('@/components/ui/phone-input', () => ({
   PhoneInput: () => <div data-testid="phone-input" />
 }));
 
-jest.mock('@/components/ui/date-input', () => ({
-  DateInput: () => <div data-testid="date-input" />
-}));
+// DateInput ya no necesita mock - es un input nativo estándar
 
 jest.mock('@/components/ui/tags', () => ({
   TagSelector: ({ label, placeholder }: any) => (

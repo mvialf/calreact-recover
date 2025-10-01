@@ -22,18 +22,7 @@ jest.mock('@/components/ui/addressInput', () => ({
   )
 }));
 
-jest.mock('@/components/ui/date-input', () => ({
-  DateInput: ({ date, onSelect, placeholder }: any) => (
-    <input 
-      data-testid="date-picker"
-      id="date"
-      type="date"
-      value={date?.toISOString?.()?.split('T')[0] || ''}
-      onChange={(e) => onSelect?.(new Date(e.target.value))}
-      placeholder={placeholder}
-    />
-  )
-}));
+// DateInput ya no necesita mock - es un input nativo estándar
 
 const createQueryClient = () => new QueryClient({
   defaultOptions: {

@@ -34,18 +34,7 @@ jest.mock('@/components/ui/phone-input', () => ({
   )
 }));
 
-jest.mock('@/components/ui/date-input', () => ({
-  DateInput: ({ date, onSelect, placeholder, disabled }: any) => (
-    <input
-      data-testid="date-input"
-      type="date"
-      value={date?.toISOString?.()?.split('T')[0] || ''}
-      onChange={(e) => onSelect?.(new Date(e.target.value))}
-      placeholder={placeholder}
-      disabled={disabled}
-    />
-  )
-}));
+// DateInput ya no necesita mock - es un input nativo estándar
 
 // Mock para TagSelector con lógica de conversión
 jest.mock('@/components/ui/tags', () => ({

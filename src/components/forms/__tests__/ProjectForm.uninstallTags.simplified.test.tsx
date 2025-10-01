@@ -22,10 +22,7 @@ jest.mock('@/components/ui/addressInput', () => ({
   AddressInput: () => <div data-testid="address-input" />
 }));
 
-// Mock simplificado de DateInput
-jest.mock('@/components/ui/date-input', () => ({
-  DateInput: () => <div data-testid="date-input" />
-}));
+// DateInput ya no necesita mock - es un input nativo estándar
 
 // Mock simplificado de TagSelector
 jest.mock('@/components/ui/tags', () => ({
