@@ -405,23 +405,25 @@ export function EventModal({
               <div className="grid gap-3">
                 <Label className="text-sm font-medium">Fecha de Inicio</Label>
                 <DateInput
-                  date={startDate}
-                  onSelect={setStartDate}
-                  calendarProps={{
-                    fromYear: new Date().getFullYear() - 1,
-                    toYear: new Date().getFullYear() + 5,
+                  value={startDate ? format(startDate, 'yyyy-MM-dd') : ''}
+                  onChange={(e) => {
+                    const date = e.target.value ? new Date(e.target.value) : undefined
+                    setStartDate(date)
                   }}
+                  min={`${new Date().getFullYear() - 1}-01-01`}
+                  max={`${new Date().getFullYear() + 5}-12-31`}
                 />
               </div>
               <div className="grid gap-3">
                 <Label className="text-sm font-medium">Fecha de Fin</Label>
                 <DateInput
-                  date={endDate}
-                  onSelect={setEndDate}
-                  calendarProps={{
-                    fromYear: new Date().getFullYear() - 1,
-                    toYear: new Date().getFullYear() + 5,
+                  value={endDate ? format(endDate, 'yyyy-MM-dd') : ''}
+                  onChange={(e) => {
+                    const date = e.target.value ? new Date(e.target.value) : undefined
+                    setEndDate(date)
                   }}
+                  min={`${new Date().getFullYear() - 1}-01-01`}
+                  max={`${new Date().getFullYear() + 5}-12-31`}
                 />
               </div>
             </div>

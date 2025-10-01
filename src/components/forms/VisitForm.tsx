@@ -27,6 +27,7 @@ import {
 import { VisitStatus, VISIT_STATUS_OPTIONS, DEFAULT_VISIT_STATUS } from '@/types/visit';
 import { AddressInput } from '@/components/ui/addressInput';
 import { DateInput } from '@/components/ui/date-input';
+import { format } from 'date-fns';
 import type { FormattedAddress } from '@/types/project';
 
 // Esquemas de validación centralizados
@@ -163,8 +164,11 @@ export const VisitForm: React.FC<VisitFormProps> = ({
                 <FormLabel>Fecha</FormLabel>
                 <FormControl>
                   <DateInput
-                    date={field.value}
-                    onSelect={field.onChange}
+                    value={field.value ? format(field.value, 'yyyy-MM-dd') : ''}
+                    onChange={(e) => {
+                      const date = e.target.value ? new Date(e.target.value) : undefined
+                      field.onChange(date)
+                    }}
                     disabled={isSubmitting}
                   />
                 </FormControl>

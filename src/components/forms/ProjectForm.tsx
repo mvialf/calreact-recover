@@ -35,6 +35,7 @@ import { PhoneInput } from '@/components/ui/phone-input';
 import { PercentageInput } from '@/components/ui/percentage-input';
 import { MoneyInput } from '@/components/ui/money-input';
 import { DateInput } from '@/components/ui/date-input';
+import { format } from 'date-fns';
 import { AddressInput } from '@/components/ui/addressInput';
 import {
   Form,
@@ -296,9 +297,11 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
                 <FormLabel>Fecha de Ingreso *</FormLabel>
                 <FormControl>
                   <DateInput
-                    date={field.value}
-                    onSelect={field.onChange}
-                    
+                    value={field.value ? format(field.value, 'yyyy-MM-dd') : ''}
+                    onChange={(e) => {
+                      const date = e.target.value ? new Date(e.target.value) : undefined
+                      field.onChange(date)
+                    }}
                   />
                 </FormControl>
                 <FormMessage />

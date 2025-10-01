@@ -20,6 +20,7 @@ import { AddressInput } from '@/components/ui/addressInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { DateInput } from '@/components/ui/date-input';
+import { format } from 'date-fns';
 import { TagSelector, type Tag } from '@/components/ui/tags';
 
 // Types imports
@@ -231,10 +232,13 @@ export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Fecha del Evento</FormLabel>
-              <FormControl> 
+              <FormControl>
                 <DateInput
-                  date={field.value}
-                  onSelect={field.onChange}
+                  value={field.value ? format(field.value, 'yyyy-MM-dd') : ''}
+                  onChange={(e) => {
+                    const date = e.target.value ? new Date(e.target.value) : undefined
+                    field.onChange(date)
+                  }}
                   disabled={disabled}
                   placeholder="Seleccionar fecha"
                 />

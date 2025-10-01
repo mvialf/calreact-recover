@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { DateInput } from '@/components/ui/date-input';
+import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -216,8 +217,11 @@ export const NewProjectEventLeanForm = forwardRef<HTMLFormElement, NewProjectEve
                 </FormLabel>
                 <FormControl>
                   <DateInput
-                    date={field.value}
-                    onSelect={(date) => field.onChange(date)}
+                    value={field.value ? format(field.value, 'yyyy-MM-dd') : ''}
+                    onChange={(e) => {
+                      const date = e.target.value ? new Date(e.target.value) : undefined
+                      field.onChange(date)
+                    }}
                     placeholder="Seleccionar fecha..."
                   />
                 </FormControl>

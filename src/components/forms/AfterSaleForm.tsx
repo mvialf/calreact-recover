@@ -25,6 +25,7 @@ import { AddressInput } from "@/components/ui/addressInput";
 import { Autocomplete, type AutocompleteItem } from "@/components/ui/autocomplete";
 import { CheckList, type CheckListItem } from "@/components/ui/check-list";
 import { DateInput } from "@/components/ui/date-input";
+import { format } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -314,14 +315,15 @@ export function AfterSaleForm({
                   <FormLabel>Fecha</FormLabel>
                   <div className="w-full">
                     <DateInput
-                      date={field.value}
-                      onSelect={field.onChange}
-                      className="w-full"
-                      calendarProps={{
-                        disabled: isSubmitting,
-                        fromDate: new Date(2020, 0, 1),
-                        toDate: new Date(),
+                      value={field.value ? format(field.value, 'yyyy-MM-dd') : ''}
+                      onChange={(e) => {
+                        const date = e.target.value ? new Date(e.target.value) : undefined
+                        field.onChange(date)
                       }}
+                      className="w-full"
+                      disabled={isSubmitting}
+                      min="2020-01-01"
+                      max={format(new Date(), 'yyyy-MM-dd')}
                     />
                   </div>
                   <FormMessage />
