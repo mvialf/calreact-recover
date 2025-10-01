@@ -1,5 +1,105 @@
 # 🎨 Patrones de Código Establecidos - CalReact
 
+## 🏗️ Layout Modular con AppLayout (IMPLEMENTADO - Sept 2025)
+
+### ✅ Patrón AppLayout para Páginas
+```typescript
+// ✅ PATRÓN OBLIGATORIO para nuevas páginas
+import { AppLayout } from '@/components/layout';
+import { IconName } from 'lucide-react';
+
+export default function ExamplePage() {
+  return (
+    <AppLayout
+      pageTitle="Título de la Página"
+      pageDescription="Descripción opcional"
+      pageIcon={IconName}
+      breadcrumbs={[
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Título' }
+      ]}
+      headerActions={
+        <>
+          <Switch />
+          <Button>Acción</Button>
+        </>
+      }
+    >
+      {/* Contenido de la página */}
+      <DataTable {...} />
+    </AppLayout>
+  );
+}
+```
+
+### Beneficios del Patrón AppLayout
+- **Consistencia:** Header estandarizado en todas las páginas
+- **Breadcrumbs:** Navegación clara y automática
+- **Escalabilidad:** Agregar features sin tocar layout core
+- **Testabilidad:** Componentes aislados testeables
+- **Mantenibilidad:** Single Responsibility aplicado
+
+### Componentes del Sistema
+- **AppLayout** (`src/components/layout/AppLayout.tsx`) - Wrapper principal (84 líneas)
+- **AppSidebar** (`src/components/layout/AppSidebar.tsx`) - Navegación lateral (78 líneas)
+- **PageHeader** (`src/components/layout/PageHeader.tsx`) - Header con breadcrumbs (107 líneas)
+
+### Páginas Migradas (100% del Proyecto)
+- ✅ **projects** - Gestión de proyectos con DataTable
+- ✅ **payments** - Registro de pagos
+- ✅ **clients** - Gestión de clientes
+- ✅ **visits** - Programación de visitas
+- ✅ **aftersales** - Servicios postventa
+- ✅ **calreact** - Calendario de eventos (con CalendarToolbar especializado)
+- ✅ **dashboard** - Vista general del sistema
+- ✅ **settings** - Configuración con tabs
+
+### 📅 Caso Especial: Calendario con Controles Complejos
+```typescript
+// ✅ PATRÓN para páginas con controles especializados
+import { AppLayout } from '@/components/layout';
+import { CalendarToolbar } from '@/components/calendar/calendar-toolbar';
+
+export default function CalendarPage() {
+  return (
+    <AppLayout
+      pageTitle="Calendario"
+      pageIcon={CalendarDays}
+      breadcrumbs={[...]}
+      headerActions={
+        <DropdownMenu>
+          {/* Solo acción principal en header */}
+          <Button>Añadir Evento</Button>
+        </DropdownMenu>
+      }
+    >
+      {/* Controles específicos como children */}
+      <CalendarToolbar {...} />
+      <CalendarView {...} />
+    </AppLayout>
+  );
+}
+```
+
+**Cuando usar este patrón:**
+- Componentes con controles multi-línea (navegación temporal, filtros complejos)
+- Toolbars especializados que manejan estado interno
+- Vistas que requieren interfaz única (calendarios, dashboards)
+
+### ❌ Anti-Pattern: Layout Monolítico
+```typescript
+// ❌ NO USAR - Layout inline hardcodeado
+return (
+  <div className="space-y-6">
+    <div className="flex justify-between items-center">
+      <h1>Título</h1>
+      <Button>Acción</Button>
+    </div>
+    <DataTable {...} />
+  </div>
+);
+```
+
 ## 🏗️ Arquitectura de Eventos por Dominio
 
 ### ✅ Servicios de Eventos Específicos (IMPLEMENTADO)
@@ -149,6 +249,86 @@ import { useGooglePlaces } from '@/hooks/useGooglePlaces';
 const { suggestions, loading, fetchSuggestions } = useGooglePlaces({
   sessionToken: true,
   region: 'es'
+});
+```
+
+### 🌍 Configuración de País (AddressInput - Arquitectura Híbrida)
+
+**Implementación Completada:** Septiembre 2025
+
+#### Sistema de Prioridad Inteligente
+AddressInput usa un orden de prioridad para seleccionar el país de búsqueda:
+
+```typescript
+// Orden de prioridad automático:
+1. countryCode prop         // Override explícito (casos especiales)
+2. entidad.componentes?.pais // País de entidad al editar
+3. config.defaultCountry     // Configuración usuario (GeneralSettings)
+4. 'CL'                      // Fallback último recurso
+```
+
+#### Uso en Formularios
+
+**Crear nueva entidad (usa configuración global):**
+```typescript
+// ✅ No pasa countryCode → usa appConfig.defaultCountry
+<AddressInput
+  value={field.value}
+  onSelect={field.onChange}
+  placeholder="Ingrese la dirección"
+/>
+```
+
+**Editar entidad existente (usa país de entidad):**
+```typescript
+// ✅ Respeta país del proyecto/visita/afterSale al editar
+<AddressInput
+  value={field.value}
+  onSelect={field.onChange}
+  placeholder="Ingrese la dirección"
+  countryCode={defaultValues?.fullAddress?.componentes?.pais}
+/>
+```
+
+**Override manual (casos especiales):**
+```typescript
+// ✅ Forzar búsqueda en país específico
+<AddressInput
+  value={field.value}
+  onSelect={field.onChange}
+  countryCode="AR" // Argentina
+/>
+```
+
+#### Configuración Global del Usuario
+El usuario puede cambiar el país predeterminado en:
+- **Ruta:** `/settings` → GeneralSettings
+- **Componente:** CountrySelector
+- **Persistencia:** localStorage vía AppConfigContext
+- **Efecto:** Todos los formularios de creación usarán este país por defecto
+
+#### Formularios Optimizados (Septiembre 2025)
+Los siguientes formularios respetan el país de la entidad al editar:
+- ✅ [ProjectForm](src/components/forms/ProjectForm.tsx:324)
+- ✅ [VisitForm](src/components/forms/VisitForm.tsx:236)
+- ✅ [AfterSaleForm](src/components/forms/AfterSaleForm.tsx:369)
+- ✅ [NewProjectEventForm](src/components/forms/NewProjectEventForm.tsx:261)
+
+#### Implementación Técnica
+```typescript
+// src/components/ui/addressInput.tsx
+const { config: appConfig } = useAppConfig();
+
+const effectiveCountry = React.useMemo(() => {
+  const country = countryCode || appConfig.defaultCountry || 'CL';
+  return country.toLowerCase(); // Google Maps API usa lowercase
+}, [countryCode, appConfig.defaultCountry]);
+
+// PlacesServiceAdapter usa país efectivo
+const adapter = new PlacesServiceAdapter({
+  componentRestrictions: { country: effectiveCountry },
+  region: effectiveCountry,
+  sessionToken: true
 });
 ```
 

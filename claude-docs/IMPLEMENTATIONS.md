@@ -151,12 +151,94 @@
   - Mantenimiento de corrección pendiente legítima (session token optimization)
 - **Implementación:** ✅ Completada - 11 archivos movidos a `/docs/technical/migrations/archived/google-places-2025-process/`
 
+### 📦 Calendar Event Registry Pattern
+- **Status:** ✅ Complete | **Date:** 2025-09-29 | **Impact:** High
+- **Branch:** `DEV`
+- **Key commits:** `4a59fbb`, `dacf602`, `cba2156`, `a598625`
+- **Quick diff:** `git diff 4a59fbb~1..a598625`
+- **Benefits:**
+  - 239 líneas de código legacy eliminadas (calendar-event.tsx)
+  - Registry Pattern implementado para escalabilidad
+  - Agregar nuevo tipo de evento requiere solo 2 pasos vs modificar conditional anidado
+  - 0 breaking changes en migración de 3 vistas
+  - Arquitectura escalable para 10+ tipos de eventos
+- **Implementación:** ✅ Completada (4 fases en ~2 horas)
+  - ✅ Fase 1: event-renderers/ estructura creada (3 archivos, 0 errores)
+  - ✅ Fase 2: CalendarEventCard.tsx con Registry Pattern
+  - ✅ Fase 3: Migración de 3 vistas (month/week/day)
+  - ✅ Fase 4: Limpieza final y documentación
+- **Documentation:** [calendar-event-registry-pattern.md](../../docs/technical/calendar-event-registry-pattern.md) | **Process archived:** [/archived/calendar-event-2025-process/](../../docs/technical/migrations/archived/calendar-event-2025-process/)
+
+### 🏗️ AppLayout Modular Architecture
+- **Status:** ✅ Complete | **Date:** 2025-09-30 | **Impact:** High
+- **Branch:** `DEV`
+- **Key commits:** Session 2025-09-30
+- **Quick diff:** Ver cambios en session actual
+- **Benefits:**
+  - 21% reducción layout principal (122→96 líneas) - simplicidad arquitectural
+  - 3 componentes nuevos modulares: AppLayout, AppSidebar, PageHeader
+  - **8 páginas migradas (100% del proyecto):** projects, payments, clients, visits, aftersales, calreact, dashboard, settings
+  - Breadcrumbs navegables en todas las páginas
+  - Header estandarizado con actions slot flexible
+  - Arquitectura escalable: agregar features sin tocar layout core
+  - Testabilidad: componentes aislados testeables independientemente
+  - CalendarToolbar refactorizado: 136→108 líneas (-21%)
+  - **Problema de duplicación resuelto:** layout.tsx ahora solo providers, AppLayout maneja estructura visual
+  - **Alineación corregida:** Contenido left-aligned sin `mx-auto`, sin conflictos de padding
+- **Implementación:** ✅ Completada (9 fases completas)
+  - ✅ Fase 1: Componentes base (AppLayout, AppSidebar, PageHeader)
+  - ✅ Fase 2: Refactorizar src/app/layout.tsx inicial
+  - ✅ Fase 3: Migrar projects/page.tsx (piloto)
+  - ✅ Fase 4: Testing intensivo piloto
+  - ✅ Fase 5: Migrar 4 páginas restantes (payments, clients, visits, aftersales)
+  - ✅ Fase 6: Documentación y cleanup inicial
+  - ✅ Fase 7: Migrar calreact/page.tsx con patrón especializado
+  - ✅ **Fase 8: Migrar dashboard y settings (completar 100% páginas)**
+  - ✅ **Fase 9: Simplificar layout.tsx (eliminar duplicación SidebarProvider/HeaderNav/AppSidebar)**
+- **Archivos creados:**
+  - `src/components/layout/AppLayout.tsx` (84 líneas)
+  - `src/components/layout/AppSidebar.tsx` (78 líneas)
+  - `src/components/layout/PageHeader.tsx` (107 líneas)
+  - `src/components/layout/index.ts` (barrel exports)
+- **Archivos modificados:**
+  - Fase 7 - Calendario:
+    - `src/components/calendar/calendar-toolbar.tsx` (136→108 líneas, -21%)
+    - `src/app/calreact/page.tsx` (migrado a AppLayout con controles especializados)
+  - Fase 8 - Completar 100%:
+    - `src/app/dashboard/page.tsx` (migrado a AppLayout)
+    - `src/app/settings/page.tsx` (migrado a AppLayout con tabs)
+  - Fase 9 - Simplificación arquitectural (CRÍTICA):
+    - `src/app/layout.tsx` (122→96 líneas, -21%, eliminada duplicación)
+    - Removidos: HeaderNav, SidebarProvider, AppSidebar, pathname conditionals
+    - Conservados: Solo providers (QueryClient, Theme, AppConfig, ErrorBoundary)
+- **Validación:** 0 errores ESLint, 0 errores TypeScript (main project), servidor funcionando
+- **Patrón establecido:** Caso especial documentado para páginas con toolbars complejos (calendario, dashboards)
+- **Problema resuelto:** Duplicación de estructura (layout.tsx + AppLayout) que causaba conflictos de alineación
+
+### 🌍 Country Configuration - AddressInput Hybrid Architecture
+- **Status:** ✅ Complete | **Date:** 2025-09-30 | **Impact:** Medium-High
+- **Branch:** `DEV`
+- **Key commits:** Current session
+- **Quick diff:** Ver cambios en formularios y AddressInput
+- **Benefits:**
+  - Centralización de configuración de país en GeneralSettings
+  - Arquitectura híbrida: respeta país de entidad al editar
+  - Backward compatible (prop opcional `countryCode`)
+  - 4 formularios optimizados para usar país de entidad automáticamente
+  - DEFAULT_CONFIG alineado con configuración del proyecto (CL)
+  - UX mejorada: búsquedas contextuales según país de la entidad
+  - Sistema de prioridad inteligente (override → entidad → config → fallback)
+- **Implementación:** ✅ Completada
+  - `src/components/ui/addressInput.tsx` - Arquitectura híbrida con useAppConfig (líneas 113-123)
+  - `src/components/forms/ProjectForm.tsx` - Pasa país de proyecto (línea 324)
+  - `src/components/forms/VisitForm.tsx` - Pasa país de visita (línea 236)
+  - `src/components/forms/AfterSaleForm.tsx` - Pasa país de afterSale (línea 369)
+  - `src/components/forms/NewProjectEventForm.tsx` - Pasa país de evento (línea 261)
+  - `src/lib/places/PlacesServiceAdapter.ts` - DEFAULT_CONFIG actualizado a 'cl' (líneas 26-31)
+- **Tests:** 0 errores TypeScript, 0 errores ESLint
+- **Documentation:** [patterns.md](../references/patterns.md#-configuración-de-país-addressinput---arquitectura-híbrida) - Patrón híbrido documentado completamente
+
 ## 🔮 Upcoming Implementations
-- [🔄] **Calendar Event Architecture Refactoring** - Fase 2/4 completada (50%) - Registry Pattern implementado (prioridad media-alta)
-  - ✅ Fase 1: event-renderers/ estructura creada (Sep 29, 2025) - 3 archivos, 0 errores
-  - ✅ Fase 2: CalendarEventCard.tsx creado (Sep 29, 2025) - Registry Pattern funcionando, 0 errores
-  - ⏳ Fase 3-4: Pendientes (migración vistas, limpieza)
-  - 📖 Ver `/docs/technical/calendar-event-INDEX.md` para estado completo y detalles
 - [ ] **Data Table Migration Fase 2** - Migrar payments, aftersales, visits, clients, installments páginas (prioridad alta)
 - [ ] **Data Table Advanced Features** - Export CSV, bulk actions, column presets (prioridad media)
 - [ ] **Performance optimization phase 2** - Bundle optimization avanzado
@@ -165,9 +247,9 @@
 
 ## 📊 Implementation Statistics
 
-**Total completadas:** 10 implementaciones major
-**Impacto alto:** 7/10 implementaciones
-**Beneficios cuantificados:** 30% reducción costos API, 67% menos duplicación docs, 70%+ test coverage, 4/4 formularios migrados, 1,339+ líneas código duplicado eliminadas (682 PageTableLayout + 657+ table components)  
+**Total completadas:** 13 implementaciones major
+**Impacto alto:** 10/13 implementaciones
+**Beneficios cuantificados:** 30% reducción costos API, 67% menos duplicación docs, 70%+ test coverage, 4/4 formularios React Hook Form migrados, 4/4 formularios con país dinámico, 1,682+ líneas código duplicado eliminadas (682 PageTableLayout + 657+ table components + 239 calendar-event + 50 layout refactor inicial + 28 calendar-toolbar + 26 layout.tsx simplificación)  
 
 ## 🎯 Success Metrics
 
@@ -177,8 +259,15 @@
 - **Build Performance:** Bundle size optimizado
 - **Developer Experience:** Testing MCP + Claude integration + React Hook Form patterns
 - **Form Management:** 4/4 formularios migrados, hook personalizado implementado
-- **Code Quality:** 1,339+ líneas código duplicado eliminadas, arquitectura escalable implementada
+- **Code Quality:** 1,682+ líneas código duplicado eliminadas, arquitectura escalable implementada
+- **Layout Architecture:** 100% páginas migradas a AppLayout modular (8/8), 21% reducción layout.tsx por simplificación
 - **Table Architecture:** Migración a TanStack Table completada, 100% ancho utilizado vs 62% anterior
+- **Component Modularity:** 8/8 páginas con header estandarizado + breadcrumbs navegables
+- **Calendar Refactor:** CalendarToolbar optimizado (-21%), patrón especializado establecido
+- **Architectural Simplification:** layout.tsx ahora solo providers, eliminada duplicación con AppLayout
+- **Alignment Issue Fixed:** Contenido left-aligned correctamente sin conflictos de padding
+- **Country Configuration:** Sistema híbrido implementado, 4/4 formularios con búsqueda contextual automática
+- **UX Improvement:** Configuración de país centralizada en GeneralSettings, respeta contexto de entidad
 - **Scalability:** Ready para datasets 10K+ registros sin cambios arquitecturales
 
 
