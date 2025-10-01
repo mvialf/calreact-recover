@@ -124,5 +124,6 @@ jest.setTimeout(10000);
 
 // Helper global para debugging en tests
 (global as any).debug = (element: any) => {
+  // eslint-disable-next-line no-console
   console.log(element.innerHTML);
 };

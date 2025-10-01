@@ -156,7 +156,7 @@ export function DateInput({
   return (
     <div className={cn("relative", className)}>
       <Popover open={open} onOpenChange={setOpen}>
-        <div className="flex items-center w-max gap-1">
+        <div className="flex items-center w-max ">
           {/* Contenedor del input */}
           <div className="relative flex-1">
             {/* Input segmentado */}

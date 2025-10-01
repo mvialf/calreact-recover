@@ -36,8 +36,10 @@ const logger: ILogger = {
   info: (message: string, meta?: any) => {
     if (shouldLog('info')) {
       if (isServer) {
+        // eslint-disable-next-line no-console
         console.log(`ℹ️  INFO: ${message}`, meta || '');
       } else {
+        // eslint-disable-next-line no-console
         console.log(`ℹ️  ${message}`, meta || '');
       }
     }
@@ -63,8 +65,10 @@ const logger: ILogger = {
   debug: (message: string, meta?: any) => {
     if (shouldLog('debug')) {
       if (isServer) {
+        // eslint-disable-next-line no-console
         console.log(`🔍 DEBUG: ${message}`, meta || '');
       } else {
+        // eslint-disable-next-line no-console
         console.log(`🔍 ${message}`, meta || '');
       }
     }
