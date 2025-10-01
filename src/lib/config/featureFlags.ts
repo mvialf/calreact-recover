@@ -124,3 +124,45 @@ export const environmentDefaults = {
     FORCE_LEGACY_API: false
   }
 } as const;
+
+// ✅ Feature flags para formularios - Compound Component Pattern
+export const formFeatureFlags = {
+  /**
+   * Usar nuevo ProjectEventForm compound component
+   * Default: false (rollout gradual)
+   */
+  USE_COMPOUND_PROJECT_EVENT_FORM: process.env.NEXT_PUBLIC_USE_COMPOUND_FORM === 'true',
+
+  /**
+   * Permitir fallback a formularios legacy si hay problemas
+   */
+  ALLOW_LEGACY_FALLBACK: process.env.NEXT_PUBLIC_FORM_LEGACY_FALLBACK !== 'false',
+} as const;
+
+// ✅ Helper para feature flags de formularios
+export const FormFeatureFlags = {
+  /**
+   * ¿Debe usarse el compound form?
+   */
+  shouldUseCompoundForm(): boolean {
+    return formFeatureFlags.USE_COMPOUND_PROJECT_EVENT_FORM;
+  },
+
+  /**
+   * ¿Está permitido el fallback a legacy?
+   */
+  isFallbackAllowed(): boolean {
+    return formFeatureFlags.ALLOW_LEGACY_FALLBACK;
+  },
+
+  /**
+   * Obtener configuración completa de form flags
+   */
+  getConfig() {
+    return {
+      ...formFeatureFlags,
+      shouldUseCompoundForm: this.shouldUseCompoundForm(),
+      isFallbackAllowed: this.isFallbackAllowed(),
+    };
+  }
+};
