@@ -1,8 +1,8 @@
 # 🏗️ Arquitectura del Stack Tecnológico - CalReact 2025
 
-**Versión:** 1.0.0  
-**Node.js Requerido:** >=18.0.0  
-**Última Actualización:** Septiembre 2025
+**Versión:** 1.0.0
+**Node.js Requerido:** >=18.0.0
+**Última Actualización:** Octubre 2025
 
 Para el **inventario completo de dependencias** ver: [dependencias.md](./dependencias.md)
 
@@ -57,7 +57,6 @@ const form = useForm<SchemaType>({
 
 ## 🗺️ Google Maps Integration
 
-### Migración Completada (Septiembre 2025)
 **Estrategia:** PlacesServiceAdapter personalizado
 
 **🚨 DEPENDENCIAS ELIMINADAS:**

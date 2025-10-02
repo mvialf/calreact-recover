@@ -1,6 +1,6 @@
 # 🎨 Patrones de Código Establecidos - CalReact
 
-## 🏗️ Layout Modular con AppLayout (IMPLEMENTADO - Sept 2025)
+## 🏗️ Layout Modular con AppLayout
 
 ### ✅ Patrón AppLayout para Páginas
 ```typescript
@@ -102,7 +102,7 @@ return (
 
 ## 🏗️ Arquitectura de Eventos por Dominio
 
-### ✅ Servicios de Eventos Específicos (IMPLEMENTADO)
+### ✅ Servicios de Eventos Específicos
 ```typescript
 // ✅ CORRECTO - Eventos específicos por dominio
 import { createProjectEvent } from '@/services/projectEventService';
@@ -111,20 +111,13 @@ import { createProjectEvent } from '@/services/projectEventService';
 import { createEvent } from '@/services/eventService'; // NO EXISTE
 ```
 
-**Servicios disponibles:**
-- `projectEventService.ts` - Eventos de proyecto (implementado)
-- `projectEventServiceV2.ts` - Versión optimizada con cache  
-- `afterSalesEventService.ts` - Para eventos postventa  
-- `visitEventService.ts` - Para eventos de visita
+**Servicios de eventos disponibles:**
+- `projectEventService.ts` - Eventos de proyecto
+- `calendarEventService.ts` - Eventos de calendario
+- `eventEnrichmentService.ts` - Enriquecimiento de eventos
+- `eventReferenceService.ts` - Referencias entre eventos
 
-### 🗄️ Sistema de Cache Inteligente
-```typescript
-// ✅ IMPLEMENTADO - Sistema de cache para eventos de proyecto (EN USO)
-import { projectCacheService } from '@/services/cache/projectCacheService';
-import { eventEnrichmentService } from '@/services/eventEnrichmentService';
-```
-
-## 📅 Calendar Event Rendering Pattern (IMPLEMENTADO - Sept 2025)
+## 📅 Calendar Event Rendering Pattern
 
 ### Registry Pattern para Renderizado de Eventos
 ```typescript
@@ -179,14 +172,13 @@ src/components/calendar/
 │   └── AfterSalesRenderer.tsx    # ← Futura extensión
 ```
 
-### ❌ Anti-Pattern Eliminado (Legacy)
+### ❌ Anti-Pattern Eliminado
 ```typescript
-// ❌ NO USAR - Componente legacy eliminado (Sept 2025)
+// ❌ NO USAR - Componente legacy eliminado
 import { CalendarEvent } from '@/components/calendar/calendar-event';
 
 // El componente calendar-event.tsx fue eliminado completamente.
-// Migración completada en commit dacf602 (Fase 1-3)
-// Limpieza final en commit [Fase 4]
+// Usar CalendarEventCard con Registry Pattern en su lugar.
 ```
 
 ## 🔥 Servicios Firebase (Patrón Establecido)
@@ -226,7 +218,7 @@ const COLLECTIONS = {
 } as const;
 ```
 
-## 🗺️ Google Places Integration (ACTUALIZADO)
+## 🗺️ Google Places Integration
 
 ### PlacesServiceAdapter (Nueva Implementación)
 ```typescript
@@ -253,8 +245,6 @@ const { suggestions, loading, fetchSuggestions } = useGooglePlaces({
 ```
 
 ### 🌍 Configuración de País (AddressInput - Arquitectura Híbrida)
-
-**Implementación Completada:** Septiembre 2025
 
 #### Sistema de Prioridad Inteligente
 AddressInput usa un orden de prioridad para seleccionar el país de búsqueda:
@@ -307,7 +297,7 @@ El usuario puede cambiar el país predeterminado en:
 - **Persistencia:** localStorage vía AppConfigContext
 - **Efecto:** Todos los formularios de creación usarán este país por defecto
 
-#### Formularios Optimizados (Septiembre 2025)
+#### Formularios Optimizados
 Los siguientes formularios respetan el país de la entidad al editar:
 - ✅ [ProjectForm](src/components/forms/ProjectForm.tsx:324)
 - ✅ [VisitForm](src/components/forms/VisitForm.tsx:236)
@@ -343,6 +333,71 @@ const ProjectForm = {
   Section: ProjectFormSection,
   Field: ProjectFormField
 };
+```
+
+### ProjectEventForm - Compound Component System
+
+Sistema unificado para crear eventos de proyecto usando **Compound Component Pattern** con Context API.
+
+**Arquitectura de componentes:**
+```typescript
+import { ProjectEventForm } from '@/components/forms/ProjectEventForm';
+
+// Componentes disponibles:
+ProjectEventForm.Container      // Wrapper principal con Context API
+ProjectEventForm.ProjectInfo    // Card informativa (solo lean mode)
+ProjectEventForm.BaseFields     // Campos comunes (eventDate, eventNotes)
+ProjectEventForm.FullFields     // Campos completos (full mode)
+ProjectEventForm.OverrideFields // Campos de override (lean mode)
+ProjectEventForm.ChecklistSection // Gestión de checklist
+```
+
+**Uso recomendado (Lean Mode):**
+```tsx
+export function NewProjectEventModal({ project }: { project: ProjectType }) {
+  const handleSubmit = async (data: ProjectEventFormValues) => {
+    await createProjectEvent(project.id, data);
+  };
+
+  return (
+    <ProjectEventForm.Container
+      mode="lean"
+      project={project}
+      onSubmit={handleSubmit}
+    >
+      <div className="space-y-4">
+        <ProjectEventForm.ProjectInfo />
+        <ProjectEventForm.BaseFields />
+        <ProjectEventForm.OverrideFields />
+        <ProjectEventForm.ChecklistSection />
+      </div>
+    </ProjectEventForm.Container>
+  );
+}
+```
+
+**Beneficios:**
+- **Composición flexible:** Agregar/quitar secciones según necesidad
+- **Context API:** Estado compartido sin prop drilling
+- **Type-safety:** TypeScript garantiza uso correcto
+- **Modos duales:** Lean (eficiente) vs Full (legacy)
+- **Error Boundary:** Manejo robusto de errores
+- **Suspense Ready:** Loading states integrados
+
+**Estructura de archivos:**
+```
+src/components/forms/ProjectEventForm/
+├── Container.tsx          # Wrapper con Context
+├── ProjectInfo.tsx        # Card de información
+├── BaseFields.tsx         # Campos base
+├── FullFields.tsx         # Campos completos
+├── OverrideFields.tsx     # Campos override
+├── ChecklistSection.tsx   # Checklist component
+├── FormErrorBoundary.tsx  # Error handling
+├── LoadingSkeleton.tsx    # Loading UI
+├── index.ts               # Barrel exports
+├── types.ts               # TypeScript types
+└── __tests__/             # Test suite completo
 ```
 
 ### Formularios con React Hook Form + Zod
@@ -474,7 +529,7 @@ const useFirebaseOperation = () => {
 };
 ```
 
-## 🏗️ Modal-Form Integration Pattern (ACTUALIZADO)
+## 🏗️ Modal-Form Integration Pattern
 
 ### Problema de Duplicación Resuelto
 ```typescript
