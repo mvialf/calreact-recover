@@ -91,7 +91,7 @@ export const createProjectsColumns = ({
   {
     accessorKey: "status",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Estado" />
+      <DataTableColumnHeader column={column} title="Estado" className="justify-center"/>
     ),
     cell: ({ row, table }) => {
       const status = row.getValue("status") as string
@@ -118,7 +118,7 @@ export const createProjectsColumns = ({
           <DropdownMenuTrigger asChild>
             <Button
               variant="secondary"
-              className="p-0 h-auto font-normal"
+              className="p-0 h-auto font-normal "
               disabled={updateStatusMutation?.isPending}
             >
               <Badge variant={variant} className="cursor-pointer">
@@ -156,7 +156,7 @@ export const createProjectsColumns = ({
   {
     accessorKey: "total",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Valor Proyecto" />
+      <DataTableColumnHeader column={column} title="Valor Proyecto" className="justify-end"/>
     ),
     cell: ({ row }) => {
       const totalValue = row.getValue("total") as number
@@ -170,7 +170,7 @@ export const createProjectsColumns = ({
   {
     accessorKey: "totalPayments",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Abonos" />
+      <DataTableColumnHeader column={column} title="Abonos" className="justify-end" />
     ),
     cell: ({ row }) => {
       const totalPaid = row.getValue("totalPayments") as number
@@ -192,7 +192,7 @@ export const createProjectsColumns = ({
   {
     accessorKey: "balance",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Saldo" />
+      <DataTableColumnHeader column={column} title="Saldo" className="justify-end" />
     ),
     cell: ({ row }) => {
       const balance = row.getValue("balance") as number
@@ -206,7 +206,7 @@ export const createProjectsColumns = ({
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Fecha" />
+      <DataTableColumnHeader column={column} title="Fecha" className="justify-center"/>
     ),
     cell: ({ row }) => {
       const createdAt = row.getValue("createdAt") as Date
