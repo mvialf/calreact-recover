@@ -41,6 +41,19 @@ export {
   type UseOptimisticUpdateOptions
 } from './useOptimisticUpdate';
 
+// Hooks de accesibilidad
+export {
+  useFormAccessibility,
+  type FormAccessibilityOptions,
+  type FormAccessibilityReturn
+} from './useFormAccessibility';
+
+export {
+  useFocusManagement,
+  type FocusManagementOptions,
+  type FocusManagementReturn
+} from './useFocusManagement';
+
 // Re-exportar hooks específicos con nombres alternativos para compatibilidad
 export { useProjectsData as useProjects } from './useProjectsData';
 export { usePaymentsData as usePayments } from './usePaymentsData';
