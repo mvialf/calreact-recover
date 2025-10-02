@@ -35,6 +35,12 @@ export {
   type UseDataSyncReturn 
 } from './useDataSync';
 
+// Hooks de optimización y UX
+export {
+  useOptimisticUpdate,
+  type UseOptimisticUpdateOptions
+} from './useOptimisticUpdate';
+
 // Re-exportar hooks específicos con nombres alternativos para compatibilidad
 export { useProjectsData as useProjects } from './useProjectsData';
 export { usePaymentsData as usePayments } from './usePaymentsData';

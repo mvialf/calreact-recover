@@ -11,6 +11,7 @@ import { useForm, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/ui/form';
 import { useFormRef, type FormRef } from '@/hooks/useFormRef';
+import { useOptimisticUpdate } from '@/hooks/useOptimisticUpdate';
 import {
   projectEventLeanSchema,
   projectEventFullSchema,
@@ -100,15 +101,36 @@ export const Container = forwardRef<FormRef<ProjectEventFormValues>, ContainerPr
       defaultValues: getDefaultValues(),
     });
 
-    // Exponer API mediante ref
-    useFormRef(ref, form, onSubmit);
+    // ✅ OPTIMIZACIÓN: Optimistic updates con rollback automático
+    const { execute: executeOptimistic, isExecuting } = useOptimisticUpdate(
+      async (data: ProjectEventFormValues) => {
+        await onSubmit(data);
+      },
+      {
+        successMessage: mode === 'lean'
+          ? 'Evento guardado exitosamente'
+          : 'Evento creado exitosamente',
+        errorMessage: 'Error al guardar el evento',
+        onSuccess: () => {
+          form.reset();
+        },
+      }
+    );
 
-    // Context value
+    // Handler con optimistic update
+    const handleSubmit = async (data: ProjectEventFormValues) => {
+      await executeOptimistic(data);
+    };
+
+    // Exponer API mediante ref
+    useFormRef(ref, form, handleSubmit);
+
+    // Context value con estado de ejecución combinado
     const contextValue: ProjectEventFormContext = {
       mode,
       project,
       form: form as UseFormReturn<ProjectEventFormValues>,
-      isSubmitting,
+      isSubmitting: isSubmitting || isExecuting,
       disabled,
     };
 
@@ -118,7 +140,7 @@ export const Container = forwardRef<FormRef<ProjectEventFormValues>, ContainerPr
         <FormContext.Provider value={contextValue}>
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit(onSubmit)}
+              onSubmit={form.handleSubmit(handleSubmit)}
               className={className}
             >
               {children}
