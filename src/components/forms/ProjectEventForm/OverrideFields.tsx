@@ -13,10 +13,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { PROJECT_STATUS_OPTIONS } from '@/constants/project';
 import { useProjectEventFormContext } from './Container';
+import { useFormAccessibility } from '@/hooks/useFormAccessibility';
 import type { BaseFormComponentProps } from './types';
 
 export const OverrideFields: React.FC<BaseFormComponentProps> = ({ className }) => {
   const { form, project, disabled } = useProjectEventFormContext();
+
+  // Type assertion para acceso seguro a errores específicos de lean mode
+  const errors = form.formState.errors as any;
+
+  // ✅ ACCESIBILIDAD: Hooks para ARIA attributes
+  const customDescriptionA11y = useFormAccessibility('customDescription', form);
+  const customPhoneA11y = useFormAccessibility('customPhone', form);
+  const customStatusA11y = useFormAccessibility('customStatus', form);
 
   // ✅ OPTIMIZACIÓN: Memoizar opciones de status (se calcula una sola vez)
   const statusOptions = useMemo(
@@ -37,16 +46,17 @@ export const OverrideFields: React.FC<BaseFormComponentProps> = ({ className }) 
         name="customDescription"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>
+            <FormLabel htmlFor={customDescriptionA11y.fieldId}>
               Descripción Personalizada
               {project?.description && (
-                <Badge variant="outline" className="ml-2 font-normal">
+                <Badge variant="outline" className="ml-2 font-normal" aria-label="Campo override">
                   Override
                 </Badge>
               )}
             </FormLabel>
             <FormControl>
               <Textarea
+                id={customDescriptionA11y.fieldId}
                 {...field}
                 disabled={disabled}
                 placeholder={
@@ -56,14 +66,20 @@ export const OverrideFields: React.FC<BaseFormComponentProps> = ({ className }) 
                 }
                 rows={3}
                 className="resize-none"
+                aria-invalid={customDescriptionA11y.ariaAttributes['aria-invalid']}
+                aria-describedby={customDescriptionA11y.ariaAttributes['aria-describedby']}
               />
             </FormControl>
-            <FormDescription>
+            <FormDescription id={customDescriptionA11y.descriptionId}>
               {project?.description
                 ? 'Deje vacío para usar la descripción del proyecto'
                 : 'Descripción específica para este evento'}
             </FormDescription>
-            <FormMessage />
+            {errors.customDescription && (
+              <FormMessage id={customDescriptionA11y.errorId} role="alert">
+                {errors.customDescription.message}
+              </FormMessage>
+            )}
           </FormItem>
         )}
       />
@@ -74,16 +90,17 @@ export const OverrideFields: React.FC<BaseFormComponentProps> = ({ className }) 
         name="customPhone"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>
+            <FormLabel htmlFor={customPhoneA11y.fieldId}>
               Teléfono Personalizado
               {project?.phone && (
-                <Badge variant="outline" className="ml-2 font-normal">
+                <Badge variant="outline" className="ml-2 font-normal" aria-label="Campo override">
                   Override
                 </Badge>
               )}
             </FormLabel>
             <FormControl>
               <Input
+                id={customPhoneA11y.fieldId}
                 {...field}
                 disabled={disabled}
                 placeholder={
@@ -92,14 +109,20 @@ export const OverrideFields: React.FC<BaseFormComponentProps> = ({ className }) 
                     : '+56 9 1234 5678'
                 }
                 type="tel"
+                aria-invalid={customPhoneA11y.ariaAttributes['aria-invalid']}
+                aria-describedby={customPhoneA11y.ariaAttributes['aria-describedby']}
               />
             </FormControl>
-            <FormDescription>
+            <FormDescription id={customPhoneA11y.descriptionId}>
               {project?.phone
                 ? 'Deje vacío para usar el teléfono del proyecto'
                 : 'Teléfono específico para este evento'}
             </FormDescription>
-            <FormMessage />
+            {errors.customPhone && (
+              <FormMessage id={customPhoneA11y.errorId} role="alert">
+                {errors.customPhone.message}
+              </FormMessage>
+            )}
           </FormItem>
         )}
       />
@@ -110,10 +133,10 @@ export const OverrideFields: React.FC<BaseFormComponentProps> = ({ className }) 
         name="customStatus"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>
+            <FormLabel htmlFor={customStatusA11y.fieldId}>
               Estado Personalizado
               {project?.status && (
-                <Badge variant="outline" className="ml-2 font-normal">
+                <Badge variant="outline" className="ml-2 font-normal" aria-label="Campo override">
                   Override
                 </Badge>
               )}
@@ -124,7 +147,11 @@ export const OverrideFields: React.FC<BaseFormComponentProps> = ({ className }) 
               disabled={disabled}
             >
               <FormControl>
-                <SelectTrigger>
+                <SelectTrigger
+                  id={customStatusA11y.fieldId}
+                  aria-invalid={customStatusA11y.ariaAttributes['aria-invalid']}
+                  aria-describedby={customStatusA11y.ariaAttributes['aria-describedby']}
+                >
                   <SelectValue
                     placeholder={
                       project?.status
@@ -145,12 +172,16 @@ export const OverrideFields: React.FC<BaseFormComponentProps> = ({ className }) 
                 {statusOptions}
               </SelectContent>
             </Select>
-            <FormDescription>
+            <FormDescription id={customStatusA11y.descriptionId}>
               {project?.status
                 ? 'Seleccione solo si necesita un estado diferente para este evento'
                 : 'Estado específico para este evento'}
             </FormDescription>
-            <FormMessage />
+            {errors.customStatus && (
+              <FormMessage id={customStatusA11y.errorId} role="alert">
+                {errors.customStatus.message}
+              </FormMessage>
+            )}
           </FormItem>
         )}
       />

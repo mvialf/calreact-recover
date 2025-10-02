@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { PROJECT_STATUS_OPTIONS } from '@/constants/project';
 import { useProjectEventFormContext } from './Container';
 import { useNumericInput } from '@/hooks/useNumericInput';
+import { useFormAccessibility } from '@/hooks/useFormAccessibility';
 import type { BaseFormComponentProps } from './types';
 import { LoadingSkeleton } from './LoadingSkeleton';
 
@@ -23,6 +24,22 @@ const AddressInput = lazy(() =>
 
 export const FullFields: React.FC<BaseFormComponentProps> = ({ className }) => {
   const { form, disabled } = useProjectEventFormContext();
+
+  // Type assertion para acceso seguro a errores específicos de full mode
+  const errors = form.formState.errors as any;
+
+  // ✅ ACCESIBILIDAD: Hooks para ARIA attributes
+  const descriptionA11y = useFormAccessibility('description', form);
+  const phoneA11y = useFormAccessibility('phone', form);
+  const fullAddressA11y = useFormAccessibility('fullAddress', form);
+  const statusA11y = useFormAccessibility('status', form, { required: true });
+  const windowsCountA11y = useFormAccessibility('windowsCount', form, {
+    ariaLabel: 'Número de ventanas del proyecto',
+  });
+  const squareMetersA11y = useFormAccessibility('squareMeters', form, {
+    ariaLabel: 'Metros cuadrados del proyecto',
+  });
+  const uninstallTagsA11y = useFormAccessibility('uninstallTags', form);
 
   // ✅ OPTIMIZACIÓN: Extraer watch y memoizar para prevenir re-creación de hooks
   const windowsCount = form.watch('windowsCount');
@@ -59,17 +76,27 @@ export const FullFields: React.FC<BaseFormComponentProps> = ({ className }) => {
         name="description"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Descripción</FormLabel>
+            <FormLabel htmlFor={descriptionA11y.fieldId}>Descripción</FormLabel>
             <FormControl>
               <Textarea
+                id={descriptionA11y.fieldId}
                 {...field}
                 disabled={disabled}
                 placeholder="Descripción del evento..."
                 rows={3}
                 className="resize-none"
+                aria-invalid={descriptionA11y.ariaAttributes['aria-invalid']}
+                aria-describedby={descriptionA11y.ariaAttributes['aria-describedby']}
               />
             </FormControl>
-            <FormMessage />
+            <FormDescription id={descriptionA11y.descriptionId}>
+              Proporcione una descripción detallada del evento
+            </FormDescription>
+            {errors.description && (
+              <FormMessage id={descriptionA11y.errorId} role="alert">
+                {errors.description.message}
+              </FormMessage>
+            )}
           </FormItem>
         )}
       />
@@ -80,16 +107,26 @@ export const FullFields: React.FC<BaseFormComponentProps> = ({ className }) => {
         name="phone"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Teléfono</FormLabel>
+            <FormLabel htmlFor={phoneA11y.fieldId}>Teléfono</FormLabel>
             <FormControl>
               <Input
+                id={phoneA11y.fieldId}
                 {...field}
                 disabled={disabled}
                 placeholder="+56 9 1234 5678"
                 type="tel"
+                aria-invalid={phoneA11y.ariaAttributes['aria-invalid']}
+                aria-describedby={phoneA11y.ariaAttributes['aria-describedby']}
               />
             </FormControl>
-            <FormMessage />
+            <FormDescription id={phoneA11y.descriptionId}>
+              Número de contacto para el evento
+            </FormDescription>
+            {errors.phone && (
+              <FormMessage id={phoneA11y.errorId} role="alert">
+                {errors.phone.message}
+              </FormMessage>
+            )}
           </FormItem>
         )}
       />
@@ -100,7 +137,7 @@ export const FullFields: React.FC<BaseFormComponentProps> = ({ className }) => {
         name="fullAddress"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Dirección</FormLabel>
+            <FormLabel htmlFor={fullAddressA11y.fieldId}>Dirección</FormLabel>
             <FormControl>
               <Suspense fallback={<LoadingSkeleton />}>
                 <AddressInput
@@ -108,10 +145,19 @@ export const FullFields: React.FC<BaseFormComponentProps> = ({ className }) => {
                   onSelect={field.onChange}
                   disabled={disabled}
                   placeholder="Buscar dirección..."
+                  aria-invalid={fullAddressA11y.ariaAttributes['aria-invalid']}
+                  aria-describedby={fullAddressA11y.ariaAttributes['aria-describedby']}
                 />
               </Suspense>
             </FormControl>
-            <FormMessage />
+            <FormDescription id={fullAddressA11y.descriptionId}>
+              Ubicación donde se realizará el evento
+            </FormDescription>
+            {errors.fullAddress && (
+              <FormMessage id={fullAddressA11y.errorId} role="alert">
+                {errors.fullAddress.message}
+              </FormMessage>
+            )}
           </FormItem>
         )}
       />
@@ -122,14 +168,22 @@ export const FullFields: React.FC<BaseFormComponentProps> = ({ className }) => {
         name="status"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Estado *</FormLabel>
+            <FormLabel htmlFor={statusA11y.fieldId}>
+              Estado
+              <span className="sr-only">Campo requerido</span>
+            </FormLabel>
             <Select
               onValueChange={field.onChange}
               defaultValue={field.value}
               disabled={disabled}
             >
               <FormControl>
-                <SelectTrigger>
+                <SelectTrigger
+                  id={statusA11y.fieldId}
+                  aria-required={statusA11y.ariaAttributes['aria-required']}
+                  aria-invalid={statusA11y.ariaAttributes['aria-invalid']}
+                  aria-describedby={statusA11y.ariaAttributes['aria-describedby']}
+                >
                   <SelectValue placeholder="Seleccione un estado" />
                 </SelectTrigger>
               </FormControl>
@@ -137,7 +191,14 @@ export const FullFields: React.FC<BaseFormComponentProps> = ({ className }) => {
                 {statusOptions}
               </SelectContent>
             </Select>
-            <FormMessage />
+            <FormDescription id={statusA11y.descriptionId}>
+              Estado actual del proyecto
+            </FormDescription>
+            {errors.status && (
+              <FormMessage id={statusA11y.errorId} role="alert">
+                {errors.status.message}
+              </FormMessage>
+            )}
           </FormItem>
         )}
       />
@@ -148,9 +209,10 @@ export const FullFields: React.FC<BaseFormComponentProps> = ({ className }) => {
         name="windowsCount"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Número de Ventanas</FormLabel>
+            <FormLabel htmlFor={windowsCountA11y.fieldId}>Número de Ventanas</FormLabel>
             <FormControl>
               <Input
+                id={windowsCountA11y.fieldId}
                 type="number"
                 value={windowsInput.displayValue}
                 onChange={(e) => windowsInput.handleChange(e.target.value)}
@@ -159,12 +221,19 @@ export const FullFields: React.FC<BaseFormComponentProps> = ({ className }) => {
                 placeholder="0"
                 min="0"
                 step="1"
+                aria-label={windowsCountA11y.ariaAttributes['aria-label']}
+                aria-invalid={windowsCountA11y.ariaAttributes['aria-invalid']}
+                aria-describedby={windowsCountA11y.ariaAttributes['aria-describedby']}
               />
             </FormControl>
-            <FormDescription>
+            <FormDescription id={windowsCountA11y.descriptionId}>
               Ingrese el número total de ventanas
             </FormDescription>
-            <FormMessage />
+            {errors.windowsCount && (
+              <FormMessage id={windowsCountA11y.errorId} role="alert">
+                {errors.windowsCount.message}
+              </FormMessage>
+            )}
           </FormItem>
         )}
       />
@@ -175,9 +244,10 @@ export const FullFields: React.FC<BaseFormComponentProps> = ({ className }) => {
         name="squareMeters"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Metros Cuadrados</FormLabel>
+            <FormLabel htmlFor={squareMetersA11y.fieldId}>Metros Cuadrados</FormLabel>
             <FormControl>
               <Input
+                id={squareMetersA11y.fieldId}
                 type="number"
                 value={squareMetersInput.displayValue}
                 onChange={(e) => squareMetersInput.handleChange(e.target.value)}
@@ -186,12 +256,19 @@ export const FullFields: React.FC<BaseFormComponentProps> = ({ className }) => {
                 placeholder="0"
                 min="0"
                 step="0.1"
+                aria-label={squareMetersA11y.ariaAttributes['aria-label']}
+                aria-invalid={squareMetersA11y.ariaAttributes['aria-invalid']}
+                aria-describedby={squareMetersA11y.ariaAttributes['aria-describedby']}
               />
             </FormControl>
-            <FormDescription>
+            <FormDescription id={squareMetersA11y.descriptionId}>
               Área total en metros cuadrados
             </FormDescription>
-            <FormMessage />
+            {errors.squareMeters && (
+              <FormMessage id={squareMetersA11y.errorId} role="alert">
+                {errors.squareMeters.message}
+              </FormMessage>
+            )}
           </FormItem>
         )}
       />
@@ -202,9 +279,10 @@ export const FullFields: React.FC<BaseFormComponentProps> = ({ className }) => {
         name="uninstallTags"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Etiquetas de Desinstalación</FormLabel>
+            <FormLabel htmlFor={uninstallTagsA11y.fieldId}>Etiquetas de Desinstalación</FormLabel>
             <FormControl>
               <Input
+                id={uninstallTagsA11y.fieldId}
                 value={(field.value || []).map((tag: any) => tag.name).join(', ')}
                 onChange={(e) => {
                   const tagNames = e.target.value.split(',').map(name => name.trim());
@@ -220,12 +298,18 @@ export const FullFields: React.FC<BaseFormComponentProps> = ({ className }) => {
                 }}
                 disabled={disabled}
                 placeholder="Etiquetas separadas por comas..."
+                aria-invalid={uninstallTagsA11y.ariaAttributes['aria-invalid']}
+                aria-describedby={uninstallTagsA11y.ariaAttributes['aria-describedby']}
               />
             </FormControl>
-            <FormDescription>
+            <FormDescription id={uninstallTagsA11y.descriptionId}>
               Etiquetas para tracking de desinstalación (separar con comas)
             </FormDescription>
-            <FormMessage />
+            {errors.uninstallTags && (
+              <FormMessage id={uninstallTagsA11y.errorId} role="alert">
+                {errors.uninstallTags.message}
+              </FormMessage>
+            )}
           </FormItem>
         )}
       />
