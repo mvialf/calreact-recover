@@ -6,13 +6,14 @@
 
 'use client';
 
-import React, { createContext, useContext, forwardRef, type ReactNode } from 'react';
+import React, { createContext, useContext, forwardRef, useRef, useState, useEffect } from 'react';
 import { useForm, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/ui/form';
 import { LoadingOverlay } from '@/components/ui/LoadingOverlay';
 import { useFormRef, type FormRef } from '@/hooks/useFormRef';
 import { useOptimisticUpdate } from '@/hooks/useOptimisticUpdate';
+import { useFocusManagement } from '@/hooks/useFocusManagement';
 import {
   projectEventLeanSchema,
   projectEventFullSchema,
@@ -64,6 +65,10 @@ export const Container = forwardRef<FormRef<ProjectEventFormValues>, ContainerPr
     },
     ref
   ) {
+    // ✅ ACCESIBILIDAD: Live region para anuncios
+    const [announcement, setAnnouncement] = useState('');
+    const formRef = useRef<HTMLFormElement>(null);
+
     // Seleccionar schema según modo
     const schema = mode === 'lean' ? projectEventLeanSchema : projectEventFullSchema;
 
@@ -102,6 +107,9 @@ export const Container = forwardRef<FormRef<ProjectEventFormValues>, ContainerPr
       defaultValues: getDefaultValues(),
     });
 
+    // ✅ ACCESIBILIDAD: Focus management hook
+    const { focusFirstError, focusFirstField } = useFocusManagement(formRef);
+
     // ✅ OPTIMIZACIÓN: Optimistic updates con rollback automático
     const { execute: executeOptimistic, isExecuting } = useOptimisticUpdate(
       async (data: ProjectEventFormValues) => {
@@ -114,6 +122,15 @@ export const Container = forwardRef<FormRef<ProjectEventFormValues>, ContainerPr
         errorMessage: 'Error al guardar el evento',
         onSuccess: () => {
           form.reset();
+          // ✅ ACCESIBILIDAD: Anunciar éxito
+          setAnnouncement(mode === 'lean' ? 'Evento guardado exitosamente' : 'Evento creado exitosamente');
+          setTimeout(() => setAnnouncement(''), 3000);
+        },
+        onError: () => {
+          // ✅ ACCESIBILIDAD: Anunciar error y enfocar primer campo con error
+          setAnnouncement('Error al guardar el evento. Por favor revise los campos marcados.');
+          setTimeout(() => setAnnouncement(''), 3000);
+          focusFirstError();
         },
       }
     );
@@ -125,6 +142,14 @@ export const Container = forwardRef<FormRef<ProjectEventFormValues>, ContainerPr
 
     // Exponer API mediante ref
     useFormRef(ref, form, handleSubmit);
+
+    // ✅ ACCESIBILIDAD: Auto-focus en primer campo al montar (si no hay initialData)
+    useEffect(() => {
+      if (!initialData && formRef.current) {
+        focusFirstField();
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Solo al montar - focusFirstField y initialData son estables
 
     // Context value con estado de ejecución combinado
     const contextValue: ProjectEventFormContext = {
@@ -141,9 +166,20 @@ export const Container = forwardRef<FormRef<ProjectEventFormValues>, ContainerPr
         <FormContext.Provider value={contextValue}>
           <Form {...form}>
             <form
+              ref={formRef}
               onSubmit={form.handleSubmit(handleSubmit)}
               className={className}
             >
+              {/* ✅ ACCESIBILIDAD: Live region para anuncios */}
+              <div
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+                className="sr-only"
+              >
+                {announcement}
+              </div>
+
               <div className="relative">
                 {/* Loading Overlay cuando está enviando */}
                 <LoadingOverlay
