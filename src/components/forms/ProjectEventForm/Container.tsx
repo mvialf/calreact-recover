@@ -10,6 +10,7 @@ import React, { createContext, useContext, forwardRef, type ReactNode } from 're
 import { useForm, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/ui/form';
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay';
 import { useFormRef, type FormRef } from '@/hooks/useFormRef';
 import { useOptimisticUpdate } from '@/hooks/useOptimisticUpdate';
 import {
@@ -143,7 +144,23 @@ export const Container = forwardRef<FormRef<ProjectEventFormValues>, ContainerPr
               onSubmit={form.handleSubmit(handleSubmit)}
               className={className}
             >
-              {children}
+              <div className="relative">
+                {/* Loading Overlay cuando está enviando */}
+                <LoadingOverlay
+                  visible={isSubmitting || isExecuting}
+                  message={
+                    mode === 'lean'
+                      ? 'Guardando evento...'
+                      : 'Creando evento...'
+                  }
+                  opacity="medium"
+                />
+
+                {/* Contenido del formulario con opacidad reducida cuando está cargando */}
+                <div className={isSubmitting || isExecuting ? 'opacity-50 pointer-events-none' : ''}>
+                  {children}
+                </div>
+              </div>
             </form>
           </Form>
         </FormContext.Provider>
