@@ -9,7 +9,7 @@
  * - Estadísticas de progreso
  */
 
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,11 +48,36 @@ const PRIORITY_OPTIONS = [
 export const ChecklistSection: React.FC<BaseFormComponentProps> = ({ className }) => {
   const { form, disabled } = useProjectEventFormContext();
 
+  // ✅ ACCESIBILIDAD: Live region para anuncios
+  const [announcement, setAnnouncement] = useState('');
+
   // Hook optimizado para manejo de checklist
   const checklist = useChecklistManager({
     control: form.control,
     name: 'checklist',
   });
+
+  // ✅ ACCESIBILIDAD: Helpers con anuncios
+  const handleAddItem = useCallback(() => {
+    checklist.addItem();
+    setAnnouncement('Item agregado al checklist');
+    setTimeout(() => setAnnouncement(''), 1000);
+  }, [checklist]);
+
+  const handleRemoveItem = useCallback((index: number) => {
+    checklist.removeItem(index);
+    setAnnouncement('Item eliminado del checklist');
+    setTimeout(() => setAnnouncement(''), 1000);
+  }, [checklist]);
+
+  const handleToggleComplete = useCallback((index: number) => {
+    const item = checklist.items[index];
+    checklist.toggleComplete(index);
+    setAnnouncement(
+      item.isCompleted ? 'Item marcado como incompleto' : 'Item marcado como completo'
+    );
+    setTimeout(() => setAnnouncement(''), 1000);
+  }, [checklist]);
 
   const getPriorityConfig = (priority: string) => {
     return PRIORITY_OPTIONS.find((opt) => opt.value === priority) || PRIORITY_OPTIONS[1];
@@ -81,9 +106,19 @@ export const ChecklistSection: React.FC<BaseFormComponentProps> = ({ className }
       </CardHeader>
 
       <CardContent className="space-y-3">
+        {/* ✅ ACCESIBILIDAD: Live region para anuncios */}
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {announcement}
+        </div>
+
         {/* Lista de Items */}
         {checklist.items.length > 0 ? (
-          <div className="space-y-2">
+          <div role="list" aria-label="Items del checklist" className="space-y-2">
             {checklist.items.map((item, index) => {
               const priorityConfig = getPriorityConfig(item.priority || 'medium');
               const PriorityIcon = priorityConfig.icon;
@@ -91,6 +126,7 @@ export const ChecklistSection: React.FC<BaseFormComponentProps> = ({ className }
               return (
                 <div
                   key={item.id}
+                  role="listitem"
                   className={cn(
                     'group relative flex items-start gap-3 rounded-lg border p-3',
                     'transition-colors hover:bg-muted/50',
@@ -102,6 +138,8 @@ export const ChecklistSection: React.FC<BaseFormComponentProps> = ({ className }
                     type="button"
                     className="cursor-move opacity-0 group-hover:opacity-100 transition-opacity"
                     disabled={disabled}
+                    aria-label={`Reordenar item ${index + 1}`}
+                    aria-grabbed="false"
                   >
                     <GripVertical className="h-4 w-4 text-muted-foreground" />
                   </button>
@@ -109,9 +147,10 @@ export const ChecklistSection: React.FC<BaseFormComponentProps> = ({ className }
                   {/* Checkbox de Completado */}
                   <Checkbox
                     checked={item.isCompleted}
-                    onCheckedChange={() => checklist.toggleComplete(index)}
+                    onCheckedChange={() => handleToggleComplete(index)}
                     disabled={disabled}
                     className="mt-1"
+                    aria-label={`Marcar item ${index + 1} como ${item.isCompleted ? 'incompleto' : 'completado'}`}
                   />
 
                   {/* Contenido del Item */}
@@ -193,9 +232,10 @@ export const ChecklistSection: React.FC<BaseFormComponentProps> = ({ className }
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => checklist.removeItem(index)}
+                    onClick={() => handleRemoveItem(index)}
                     disabled={disabled}
                     className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
+                    aria-label={`Eliminar item ${index + 1}`}
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
@@ -204,8 +244,8 @@ export const ChecklistSection: React.FC<BaseFormComponentProps> = ({ className }
             })}
           </div>
         ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+          <div className="text-center py-8 text-muted-foreground" role="status">
+            <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" aria-hidden="true" />
             <p className="text-sm">No hay items en el checklist</p>
           </div>
         )}
@@ -216,11 +256,12 @@ export const ChecklistSection: React.FC<BaseFormComponentProps> = ({ className }
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => checklist.addItem()}
+            onClick={handleAddItem}
             disabled={disabled}
             className="flex-1"
+            aria-label="Agregar nuevo item al checklist"
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
             Agregar Item
           </Button>
 
@@ -232,6 +273,7 @@ export const ChecklistSection: React.FC<BaseFormComponentProps> = ({ className }
               onClick={checklist.clearCompleted}
               disabled={disabled}
               className="text-muted-foreground"
+              aria-label={`Limpiar ${checklist.stats.completed} items completados`}
             >
               Limpiar Completados
             </Button>
@@ -241,7 +283,14 @@ export const ChecklistSection: React.FC<BaseFormComponentProps> = ({ className }
         {/* Barra de Progreso */}
         {checklist.stats.total > 0 && (
           <div className="pt-2">
-            <div className="h-2 bg-secondary rounded-full overflow-hidden">
+            <div
+              className="h-2 bg-secondary rounded-full overflow-hidden"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(checklist.stats.completionRate)}
+              aria-label="Progreso del checklist"
+            >
               <div
                 className="h-full bg-primary transition-all duration-300"
                 style={{ width: `${checklist.stats.completionRate}%` }}
