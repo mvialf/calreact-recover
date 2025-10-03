@@ -17,21 +17,27 @@ import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 interface MonthViewProps {
   currentDate: Date;
   events: EventType[];
-  onEventClick: (event: EventType) => void;
+  onEventClick: (event: EventType) => void;     // Ver detalles
+  onEventEdit?: (event: EventType) => void;     // Editar
+  onEventDelete?: (event: EventType) => void;   // Eliminar
   onMoveEvent?: (eventId: string, newDate: Date) => void;
   weekStartsOn?: 0 | 1;
   enableDragAndDrop?: boolean;
   enableResizing?: boolean;
+  visibleDays?: number[];
 }
 
 export function MonthView({
   currentDate,
   events,
   onEventClick,
+  onEventEdit,
+  onEventDelete,
   onMoveEvent,
   weekStartsOn = 0, // Default to Sunday
   enableDragAndDrop,
   enableResizing,
+  visibleDays = [1, 2, 3, 4, 5], // Lun-Vie por defecto
 }: MonthViewProps) {
   // 🎯 Hook simplificado - solo maneja eventos de DROP
   const { handleDragOver, handleDragLeave, handleDrop } = useDragAndDrop();
@@ -39,10 +45,22 @@ export function MonthView({
   const weeks = getDaysInMonth(currentDate, weekStartsOn);
 
   // Day names in Spanish, considering weekStartsOn
-  let dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+  let allDayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
   if (weekStartsOn === 1) { // Monday start
-    dayNames.push(dayNames.shift()!);
+    allDayNames.push(allDayNames.shift()!);
   }
+
+  // Filtrar nombres de días para mostrar solo días visibles
+  // Mapeo de nombres a números de día (0=Dom, 1=Lun, etc.)
+  const dayNameToNumber = weekStartsOn === 1
+    ? [1, 2, 3, 4, 5, 6, 0] // Lun-Dom cuando empieza en lunes
+    : [0, 1, 2, 3, 4, 5, 6]; // Dom-Sáb cuando empieza en domingo
+
+  const visibleDayNames = allDayNames.filter((_, index) =>
+    visibleDays.includes(dayNameToNumber[index])
+  );
+
+  const visibleDayNumbers = dayNameToNumber.filter(dayNum => visibleDays.includes(dayNum));
 
 
   const getEventsForDay = (day: Date) => {
@@ -58,7 +76,12 @@ export function MonthView({
   };
 
   // Componente para cada celda de día con soporte para soltar
-  const DayCell = ({ day, dayEvents, index }: { day: Date; dayEvents: EventType[]; index: number }) => {
+  const DayCell = ({ day, dayEvents, cellIndex, visibleCols }: {
+    day: Date;
+    dayEvents: EventType[];
+    cellIndex: number;
+    visibleCols: number;
+  }) => {
     const dayISOString = day.toISOString();
 
     const handleCellDrop = (e: React.DragEvent) => {
@@ -77,12 +100,11 @@ export function MonthView({
 
     return (
       <div
-        key={index}
         className={cn(
           "border-r border-b border-border p-1.5 flex flex-col bg-card relative cursor-pointer transition-colors duration-150 min-h-0 w-full",
           !isSameMonth(day, currentDate) && "bg-muted/30 text-muted-foreground/60",
           isToday(day) && "bg-primary/10",
-          (index + 1) % 7 === 0 && "border-r-0" // No right border for last column
+          (cellIndex + 1) % visibleCols === 0 && "border-r-0" // No right border for last visible column
         )}
         onDragOver={handleCellDragOver}
         onDragLeave={handleDragLeave}
@@ -102,6 +124,8 @@ export function MonthView({
               key={event.id}
               event={event}
               onClick={onEventClick}
+              onEdit={onEventEdit}
+              onDelete={onEventDelete}
               view="month"
               enableDragAndDrop={enableDragAndDrop}
               enableResizing={enableResizing}
@@ -117,22 +141,36 @@ export function MonthView({
     );
   };
 
+  // Filtrar todos los días del mes para mostrar solo los días visibles
+  const allDays = weeks.flat();
+  const filteredDays = allDays.filter(day => visibleDayNumbers.includes(day.getDay()));
+
   return (
     <div className="flex flex-col size-full">
-      <div className="grid grid-cols-7 w-full border-b border-border">
-        {dayNames.map(dayName => (
+      {/* Header con nombres de días filtrados */}
+      <div
+        className="grid w-full border-b border-border"
+        style={{ gridTemplateColumns: `repeat(${visibleDayNames.length}, 1fr)` }}
+      >
+        {visibleDayNames.map(dayName => (
           <div key={dayName} className="p-2 text-center font-medium text-sm text-muted-foreground">
             {dayName}
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7 flex-1 w-full">
-        {weeks.flat().map((day, index) => (
-          <DayCell 
-            key={index} 
-            day={day} 
-            dayEvents={getEventsForDay(day)} 
-            index={index} 
+
+      {/* Grid de días filtrados */}
+      <div
+        className="grid flex-1 w-full"
+        style={{ gridTemplateColumns: `repeat(${visibleDayNames.length}, 1fr)` }}
+      >
+        {filteredDays.map((day, cellIndex) => (
+          <DayCell
+            key={day.toISOString()}
+            day={day}
+            dayEvents={getEventsForDay(day)}
+            cellIndex={cellIndex}
+            visibleCols={visibleDayNames.length}
           />
         ))}
       </div>

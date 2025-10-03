@@ -15,7 +15,9 @@ import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 interface DayViewProps {
   currentDate: Date;
   events: EventType[];
-  onEventClick: (event: EventType) => void;
+  onEventClick: (event: EventType) => void;     // Ver detalles
+  onEventEdit?: (event: EventType) => void;     // Editar
+  onEventDelete?: (event: EventType) => void;   // Eliminar
   onMoveEvent?: (eventId: string, newDate: Date) => void;
   enableDragAndDrop?: boolean;
   enableResizing?: boolean;
@@ -25,6 +27,8 @@ export function DayView({
   currentDate,
   events,
   onEventClick,
+  onEventEdit,
+  onEventDelete,
   onMoveEvent,
   enableDragAndDrop,
   enableResizing,
@@ -81,6 +85,8 @@ export function DayView({
               <CalendarEventCard
                 event={event}
                 onClick={onEventClick}
+                onEdit={onEventEdit}
+                onDelete={onEventDelete}
                 view="day"
                 enableDragAndDrop={enableDragAndDrop}
                 enableResizing={enableResizing}

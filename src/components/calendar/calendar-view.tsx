@@ -12,12 +12,15 @@ interface CalendarViewProps {
   currentDate: Date;
   events: EventType[];
   currentView: ViewOption;
-  onEventClick: (event: EventType) => void;
+  onEventClick: (event: EventType) => void;     // Ver detalles
+  onEventEdit?: (event: EventType) => void;     // Editar
+  onEventDelete?: (event: EventType) => void;   // Eliminar
   onEventDrop?: (eventId: string, newStartDate: Date, newEndDate: Date) => void;
   onEventResize?: (eventId: string, newStartDate: Date, newEndDate: Date) => void;
   enableDragAndDrop?: boolean;
   enableResizing?: boolean;
-  weekStartsOn?: 0 | 1; 
+  weekStartsOn?: 0 | 1;
+  visibleDays?: number[];
 }
 
 export function CalendarView({
@@ -25,11 +28,14 @@ export function CalendarView({
   events,
   currentView,
   onEventClick,
+  onEventEdit,
+  onEventDelete,
   onEventDrop,
   onEventResize,
   enableDragAndDrop = true,
   enableResizing = true,
   weekStartsOn = 0,
+  visibleDays = [1, 2, 3, 4, 5], // Lun-Vie por defecto
 }: CalendarViewProps) {
 
   // 🎯 Adapter: convertir onEventDrop (3 params) a onMoveEvent (2 params)
@@ -53,10 +59,13 @@ export function CalendarView({
           currentDate={currentDate}
           events={events}
           onEventClick={onEventClick}
+          onEventEdit={onEventEdit}
+          onEventDelete={onEventDelete}
           onMoveEvent={handleMoveEvent}
           weekStartsOn={weekStartsOn}
           enableDragAndDrop={enableDragAndDrop}
           enableResizing={enableResizing}
+          visibleDays={visibleDays}
         />
       )}
       {currentView === 'week' && (
@@ -64,10 +73,13 @@ export function CalendarView({
           currentDate={currentDate}
           events={events}
           onEventClick={onEventClick}
+          onEventEdit={onEventEdit}
+          onEventDelete={onEventDelete}
           onMoveEvent={handleMoveEvent}
           weekStartsOn={weekStartsOn}
           enableDragAndDrop={enableDragAndDrop}
           enableResizing={enableResizing}
+          visibleDays={visibleDays}
         />
       )}
       {currentView === 'day' && (
@@ -75,6 +87,8 @@ export function CalendarView({
           currentDate={currentDate}
           events={events}
           onEventClick={onEventClick}
+          onEventEdit={onEventEdit}
+          onEventDelete={onEventDelete}
           onMoveEvent={handleMoveEvent}
           enableDragAndDrop={enableDragAndDrop}
           enableResizing={enableResizing}

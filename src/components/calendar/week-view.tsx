@@ -16,11 +16,14 @@ import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 interface WeekViewProps {
   currentDate: Date;
   events: EventType[];
-  onEventClick: (event: EventType) => void;
+  onEventClick: (event: EventType) => void;     // Ver detalles
+  onEventEdit?: (event: EventType) => void;     // Editar
+  onEventDelete?: (event: EventType) => void;   // Eliminar
   onMoveEvent?: (eventId: string, newDate: Date) => void;
   weekStartsOn?: 0 | 1;
   enableDragAndDrop?: boolean;
   enableResizing?: boolean;
+  visibleDays?: number[];
 }
 
 // Componente auxiliar para cada columna de día
@@ -28,6 +31,8 @@ function DayColumn({
   day,
   dayEvents,
   onEventClick,
+  onEventEdit,
+  onEventDelete,
   onMoveEvent,
   enableDragAndDrop,
   enableResizing,
@@ -38,6 +43,8 @@ function DayColumn({
   day: Date;
   dayEvents: EventType[];
   onEventClick: (event: EventType) => void;
+  onEventEdit?: (event: EventType) => void;
+  onEventDelete?: (event: EventType) => void;
   onMoveEvent?: (eventId: string, newDate: Date) => void;
   enableDragAndDrop?: boolean;
   enableResizing?: boolean;
@@ -76,6 +83,8 @@ function DayColumn({
             <CalendarEventCard
               event={event}
               onClick={onEventClick}
+              onEdit={onEventEdit}
+              onDelete={onEventDelete}
               view="week"
               enableDragAndDrop={enableDragAndDrop}
               enableResizing={enableResizing}
@@ -101,15 +110,22 @@ export function WeekView({
   currentDate,
   events,
   onEventClick,
+  onEventEdit,
+  onEventDelete,
   onMoveEvent,
   weekStartsOn = 0,
   enableDragAndDrop,
   enableResizing,
+  visibleDays = [1, 2, 3, 4, 5], // Lun-Vie por defecto
 }: WeekViewProps) {
   // 🎯 Hook simplificado - solo maneja eventos de DROP
   const { handleDragOver, handleDragLeave, handleDrop } = useDragAndDrop();
 
-  const days = getDaysInWeek(currentDate, weekStartsOn);
+  // Obtener todos los días de la semana
+  const allDays = getDaysInWeek(currentDate, weekStartsOn);
+
+  // Filtrar para mostrar solo días visibles
+  const filteredDays = allDays.filter(day => visibleDays.includes(day.getDay()));
 
   const getEventsForDay = (day: Date) => {
     const currentViewDayStart = startOfDay(day);
@@ -135,8 +151,11 @@ export function WeekView({
   return (
     <div className="flex flex-col w-full bg-card rounded-lg shadow-md border border-border">
       {/* Header: Day Names */}
-      <div className="grid grid-cols-7 border-b border-border sticky top-0 bg-card z-10">
-        {days.map(day => (
+      <div
+        className="grid border-b border-border sticky top-0 bg-card z-10"
+        style={{ gridTemplateColumns: `repeat(${filteredDays.length}, 1fr)` }}
+      >
+        {filteredDays.map(day => (
           <div
             key={day.toISOString()}
             className={cn(
@@ -153,8 +172,11 @@ export function WeekView({
       </div>
 
       {/* Body: Day Columns with Events List */}
-      <div className="grid grid-cols-7">
-        {days.map(day => {
+      <div
+        className="grid"
+        style={{ gridTemplateColumns: `repeat(${filteredDays.length}, 1fr)` }}
+      >
+        {filteredDays.map(day => {
           const dayEvents = getEventsForDay(day);
 
           return (
@@ -163,6 +185,8 @@ export function WeekView({
               day={day}
               dayEvents={dayEvents}
               onEventClick={onEventClick}
+              onEventEdit={onEventEdit}
+              onEventDelete={onEventDelete}
               onMoveEvent={onMoveEvent}
               enableDragAndDrop={enableDragAndDrop}
               enableResizing={enableResizing}
