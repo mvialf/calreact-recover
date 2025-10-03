@@ -11,7 +11,9 @@ import { EVENT_RENDERERS, DefaultEventRenderer} from './event-renderers';
 
 interface CalendarEventCardProps {
   event: EventType;
-  onClick: (event: EventType) => void;
+  onClick: (event: EventType) => void;     // Ver detalles
+  onEdit?: (event: EventType) => void;     // Editar
+  onDelete?: (event: EventType) => void;   // Eliminar
   view: 'month' | 'week' | 'day';
   enableDragAndDrop?: boolean;
   enableResizing?: boolean;
@@ -46,6 +48,8 @@ const useValidatedEvent = (event: EventType) => {
 export function CalendarEventCard({
   event: originalEvent,
   onClick,
+  onEdit,
+  onDelete,
   view,
   enableDragAndDrop
 }: CalendarEventCardProps) {
@@ -175,8 +179,14 @@ export function CalendarEventCard({
       title={getTooltipText()}
       data-calendar-event="true" // CRÍTICO: Para detección de clicks en componente padre
     >
-      {/* 🎯 REGISTRY PATTERN PRESERVADO 100% */}
-      <Renderer event={event} view={view} />
+      {/* 🎯 REGISTRY PATTERN PRESERVADO 100% + Props de acciones */}
+      <Renderer
+        event={event}
+        view={view}
+        onClick={onClick}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
     </div>
   );
 }
