@@ -4,11 +4,13 @@ import { useState, useEffect, useMemo } from 'react';
 import type { EventType, ViewOption } from '@/types/event';
 import { CalendarView } from '@/components/calendar/calendar-view';
 import { EventModal } from '@/components/calendar/event-modal';
+import { EventViewDialog } from '@/components/calendar/EventViewDialog';
+import { EventDeleteDialog } from '@/components/calendar/EventDeleteDialog';
 import { CalendarToolbar } from '@/components/calendar/calendar-toolbar';
 import { AppLayout } from '@/components/layout';
 import { db } from '@/lib/firebase/client'; // Importar la instancia db configurada
 import { getAllCalendarEvents } from '@/services/calendarEventService';
-import { updateProjectEvent } from '@/services/projectEventService';
+import { updateProjectEvent, deleteProjectEvent } from '@/services/projectEventService';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,7 +20,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { normalizeSearchText } from '@/utils/search-utils';
-import { startOfDay, endOfDay, isSameDay, parseISO } from '@/lib/calendar-utils';
+import { startOfDay, endOfDay, isSameDay, parseISO, startOfWeek } from '@/lib/calendar-utils';
 import { eventLogger } from '@/lib/logger';
 import { CalendarDays, Plus, Briefcase, Wrench, Users } from 'lucide-react';
 
@@ -57,15 +59,46 @@ export default function CalReactAppPage() {
   const [events, setEvents] = useState<EventType[]>([]);
   const [currentView, setCurrentView] = useState<ViewOption>('week');
   const [filterTerm, setFilterTerm] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Estados para modales (view, edit, delete)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const [isModalOpen, setIsModalOpen] = useState(false); // Legacy - mantener por compatibilidad
   const [selectedEvent, setSelectedEvent] = useState<EventType | Partial<Omit<EventType, 'id'>> | null>(null);
+  const [visibleDays, setVisibleDays] = useState<number[]>([1, 2, 3, 4, 5]); // Lun-Vie por defecto
   const { toast } = useToast();
 
   // Efecto para inicialización del cliente y fecha actual (solo se ejecuta una vez)
   useEffect(() => {
     setIsClient(true);
-    setCurrentDate(new Date());
+    // Inicializar con el lunes de la semana actual
+    const today = new Date();
+    const mondayOfWeek = startOfWeek(today, { weekStartsOn: 1 });
+    setCurrentDate(mondayOfWeek);
+
+    // Cargar días visibles desde localStorage
+    const savedVisibleDays = localStorage.getItem('calendar-visible-days');
+    if (savedVisibleDays) {
+      try {
+        const parsed = JSON.parse(savedVisibleDays);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setVisibleDays(parsed);
+        }
+      } catch (error) {
+        eventLogger.warn('Error al cargar días visibles desde localStorage', error);
+      }
+    }
   }, []);
+
+  // Efecto para persistir días visibles en localStorage
+  useEffect(() => {
+    if (isClient) {
+      localStorage.setItem('calendar-visible-days', JSON.stringify(visibleDays));
+    }
+  }, [visibleDays, isClient]);
 
   // Efecto para cargar eventos (se ejecuta cuando userId cambia)
   useEffect(() => {
@@ -133,7 +166,14 @@ export default function CalReactAppPage() {
   };
 
   const handleToday = () => {
-    setCurrentDate(new Date());
+    const today = new Date();
+    // Si estamos en vista semanal, ir al lunes de la semana actual
+    if (currentView === 'week') {
+      const mondayOfWeek = startOfWeek(today, { weekStartsOn: 1 });
+      setCurrentDate(mondayOfWeek);
+    } else {
+      setCurrentDate(today);
+    }
   };
 
   const handleViewChange = (newView: ViewOption) => {
@@ -142,6 +182,10 @@ export default function CalReactAppPage() {
 
   const handleFilterChange = (term: string) => {
     setFilterTerm(term);
+  };
+
+  const handleVisibleDaysChange = (days: number[]) => {
+    setVisibleDays(days);
   };
 
   const handleAddEventClick = (type?: 'Proyecto' | 'Postventa' | 'Visita') => {
@@ -158,9 +202,74 @@ export default function CalReactAppPage() {
     setIsModalOpen(true);
   };
 
-  const handleEventClick = (event: EventType) => {
+  /**
+   * Handler para ver detalles de un evento (modal de vista rápida)
+   */
+  const handleViewEvent = (event: EventType) => {
     setSelectedEvent(event);
-    setIsModalOpen(true);
+    setIsViewModalOpen(true);
+  };
+
+  /**
+   * Handler para editar un evento (modal de edición)
+   */
+  const handleEditEvent = (event: EventType) => {
+    setSelectedEvent(event);
+    setIsEditModalOpen(true);
+  };
+
+  /**
+   * Handler para eliminar un evento (confirmación)
+   */
+  const handleDeleteEvent = (event: EventType) => {
+    setSelectedEvent(event);
+    setIsDeleteDialogOpen(true);
+  };
+
+  /**
+   * Handler para confirmar eliminación de evento
+   */
+  const handleConfirmDelete = async (event: EventType) => {
+    try {
+      setIsDeleting(true);
+
+      // Solo eventos de tipo Proyecto tienen servicio de eliminación
+      if (event.type === 'Proyecto') {
+        await deleteProjectEvent(event.id, db);
+
+        // Actualizar lista local
+        setEvents(prev => prev.filter(e => e.id !== event.id));
+
+        toast({
+          title: "Evento eliminado",
+          description: `El evento "${event.name}" ha sido eliminado correctamente.`,
+        });
+      } else {
+        toast({
+          title: "No disponible",
+          description: "La eliminación de este tipo de evento aún no está implementada.",
+          variant: "destructive"
+        });
+      }
+
+      // Cerrar dialog
+      setIsDeleteDialogOpen(false);
+      setSelectedEvent(null);
+    } catch (error) {
+      eventLogger.error('Error al eliminar evento', error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el evento. Intenta nuevamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Legacy handler - redirige a handleViewEvent
+  const handleEventClick = (event: EventType) => {
+    handleViewEvent(event);
   };
 
   const handleEventResize = async (eventId: string, newStartDate: Date, newEndDate: Date) => {
@@ -335,9 +444,11 @@ export default function CalReactAppPage() {
           currentDate={currentDate}
           currentView={currentView}
           filterTerm={filterTerm}
+          visibleDays={visibleDays}
           onDateChange={handleDateChange}
           onViewChange={handleViewChange}
           onFilterChange={handleFilterChange}
+          onVisibleDaysChange={handleVisibleDaysChange}
           onToday={handleToday}
         />
       </div>
@@ -346,14 +457,61 @@ export default function CalReactAppPage() {
         currentDate={currentDate}
         events={filteredEvents}
         currentView={currentView}
-        onEventClick={handleEventClick}
+        onEventClick={handleViewEvent}
+        onEventEdit={handleEditEvent}
+        onEventDelete={handleDeleteEvent}
         onEventDrop={handleEventDrop}
         onEventResize={handleEventResize}
         enableDragAndDrop={true}
         enableResizing={true}
         weekStartsOn={1}
+        visibleDays={visibleDays}
       />
 
+      {/* Modal de vista rápida */}
+      {isViewModalOpen && selectedEvent && 'id' in selectedEvent && (
+        <EventViewDialog
+          event={selectedEvent}
+          isOpen={isViewModalOpen}
+          onClose={() => {
+            setIsViewModalOpen(false);
+            setSelectedEvent(null);
+          }}
+          onEdit={handleEditEvent}
+        />
+      )}
+
+      {/* Modal de edición */}
+      {isEditModalOpen && (
+        <EventModal
+          isOpen={isEditModalOpen}
+          eventData={selectedEvent}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedEvent(null);
+          }}
+          onSave={handleModalSave}
+          onDelete={selectedEvent && 'id' in selectedEvent ? handleModalDelete : undefined}
+          preSelectedType={selectedEvent?.type as 'Proyecto' | 'Postventa' | 'Visita' | undefined}
+          onEventCreated={refreshCalendarEvents}
+        />
+      )}
+
+      {/* Dialog de confirmación de eliminación */}
+      {isDeleteDialogOpen && selectedEvent && 'id' in selectedEvent && (
+        <EventDeleteDialog
+          event={selectedEvent}
+          isOpen={isDeleteDialogOpen}
+          isDeleting={isDeleting}
+          onClose={() => {
+            setIsDeleteDialogOpen(false);
+            setSelectedEvent(null);
+          }}
+          onConfirm={handleConfirmDelete}
+        />
+      )}
+
+      {/* Legacy modal - mantener por compatibilidad */}
       {isModalOpen && (
         <EventModal
           isOpen={isModalOpen}
