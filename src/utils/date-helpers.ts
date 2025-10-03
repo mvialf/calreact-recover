@@ -56,6 +56,23 @@ export const formatDateForInput = (date: Date | string | undefined): string => {
   }
 };
 
+/**
+ * Formatea una fecha para mostrar en tablas
+ * Formato estándar: dd/MM/yyyy
+ * @param date Fecha a formatear
+ * @returns Cadena en formato dd/MM/yyyy
+ */
+export const formatDateForTable = (date: Date | string | null | undefined): string => {
+  if (!date) return '—';
+  try {
+    const d = typeof date === 'string' ? parseISO(date) : date;
+    if (!fnsIsValid(d)) return 'Fecha inválida';
+    return format(d, 'dd/MM/yyyy');
+  } catch (error) {
+    return 'Fecha inválida';
+  }
+};
+
 // Re-exportación de funciones de date-fns con alias más descriptivos
 export {
   fnsAddDays as addDays,
