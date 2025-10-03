@@ -6,6 +6,7 @@
  */
 
 export { ProjectSummary } from './project-summary';
+export { ProjectStatusDropdown } from './project-status-dropdown';
 export { AddressSummary } from './address-summary';
 
 // Preparado para futuros summary components:
