@@ -23,13 +23,9 @@ import { format as formatDate } from 'date-fns'
 import { es } from 'date-fns/locale'
 
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header"
-import { ProjectSummary } from '@/components/summary'
+import { ProjectSummary, ProjectStatusDropdown } from '@/components/summary'
 import { formatCurrency } from '@/utils/format-helpers'
-import {
-  getPaymentPercentageBadgeVariant,
-  getStatusBadgeVariant,
-  PROJECT_STATUS_OPTIONS
-} from '@/lib/constants'
+import { getPaymentPercentageBadgeVariant } from '@/lib/constants'
 import type { EnrichedProject } from '@/types/project'
 
 interface ProjectsColumnsProps {
@@ -94,59 +90,19 @@ export const createProjectsColumns = ({
       <DataTableColumnHeader column={column} title="Estado" className="justify-center"/>
     ),
     cell: ({ row, table }) => {
-      const status = row.getValue("status") as string
-      const statusOption = PROJECT_STATUS_OPTIONS.find(opt => opt.value === status)
-      const variant = getStatusBadgeVariant(status)
       const project = row.original
-
-      // Obtener funciones del meta de la tabla
       const handleStatusChange = (table.options.meta as any)?.handleStatusChange
       const updateStatusMutation = (table.options.meta as any)?.updateStatusMutation
 
-      if (!handleStatusChange) {
-        return (
-          <Badge 
-          variant={variant}
-          className="flex justify-center">
-            {statusOption?.label || status}
-          </Badge>
-        )
-      }
-
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="secondary"
-              className="p-0 h-auto font-normal "
-              disabled={updateStatusMutation?.isPending}
-            >
-              <Badge variant={variant} className="cursor-pointer">
-                {updateStatusMutation?.isPending && updateStatusMutation?.variables?.projectId === project.id
-                  ? "Actualizando..."
-                  : (statusOption?.label || status)
-                }
-              </Badge>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuLabel>Cambiar Estado</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {PROJECT_STATUS_OPTIONS.map((option) => (
-              <DropdownMenuItem
-                key={option.value}
-                onClick={() => handleStatusChange(project.id, option.value)}
-                disabled={option.value === status || updateStatusMutation?.isPending}
-              >
-                <Badge variant={getStatusBadgeVariant(option.value)} className="mr-2">
-                  {option.label}
-                </Badge>
-                {option.label}
-                {option.value === status && " (Actual)"}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ProjectStatusDropdown
+          projectId={project.id}
+          currentStatus={project.status}
+          onStatusChange={handleStatusChange}
+          isPending={updateStatusMutation?.isPending && 
+                     updateStatusMutation?.variables?.projectId === project.id}
+          readOnly={!handleStatusChange}
+        />
       )
     },
     filterFn: (row, id, value) => {
