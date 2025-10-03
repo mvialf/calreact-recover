@@ -72,7 +72,7 @@ export function AppLayout({
           <AppSidebar />
 
           {/* Main content */}
-          <main className="flex-1 px-6 py-6 pt-12">
+          <main className="flex-1 px-6 py-6 pt-20">
             <div>
               {/* Page header with title, breadcrumbs, and actions */}
               {(pageTitle || breadcrumbs) && (
