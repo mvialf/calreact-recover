@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Country } from 'react-phone-number-input';
 import { Logger } from '@/lib/logger';
+import { normalizeCountryCode } from '@/utils/country-utils';
 
 type AppConfig = {
   defaultCountry: Country;
@@ -30,7 +31,13 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
     try {
       const savedConfig = localStorage.getItem('appConfig');
       if (savedConfig) {
-        setConfig(JSON.parse(savedConfig));
+        const parsed = JSON.parse(savedConfig);
+        // Normalizar código de país para asegurar formato ISO consistente
+        const normalizedConfig = {
+          ...parsed,
+          defaultCountry: normalizeCountryCode(parsed.defaultCountry).toUpperCase() as Country
+        };
+        setConfig(normalizedConfig);
       }
     } catch (error) {
       configLogger.error('Error al cargar la configuración', error);

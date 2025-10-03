@@ -25,7 +25,7 @@ export interface PlacesAdapterConfig {
 // Configuración por defecto (alineada con AppConfigContext.defaultCountry)
 const DEFAULT_CONFIG: Required<PlacesAdapterConfig> = {
   componentRestrictions: { country: 'cl' }, // Chile por defecto, consistente con AppConfig
-  types: ['establishment'],
+  types: [], // Sin restricción de tipos = busca todo (direcciones + establecimientos)
   sessionToken: true,
   region: 'cl',
   language: 'es' // Mantener español como idioma
@@ -142,6 +142,10 @@ export class PlacesServiceAdapter {
       throw new Error('AutocompleteSuggestion no disponible');
     }
     
+    // Construir types solo si hay valores específicos
+    const types = additionalOptions.types || this.config.types;
+    const hasTypes = types && types.length > 0;
+
     const request = {
       input,
       sessionToken: this.sessionToken || undefined,
@@ -149,7 +153,8 @@ export class PlacesServiceAdapter {
         center: additionalOptions.location,
         radius: additionalOptions.radius || 50000
       } : undefined,
-      includedPrimaryTypes: additionalOptions.types || this.config.types,
+      // Solo incluir types si hay valores específicos (sin tipos = busca todo)
+      ...(hasTypes && { includedPrimaryTypes: types }),
       region: this.config.region,
     };
     
@@ -251,22 +256,22 @@ export class PlacesServiceAdapter {
         const { Place } = this.placesLib;
         
         // Crear instancia de Place según documentación
-        // Nota: sessionToken es requerido por Google API para evitar facturación duplicada
-        // pero las definiciones TypeScript están desactualizadas
+        // Nota: sessionToken NO va en constructor, va en fetchFields()
         const place = new Place({
           id: placeId,
-          requestedLanguage: this.config.language || 'es',
-          sessionToken: this.sessionToken
-        } as any);
+          requestedLanguage: this.config.language || 'es'
+        });
         
         // Mapear campos legacy a moderna API según documentación oficial
         const modernFields = this.mapFieldsToModernAPI(fields);
-        
+
         // Usar fetchFields() según documentación oficial
-        // El sessionToken ya se pasó en el constructor, no es necesario aquí
+        // Session token se pasa aquí, NO en el constructor
+        // Nota: TypeScript definitions están desactualizadas, sessionToken SÍ existe según Google Docs
         await place.fetchFields({
-          fields: modernFields
-        });
+          fields: modernFields,
+          sessionToken: this.sessionToken
+        } as any);
         
         // Convertir respuesta moderna a formato legacy para compatibilidad
         const legacyResult = this.convertModernPlaceToLegacy(place);
@@ -346,11 +351,10 @@ export class PlacesServiceAdapter {
       'formatted_address': 'formattedAddress',
       'geometry': 'location',
       'geometry.location': 'location',
-      'geometry.viewport': 'viewport', 
+      'geometry.viewport': 'viewport',
       'address_components': 'addressComponents',
       'name': 'displayName',
       'types': 'types',
-      'vicinity': 'shortFormattedAddress',
       'website': 'websiteURI',
       'formatted_phone_number': 'nationalPhoneNumber',
       'international_phone_number': 'internationalPhoneNumber',
@@ -386,6 +390,15 @@ export class PlacesServiceAdapter {
    * Convierte respuesta de nueva API a formato legacy según documentación oficial
    */
   private convertModernPlaceToLegacy(modernPlace: any): google.maps.places.PlaceResult {
+    // Convertir addressComponents de formato moderno a legacy
+    // API Moderna: { longText, shortText, types }
+    // API Legacy: { long_name, short_name, types }
+    const legacyAddressComponents = (modernPlace.addressComponents || []).map((component: any) => ({
+      long_name: component.longText || '',
+      short_name: component.shortText || component.longText || '',
+      types: component.types || []
+    }));
+
     return {
       place_id: modernPlace.id || '',
       name: modernPlace.displayName || '',
@@ -394,9 +407,9 @@ export class PlacesServiceAdapter {
         location: modernPlace.location || null,
         viewport: modernPlace.viewport || null
       },
-      address_components: modernPlace.addressComponents || [],
+      address_components: legacyAddressComponents,
       types: modernPlace.types || [],
-      vicinity: modernPlace.shortFormattedAddress || '',
+      vicinity: '',
       website: modernPlace.websiteURI || undefined,
       formatted_phone_number: modernPlace.nationalPhoneNumber || undefined,
       international_phone_number: modernPlace.internationalPhoneNumber || undefined,
