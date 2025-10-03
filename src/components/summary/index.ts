@@ -6,6 +6,7 @@
  */
 
 export { ProjectSummary } from './project-summary';
+export { AddressSummary } from './address-summary';
 
 // Preparado para futuros summary components:
 // export { ClientSummary } from './client-summary';
