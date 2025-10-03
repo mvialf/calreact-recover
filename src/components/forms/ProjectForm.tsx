@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { phoneSchema } from '@/utils/validation-schemas';
+import { normalizeCountryCode } from '@/utils/country-utils';
 import { useQuery } from '@tanstack/react-query';
 import { formatCurrency } from '@/utils/format-helpers';
 import { TagSelector, type Tag } from '@/components/ui/tags';
@@ -324,7 +325,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
                   value={field.value}
                   onSelect={field.onChange}
                   placeholder="Ingrese la dirección del proyecto"
-                  countryCode={defaultValues?.fullAddress?.componentes?.pais}
+                  countryCode={normalizeCountryCode(defaultValues?.fullAddress?.componentes?.pais)}
                 />
               </FormControl>
               <FormMessage />

@@ -7,6 +7,7 @@ import * as z from "zod";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { formLogger } from '@/lib/logger';
+import { normalizeCountryCode } from '@/utils/country-utils';
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -368,7 +369,7 @@ export function AfterSaleForm({
                     onSelect={field.onChange}
                     placeholder="Ingrese la dirección..."
                     disabled={isSubmitting}
-                    countryCode={initialData?.address?.componentes?.pais}
+                    countryCode={normalizeCountryCode(initialData?.address?.componentes?.pais)}
                   />
                 </FormControl>
                 <FormMessage />

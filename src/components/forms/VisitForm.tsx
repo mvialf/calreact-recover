@@ -4,6 +4,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { normalizeCountryCode } from '@/utils/country-utils';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -237,7 +238,7 @@ export const VisitForm: React.FC<VisitFormProps> = ({
                   onPlaceSelected={handleAddressSelect}
                   value={field.value ?? null}
                   placeholder="Buscar dirección..."
-                  countryCode={initialData?.fullAddress?.componentes?.pais}
+                  countryCode={normalizeCountryCode(initialData?.fullAddress?.componentes?.pais)}
                 />
               </FormControl>
               <FormMessage />
