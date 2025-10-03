@@ -18,13 +18,13 @@ import {
   Trash2,
   MoreHorizontal,
   Phone,
-  MapPin
 } from "lucide-react"
-import { format as formatDate } from 'date-fns'
-import { es } from 'date-fns/locale'
 
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header"
+import { AddressSummary } from "@/components/summary"
+import { formatDateForTable } from "@/utils/date-helpers"
 import type { Visit, VisitStatus } from '@/services/visitService'
+import type { FormattedAddress } from "@/types/project"
 
 // Función de estilos de estado - manteniendo la implementación exacta
 const getStatusVariant = (status: VisitStatus) => {
@@ -40,6 +40,29 @@ const getStatusVariant = (status: VisitStatus) => {
     default: // Ingresada
       return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
   }
+}
+
+// Helper para convertir datos legacy de Visit a FormattedAddress
+const getVisitAddress = (visit: Visit): FormattedAddress | null => {
+  // Priorizar fullAddress si existe
+  if (visit.fullAddress) {
+    return visit.fullAddress as FormattedAddress;
+  }
+
+  // Fallback: construir desde address/municipality legacy
+  if (visit.address || visit.municipality) {
+    return {
+      textoCompleto: visit.address || visit.municipality || '',
+      componentes: {
+        calle: visit.address || '',
+        comuna: visit.municipality,
+      },
+      coordenadas: visit.coordinates,
+      placeId: visit.placeId,
+    } as FormattedAddress;
+  }
+
+  return null;
 }
 
 interface VisitsColumnsProps {
@@ -129,39 +152,24 @@ export const createVisitsColumns = ({
     ),
     cell: ({ row }) => {
       const visit = row.original
-      const address = visit.address
-      const municipality = visit.municipality
+      const address = getVisitAddress(visit)
 
-      if (!address && !municipality) {
-        return <span className="text-muted-foreground">—</span>
-      }
-
-      return (
-        <div className="space-y-1">
-          <div className="flex items-center space-x-2">
-            <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-            <div className="min-w-0">
-              {address && (
-                <div className="font-medium text-sm truncate">
-                  {address}
-                </div>
-              )}
-              {municipality && (
-                <div className="text-xs text-muted-foreground">
-                  {municipality}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )
+      return <AddressSummary address={address} showIcon={false} />
     },
     filterFn: (row, id, value) => {
       const visit = row.original
       const searchTerm = value.toLowerCase()
+
+      // Buscar en fullAddress si existe
+      if (visit.fullAddress) {
+        const textoCompleto = visit.fullAddress.textoCompleto?.toLowerCase() ?? ''
+        const comuna = visit.fullAddress.componentes?.comuna?.toLowerCase() ?? ''
+        return textoCompleto.includes(searchTerm) || comuna.includes(searchTerm)
+      }
+
+      // Fallback: buscar en campos legacy
       const address = visit.address?.toLowerCase() ?? ''
       const municipality = visit.municipality?.toLowerCase() ?? ''
-
       return address.includes(searchTerm) || municipality.includes(searchTerm)
     },
   },
@@ -173,20 +181,11 @@ export const createVisitsColumns = ({
     cell: ({ row }) => {
       const scheduledDate = row.getValue("scheduledDate") as Date | string | null
 
-      if (!scheduledDate) {
-        return <span className="text-muted-foreground">—</span>
-      }
-
-      try {
-        const date = scheduledDate instanceof Date ? scheduledDate : new Date(scheduledDate)
-        return (
-          <div className="text-sm">
-            {formatDate(date, 'PPP', { locale: es })}
-          </div>
-        )
-      } catch (error) {
-        return <span className="text-muted-foreground">Fecha inválida</span>
-      }
+      return (
+        <div className="text-sm">
+          {formatDateForTable(scheduledDate)}
+        </div>
+      )
     },
     sortingFn: (rowA, rowB) => {
       const dateA = rowA.getValue("scheduledDate") as Date | string | null
