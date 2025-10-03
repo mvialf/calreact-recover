@@ -3,17 +3,20 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { format } from '@/lib/calendar-utils';
+import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from '@/lib/calendar-utils';
 import type { ViewOption } from '@/types/event';
 import { ChevronLeft, ChevronRight, Search, CalendarDays, Columns, SigmaSquare } from 'lucide-react';
+import { CalendarDayFilter } from './calendar-day-filter';
 
 interface CalendarToolbarProps {
   currentDate: Date;
   currentView: ViewOption;
   filterTerm: string;
+  visibleDays: number[];
   onDateChange: (newDate: Date) => void;
   onViewChange: (newView: ViewOption) => void;
   onFilterChange: (term: string) => void;
+  onVisibleDaysChange: (days: number[]) => void;
   onToday: () => void;
 }
 
@@ -21,9 +24,11 @@ export function CalendarToolbar({
   currentDate,
   currentView,
   filterTerm,
+  visibleDays,
   onDateChange,
   onViewChange,
   onFilterChange,
+  onVisibleDaysChange,
   onToday,
 }: CalendarToolbarProps) {
   
@@ -32,7 +37,9 @@ export function CalendarToolbar({
     if (currentView === 'month') {
       newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
     } else if (currentView === 'week') {
-      newDate = new Date(currentDate.setDate(currentDate.getDate() - 7));
+      // Retroceder una semana completa desde el inicio de la semana actual
+      const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+      newDate = subWeeks(weekStart, 1);
     } else { // day
       newDate = new Date(currentDate.setDate(currentDate.getDate() - 1));
     }
@@ -44,7 +51,9 @@ export function CalendarToolbar({
     if (currentView === 'month') {
       newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
     } else if (currentView === 'week') {
-      newDate = new Date(currentDate.setDate(currentDate.getDate() + 7));
+      // Avanzar una semana completa desde el inicio de la semana actual
+      const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+      newDate = addWeeks(weekStart, 1);
     } else { // day
       newDate = new Date(currentDate.setDate(currentDate.getDate() + 1));
     }
@@ -56,10 +65,11 @@ export function CalendarToolbar({
       return format(currentDate, 'MMMM yyyy');
     }
     if (currentView === 'week') {
-      const start = format(currentDate, 'MMM d');
-      const endDate = new Date(currentDate);
-      endDate.setDate(currentDate.getDate() + 6);
-      const end = format(endDate, 'MMM d, yyyy');
+      // Obtener el inicio y fin de la semana (lunes a domingo)
+      const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+      const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
+      const start = format(weekStart, 'MMM d');
+      const end = format(weekEnd, 'MMM d, yyyy');
       return `${start} - ${end}`;
     }
     return format(currentDate, 'MMMM d, yyyy');
@@ -91,7 +101,15 @@ export function CalendarToolbar({
             className="pl-8"
           />
         </div>
-        
+
+        {/* Filtro de días (solo visible en week/month view) */}
+        {(currentView === 'week' || currentView === 'month') && (
+          <CalendarDayFilter
+            visibleDays={visibleDays}
+            onVisibleDaysChange={onVisibleDaysChange}
+          />
+        )}
+
         <Select value={currentView} onValueChange={(value) => onViewChange(value as ViewOption)}>
           <SelectTrigger className="w-full sm:w-[120px]" aria-label="Seleccionar vista de calendario">
             <SelectValue placeholder="Select view" />
