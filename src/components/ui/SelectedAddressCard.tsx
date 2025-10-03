@@ -15,7 +15,7 @@
 "use client";
 
 import * as React from "react";
-import { MapPin, X, MoreVertical, Building, Copy, Map, Share2 } from "lucide-react";
+import { X, MoreVertical, Building, Copy, Map, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -164,7 +164,7 @@ export function SelectedAddressCard({
 
     setShowAdditionalInfoInput(false);
     uiLogger.debug('Información adicional guardada', { info: localAdditionalInfo });
-  }, [localAdditionalInfo, onAdditionalInfoChange, address.informacionAdicional]);
+  }, [localAdditionalInfo, onAdditionalInfoChange]);
 
   /**
    * Manejar cambio en input de información adicional
@@ -182,18 +182,25 @@ export function SelectedAddressCard({
       data-testid="selected-address"
     >
       <div className="space-y-1">
-        {/* Header: Dirección + Acciones */}
+        {/* Header: Dirección + Info Adicional + Acciones (todo en una línea) */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <MapPin className="h-4 w-4 mr-2 text-muted-foreground flex-shrink-0" />
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             <span className="text-sm font-medium">
               {address.componentes?.calle} {address.componentes?.numero}
             </span>
+
+            {/* Información adicional inline */}
+            {address.informacionAdicional && (
+              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Building className="h-3.5 w-3.5 flex-shrink-0" />
+                <span className="truncate">{address.informacionAdicional}</span>
+              </div>
+            )}
           </div>
 
           {/* Botones de acción */}
           {showActions && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 flex-shrink-0">
               {/* Menú dropdown con acciones */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -309,17 +316,9 @@ export function SelectedAddressCard({
           )}
         </div>
 
-        {/* Información adicional (si existe) */}
-        {address.informacionAdicional && (
-          <div className="text-sm text-muted-foreground pl-6 flex items-center mt-1">
-            <Building className="h-3.5 w-3.5 mr-1.5 flex-shrink-0 opacity-70" />
-            <span className="text-foreground/80">{address.informacionAdicional}</span>
-          </div>
-        )}
-
         {/* Comuna y región */}
         {address.componentes?.comuna && (
-          <div className="text-sm text-muted-foreground pl-6">
+          <div className="text-sm text-muted-foreground">
             {address.componentes.comuna}
             {address.componentes.region && `, ${address.componentes.region}`}
           </div>
