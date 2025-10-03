@@ -19,11 +19,10 @@ import {
   CreditCard,
   Banknote
 } from "lucide-react"
-import { format as formatDate } from 'date-fns'
-import { es } from 'date-fns/locale'
 
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header"
 import { formatCurrency } from '@/utils/format-utils'
+import { formatDateForTable } from '@/utils/date-helpers'
 import type { Payment } from '@/types/payment'
 import type { ProjectType } from '@/types/project'
 import type { Client } from '@/types/client'
@@ -201,11 +200,10 @@ export const createPaymentsColumns = ({
     ),
     cell: ({ row }) => {
       const date = row.getValue("date") as Date | null
-      if (!date) return <span className="text-muted-foreground">—</span>
 
       return (
         <div className="text-sm">
-          {formatDate(date, 'PPP', { locale: es })}
+          {formatDateForTable(date)}
         </div>
       )
     },

@@ -18,11 +18,10 @@ import {
   Eye,
   MoreHorizontal
 } from "lucide-react"
-import { format as formatDate } from 'date-fns'
-import { es } from 'date-fns/locale'
 
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header"
 import { ProjectSummary } from '@/components/summary'
+import { formatDateForTable } from '@/utils/date-helpers'
 import type { AfterSales } from '@/types/afterSales'
 import type { ProjectType } from '@/types/project'
 
@@ -135,11 +134,10 @@ export const createAfterSalesColumns = ({
     ),
     cell: ({ row }) => {
       const entryDate = row.getValue("entryDate") as Date | null
-      if (!entryDate) return <span className="text-muted-foreground">—</span>
 
       return (
         <div className="text-sm">
-          {formatDate(entryDate, 'PPP', { locale: es })}
+          {formatDateForTable(entryDate)}
         </div>
       )
     },
