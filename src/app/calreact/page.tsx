@@ -9,10 +9,11 @@ import { EventDeleteDialog } from '@/components/calendar/EventDeleteDialog';
 import { CalendarToolbar } from '@/components/calendar/calendar-toolbar';
 import { AppLayout } from '@/components/layout';
 import { db } from '@/lib/firebase/client'; // Importar la instancia db configurada
-import { getAllCalendarEvents } from '@/services/calendarEventService';
 import { updateProjectEvent, deleteProjectEvent } from '@/services/projectEventService';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { useCalendarEvents } from '@/hooks/useCalendarEvents';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,10 +54,14 @@ export default function CalReactAppPage() {
   // Ej: const userId = useAuth().currentUser?.uid || "anonymous";
   const userId = "mockUserId"; // Placeholder para desarrollo
 
-  const [isLoadingEvents, setIsLoadingEvents] = useState(true);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  // Usar hook de TanStack Query para eventos
+  const { events, isLoading: isLoadingEvents, isError, error } = useCalendarEvents(userId);
+
   const [currentDate, setCurrentDate] = useState<Date | undefined>(undefined); // Se inicializará en useEffect
   const [isClient, setIsClient] = useState(false);
-  const [events, setEvents] = useState<EventType[]>([]);
   const [currentView, setCurrentView] = useState<ViewOption>('week');
   const [filterTerm, setFilterTerm] = useState('');
 
@@ -64,12 +69,10 @@ export default function CalReactAppPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false); // Legacy - mantener por compatibilidad
   const [selectedEvent, setSelectedEvent] = useState<EventType | Partial<Omit<EventType, 'id'>> | null>(null);
   const [visibleDays, setVisibleDays] = useState<number[]>([1, 2, 3, 4, 5]); // Lun-Vie por defecto
-  const { toast } = useToast();
 
   // Efecto para inicialización del cliente y fecha actual (solo se ejecuta una vez)
   useEffect(() => {
@@ -100,50 +103,43 @@ export default function CalReactAppPage() {
     }
   }, [visibleDays, isClient]);
 
-  // Efecto para cargar eventos (se ejecuta cuando userId cambia)
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        setIsLoadingEvents(true);
+  // Mutaciones de TanStack Query
+  const updateEventMutation = useMutation({
+    mutationFn: ({ eventId, data }: { eventId: string; data: Partial<any> }) =>
+      updateProjectEvent(eventId, data, db),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['calendar-events', userId] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast({ title: 'Evento actualizado', variant: 'default' });
+    },
+    onError: (error: Error) => {
+      eventLogger.error('Error al actualizar evento', error);
+      toast({
+        title: 'Error al actualizar evento',
+        description: error.message,
+        variant: 'destructive'
+      });
+    }
+  });
 
-        
-        // Verificar si Firebase está configurado correctamente
-        if (!db) {
-
-          setEvents([]);
-          return;
-        }
-        
-        // Usar el servicio que combina projectEvents y otros
-        const fetchedEvents = await getAllCalendarEvents(db, userId);
-
-        
-        setEvents(fetchedEvents);
-      } catch (error) {
-
-        
-        // No mostrar toast de error en desarrollo si Firebase no está configurado
-        const isFirebaseNotConfigured = (error as any)?.message?.includes?.('your-project-id') || 
-                                        (error as any)?.code === 'app/invalid-credential';
-        
-        if (!isFirebaseNotConfigured) {
-          toast({ 
-            title: "Error", 
-            description: "No se pudieron cargar los eventos del calendario.", 
-            variant: "destructive" 
-          });
-        } else {
-          eventLogger.warn("Firebase no configurado - funcionando en modo demo");
-        }
-        
-        setEvents([]); // Limpia eventos en caso de error  
-      } finally {
-        setIsLoadingEvents(false);
-      }
-    };
-
-    fetchEvents();
-  }, [userId, toast]); // Dependencias actualizadas
+  const deleteEventMutation = useMutation({
+    mutationFn: (eventId: string) => deleteProjectEvent(eventId, db),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['calendar-events', userId] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast({ title: 'Evento eliminado', variant: 'default' });
+      setIsDeleteDialogOpen(false);
+      setSelectedEvent(null);
+    },
+    onError: (error: Error) => {
+      eventLogger.error('Error al eliminar evento', error);
+      toast({
+        title: 'Error al eliminar evento',
+        description: error.message,
+        variant: 'destructive'
+      });
+    }
+  });
 
   const filteredEvents = useMemo(() => {
     if (!filterTerm.trim()) {
@@ -229,41 +225,18 @@ export default function CalReactAppPage() {
   /**
    * Handler para confirmar eliminación de evento
    */
-  const handleConfirmDelete = async (event: EventType) => {
-    try {
-      setIsDeleting(true);
-
-      // Solo eventos de tipo Proyecto tienen servicio de eliminación
-      if (event.type === 'Proyecto') {
-        await deleteProjectEvent(event.id, db);
-
-        // Actualizar lista local
-        setEvents(prev => prev.filter(e => e.id !== event.id));
-
-        toast({
-          title: "Evento eliminado",
-          description: `El evento "${event.name}" ha sido eliminado correctamente.`,
-        });
-      } else {
-        toast({
-          title: "No disponible",
-          description: "La eliminación de este tipo de evento aún no está implementada.",
-          variant: "destructive"
-        });
-      }
-
-      // Cerrar dialog
-      setIsDeleteDialogOpen(false);
-      setSelectedEvent(null);
-    } catch (error) {
-      eventLogger.error('Error al eliminar evento', error);
+  const handleConfirmDelete = (event: EventType) => {
+    // Solo eventos de tipo Proyecto tienen servicio de eliminación
+    if (event.type === 'Proyecto') {
+      deleteEventMutation.mutate(event.id);
+    } else {
       toast({
-        title: "Error",
-        description: "No se pudo eliminar el evento. Intenta nuevamente.",
+        title: "No disponible",
+        description: "La eliminación de este tipo de evento aún no está implementada.",
         variant: "destructive"
       });
-    } finally {
-      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+      setSelectedEvent(null);
     }
   };
 
@@ -284,58 +257,27 @@ export default function CalReactAppPage() {
 
   /**
    * Handler para mover eventos mediante drag & drop
-   * Actualiza el evento en Firebase y en el estado local
+   * Actualiza el evento en Firebase usando TanStack Query mutation
    */
-  const handleEventDrop = async (eventId: string, newStartDate: Date, newEndDate: Date) => {
-    try {
-      // Buscar el evento a actualizar
-      const eventToUpdate = events.find(e => e.id === eventId);
-      if (!eventToUpdate) {
-        eventLogger.warn('Evento no encontrado para actualizar', { eventId });
-        return;
-      }
+  const handleEventDrop = (eventId: string, newStartDate: Date, newEndDate: Date) => {
+    // Buscar el evento a actualizar
+    const eventToUpdate = events.find(e => e.id === eventId);
+    if (!eventToUpdate) {
+      eventLogger.warn('Evento no encontrado para actualizar', { eventId });
+      return;
+    }
 
-      // Calcular duración original del evento
-      const duration = eventToUpdate.endDate.getTime() - eventToUpdate.startDate.getTime();
+    eventLogger.info('Moviendo evento', {
+      eventId,
+      oldStart: eventToUpdate.startDate,
+      newStart: newStartDate
+    });
 
-      // Ajustar fecha de fin manteniendo la duración
-      const adjustedEndDate = new Date(newStartDate.getTime() + duration);
-
-      eventLogger.info('Moviendo evento', {
+    // Actualizar en Firebase (solo eventos de tipo Proyecto)
+    if (eventToUpdate.type === 'Proyecto') {
+      updateEventMutation.mutate({
         eventId,
-        oldStart: eventToUpdate.startDate,
-        newStart: newStartDate,
-        duration
-      });
-
-      // Actualizar en Firebase (solo eventos de tipo Proyecto)
-      if (eventToUpdate.type === 'Proyecto') {
-        await updateProjectEvent(eventId, {
-          eventDate: newStartDate  // ProjectEventType usa eventDate, no startDate
-        }, db);
-      }
-
-      // Actualizar estado local inmediatamente para mejor UX
-      setEvents(prev => prev.map(e =>
-        e.id === eventId
-          ? { ...e, startDate: newStartDate, endDate: adjustedEndDate }
-          : e
-      ));
-
-      // ✅ No mostrar toast para drag & drop - el feedback visual es suficiente
-      // Solo logueamos para debugging
-      eventLogger.info('Evento movido exitosamente', {
-        eventId,
-        newStart: newStartDate,
-        newEnd: adjustedEndDate
-      });
-
-    } catch (error) {
-      eventLogger.error('Error al mover evento', error);
-      toast({
-        title: "Error al mover evento",
-        description: "No se pudo actualizar el evento. Intenta nuevamente.",
-        variant: "destructive"
+        data: { eventDate: newStartDate } // ProjectEventType usa eventDate, no startDate
       });
     }
   };
@@ -343,26 +285,6 @@ export default function CalReactAppPage() {
   const handleModalClose = () => {
     setIsModalOpen(false);
     setSelectedEvent(null);
-  };
-
-  // Función para refrescar eventos del calendario
-  const refreshCalendarEvents = async () => {
-
-    try {
-      setIsLoadingEvents(true);
-      const fetchedEvents = await getAllCalendarEvents(db, userId);
-
-      setEvents(fetchedEvents);
-    } catch (error) {
-
-      toast({ 
-        title: "Error", 
-        description: "No se pudieron refrescar los eventos.", 
-        variant: "destructive" 
-      });
-    } finally {
-      setIsLoadingEvents(false);
-    }
   };
 
   const handleModalSave = async (eventToSave: Omit<EventType, 'id'> & { id?: string }) => {
@@ -493,7 +415,6 @@ export default function CalReactAppPage() {
           onSave={handleModalSave}
           onDelete={selectedEvent && 'id' in selectedEvent ? handleModalDelete : undefined}
           preSelectedType={selectedEvent?.type as 'Proyecto' | 'Postventa' | 'Visita' | undefined}
-          onEventCreated={refreshCalendarEvents}
         />
       )}
 
@@ -502,7 +423,7 @@ export default function CalReactAppPage() {
         <EventDeleteDialog
           event={selectedEvent}
           isOpen={isDeleteDialogOpen}
-          isDeleting={isDeleting}
+          isDeleting={deleteEventMutation.isPending}
           onClose={() => {
             setIsDeleteDialogOpen(false);
             setSelectedEvent(null);
@@ -520,7 +441,6 @@ export default function CalReactAppPage() {
           onSave={handleModalSave}
           onDelete={selectedEvent && 'id' in selectedEvent ? handleModalDelete : undefined}
           preSelectedType={selectedEvent?.type as 'Proyecto' | 'Postventa' | 'Visita' | undefined}
-          onEventCreated={refreshCalendarEvents}
         />
       )}
     </AppLayout>
