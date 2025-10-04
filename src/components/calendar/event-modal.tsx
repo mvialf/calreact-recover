@@ -44,7 +44,6 @@ interface EventModalProps {
   onSave: (event: Omit<EventType, 'id'> & { id?: string }) => void;
   onDelete?: (eventId: string) => void;
   preSelectedType?: 'Proyecto' | 'Postventa' | 'Visita';
-  onEventCreated?: () => Promise<void>;
 }
 
 const defaultColor = 'hsl(var(--primary))';
@@ -56,7 +55,6 @@ export function EventModal({
   onSave,
   onDelete,
   preSelectedType,
-  onEventCreated,
 }: EventModalProps) {
   const [name, setName] = useState('');
   const [startDate, setStartDate] = useState<Date | undefined>(new Date());

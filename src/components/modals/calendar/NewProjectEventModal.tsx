@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 
 import { ModalLayout } from '../modalLayout';
 import { getProjects } from '@/services/projectService';
@@ -27,7 +27,6 @@ export interface NewProjectEventModalProps {
   initialData?: Partial<NewProjectEventFormValues>;
   isSubmitting?: boolean;
   autoSave?: boolean; // Si true, guarda automáticamente sin onSubmit externo
-  onEventCreated?: () => void; // Callback para cuando se crea un evento exitosamente
 }
 
 export function NewProjectEventModal({
@@ -37,11 +36,10 @@ export function NewProjectEventModal({
   initialData,
   isSubmitting = false,
   autoSave = true, // Por defecto guarda automáticamente
-  onEventCreated,
 }: NewProjectEventModalProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedProject, setSelectedProject] = useState<ProjectType | null>(null);
-  const [isInternalSubmitting, setIsInternalSubmitting] = useState(false);
   const [projectValidation, setProjectValidation] = useState<{isValid: boolean, warnings: string[]}>({isValid: true, warnings: []});
   const formRef = useRef<HTMLFormElement>(null);
   const formInstanceRef = useRef<UseFormReturn<NewProjectEventFormValues> | null>(null);
@@ -51,6 +49,29 @@ export function NewProjectEventModal({
     queryKey: ['projects'],
     queryFn: () => getProjects(),
     enabled: isOpen,
+  });
+
+  // Mutación para crear evento de proyecto
+  const createEventMutation = useMutation({
+    mutationFn: (eventData: Omit<ProjectEventType, 'id' | 'createdAt' | 'updatedAt'>) =>
+      createProjectEvent(eventData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['calendar-events'] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast({
+        title: "Evento creado exitosamente",
+        description: `El evento para ${selectedProject?.clientName || 'el proyecto'} ha sido guardado.`,
+        variant: "default"
+      });
+      onClose();
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error al crear evento",
+        description: error.message || 'Ocurrió un error inesperado',
+      });
+    }
   });
 
   // Filtrar proyectos: excluir completados y pagados
@@ -177,10 +198,7 @@ export function NewProjectEventModal({
   }, [initialData]);
 
   // Manejar el envío del formulario con guardado automático
-  const handleFormSubmit = async (data: NewProjectEventFormValues) => {
-    // Debug: Log de datos antes de enviar
-
-    
+  const handleFormSubmit = (data: NewProjectEventFormValues) => {
     // Validar que hay un proyecto seleccionado
     if (!selectedProject) {
       toast({
@@ -190,83 +208,41 @@ export function NewProjectEventModal({
       });
       return;
     }
-    
-    // Los datos ya vienen completos del formulario, solo necesitamos asegurar algunos valores
-    const completeFormData: NewProjectEventFormValues = {
-      ...data,
-      projectId: selectedProject.id,
-      eventDate: data.eventDate || new Date(),
-      clientName: selectedProject.clientName || data.clientName || 'Cliente pendiente',
-    };
-    
 
-    
-    try {
-      // Si autoSave está habilitado, guardar directamente
-      if (autoSave) {
-        setIsInternalSubmitting(true);
-        
-        // Transformar datos del formulario al formato de entidad para createProjectEvent
-        const eventDataForService: Omit<ProjectEventType, 'id' | 'createdAt' | 'updatedAt'> = {
+    // Si autoSave está habilitado, guardar directamente usando mutation
+    if (autoSave) {
+      // Transformar datos del formulario al formato de entidad para createProjectEvent
+      const eventDataForService: Omit<ProjectEventType, 'id' | 'createdAt' | 'updatedAt'> = {
+        projectId: selectedProject.id,
+
+        // Campos específicos del evento (del formulario)
+        eventDate: data.eventDate || new Date(),
+        status: data.status as ProjectStatus,
+        checklist: data.checklist || [],
+
+        // Campos del proyecto (fuente única: selectedProject)
+        clientName: selectedProject.clientName || 'Cliente pendiente',
+        description: selectedProject.description || '',
+        phone: selectedProject.phone || '',
+        fullAddress: selectedProject.fullAddress,
+        windowsCount: selectedProject.windowsCount || 0,
+        squareMeters: selectedProject.squareMeters || 0,
+        uninstallTags: selectedProject.uninstallTags || [],
+        glosa: selectedProject.glosa,
+      };
+
+      createEventMutation.mutate(eventDataForService);
+    } else {
+      // Si no está en modo autoSave, usar onSubmit externo
+      if (typeof onSubmit === 'function') {
+        const completeFormData: NewProjectEventFormValues = {
+          ...data,
           projectId: selectedProject.id,
-          eventDate: completeFormData.eventDate || new Date(),
-          status: completeFormData.status as ProjectStatus,
-          clientName: selectedProject.clientName || completeFormData.clientName || 'Cliente pendiente',
-          description: completeFormData.description,
-          phone: completeFormData.phone,
-          fullAddress: completeFormData.fullAddress ? {
-            textoCompleto: completeFormData.fullAddress.textoCompleto,
-            placeId: completeFormData.fullAddress.placeId,
-            coordenadas: completeFormData.fullAddress.coordenadas,
-            componentes: completeFormData.fullAddress.componentes,
-            detalle: completeFormData.fullAddress.detalle,
-            informacionAdicional: completeFormData.fullAddress.informacionAdicional,
-            comune: completeFormData.fullAddress.comune
-          } : undefined,
-          windowsCount: completeFormData.windowsCount || 0,
-          squareMeters: completeFormData.squareMeters || 0,
-          uninstallTags: (completeFormData.uninstallTags || []) as any,
-          glosa: selectedProject.glosa,
-          checklist: completeFormData.checklist || [],
+          eventDate: data.eventDate || new Date(),
+          clientName: selectedProject.clientName || data.clientName || 'Cliente pendiente',
         };
-        
-
-        const createdEvent = await createProjectEvent(eventDataForService);
-        
-        toast({
-          title: "Evento creado exitosamente",
-          description: `El evento para ${selectedProject.clientName || 'el proyecto'} ha sido guardado.`,
-          variant: "default"
-        });
-        
-
-        
-        // Callback para refrescar calendario si se proporciona
-        if (onEventCreated) {
-          onEventCreated();
-        }
-        
-        // Cerrar modal después del guardado exitoso
-        onClose();
-        
-      } else {
-        // Si no está en modo autoSave, usar onSubmit externo
-        if (typeof onSubmit === 'function') {
-          onSubmit(completeFormData);
-        } else {
-          throw new Error('No se proporcionó función onSubmit y autoSave está deshabilitado');
-        }
+        onSubmit(completeFormData);
       }
-      
-    } catch (error) {
-
-      toast({
-        variant: "destructive",
-        title: "Error al crear evento",
-        description: error instanceof Error ? error.message : 'Ocurrió un error inesperado',
-      });
-    } finally {
-      setIsInternalSubmitting(false);
     }
   };
 
@@ -277,9 +253,9 @@ export function NewProjectEventModal({
       onClose={onClose}
       onSubmit={() => {
         formRef.current?.requestSubmit();
-      }} 
-      submitButtonText={(isSubmitting || isInternalSubmitting) ? 'Guardando...' : 'Crear Evento'}
-      isSubmitting={isSubmitting || isLoadingProjects || isInternalSubmitting}
+      }}
+      submitButtonText={(isSubmitting || createEventMutation.isPending) ? 'Guardando...' : 'Crear Evento'}
+      isSubmitting={isSubmitting || isLoadingProjects || createEventMutation.isPending}
       className="w-full max-w-xl"
     >
       <div className="space-y-4">

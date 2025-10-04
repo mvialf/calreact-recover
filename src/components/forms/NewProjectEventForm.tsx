@@ -128,33 +128,6 @@ export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
     }
   }, [form, formInstanceRef]);
 
-  // Efecto para actualizar el formulario cuando cambian los datos iniciales
-  useEffect(() => {
-    if (initialData) {
-      const getValidNumber = (value: any, defaultValue: number): number => {
-        if (value == null || value === undefined) return defaultValue;
-        const numValue = Number(value);
-        return isNaN(numValue) || !isFinite(numValue) ? defaultValue : Math.max(0, numValue);
-      };
-
-      const windowsCount = getValidNumber(initialData.windowsCount, DEFAULT_WINDOWS_COUNT || 0);
-      const squareMeters = getValidNumber(initialData.squareMeters, DEFAULT_SQUARE_METERS || 0);
-      
-      form.reset({
-        projectId: initialData.projectId || "",
-        description: initialData.description || DEFAULT_EVENT_DESCRIPTION,
-        phone: initialData.phone || DEFAULT_PHONE,
-        fullAddress: initialData.fullAddress || undefined,
-        status: initialData.status || DEFAULT_PROJECT_STATUS,
-        eventDate: initialData.eventDate || undefined,
-        windowsCount: Math.floor(windowsCount),
-        squareMeters,
-        uninstallTags: Array.isArray(initialData.uninstallTags) ? initialData.uninstallTags : [],
-        checklist: Array.isArray(initialData.checklist) ? initialData.checklist : [],
-      });
-    }
-  }, [initialData, form]);
-
   // Hook para uninstall tags con Firebase
   const {
     availableTags: uninstallTags,

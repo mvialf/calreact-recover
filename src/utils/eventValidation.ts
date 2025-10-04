@@ -152,6 +152,7 @@ export const sanitizeProjectEventData = (
     squareMeters,
     uninstallTags,
     clientName,
+    glosa: eventData.glosa || projectData.glosa,
     checklist: eventData.checklist || []
   };
 };

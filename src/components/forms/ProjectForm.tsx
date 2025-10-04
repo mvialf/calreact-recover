@@ -28,7 +28,6 @@ import { getClients } from '@/services/clientService';
 // UI Components
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Autocomplete, type AutocompleteItem } from '@/components/ui/autocomplete';
@@ -373,14 +372,16 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
           />
 
           {/* Total (read-only) */}
-          <div className="space-y-2">
-            <Label>Total</Label>
-            <Input
-              value={formatCurrency(total)}
-              readOnly
-              className={cn("bg-gray-50")}
-            />
-          </div>
+          <FormItem>
+            <FormLabel>Total</FormLabel>
+            <FormControl>
+              <Input
+                value={formatCurrency(total)}
+                readOnly
+                className={cn("bg-gray-50")}
+              />
+            </FormControl>
+          </FormItem>
         </FormGrid>
 
         {/* Fila 6: Ventanas + Metros Cuadrados */}
