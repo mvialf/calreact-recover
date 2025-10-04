@@ -231,7 +231,7 @@ export function Autocomplete({
               onBlur={handleBlur}
               disabled={disabled || isLoading}
               className={cn(
-                "w-full pr-10 h-10",
+                "w-full pr-10",
                 strictSelection && !isValidInput && "border-destructive focus:ring-destructive",
                 inputClassName
               )}

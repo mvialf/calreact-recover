@@ -18,11 +18,11 @@ const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
         data-slot="date-input"
         className={cn(
           // Base styles (compatibles con Input estándar)
-          "flex h-10 w-full rounded-md border border-input bg-background px-3 py-1",
-          "text-sm ring-offset-background",
+          "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1",
+          "text-base shadow-sm transition-colors md:text-sm",
           "placeholder:text-muted-foreground",
           // Focus styles
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
           // Disabled styles
           "disabled:cursor-not-allowed disabled:opacity-50",
           // Date input specific styles
