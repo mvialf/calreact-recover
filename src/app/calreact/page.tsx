@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { EventType, ViewOption } from '@/types/event';
 import { CalendarView } from '@/components/calendar/calendar-view';
-import { EventModal } from '@/components/calendar/event-modal';
 import { EventViewDialog } from '@/components/calendar/EventViewDialog';
 import { EventDeleteDialog } from '@/components/calendar/EventDeleteDialog';
 import { CalendarToolbar } from '@/components/calendar/calendar-toolbar';
@@ -64,9 +63,8 @@ export default function CalReactAppPage() {
   const [currentView, setCurrentView] = useState<ViewOption>('week');
   const [filterTerm, setFilterTerm] = useState('');
 
-  // Estados para modales (view, edit, delete)
+  // Estados para modales (view, delete)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false); // Legacy - mantener por compatibilidad
@@ -199,14 +197,6 @@ export default function CalReactAppPage() {
   const handleViewEvent = (event: EventType) => {
     setSelectedEvent(event);
     setIsViewModalOpen(true);
-  };
-
-  /**
-   * Handler para editar un evento (modal de edición)
-   */
-  const handleEditEvent = (event: EventType) => {
-    setSelectedEvent(event);
-    setIsEditModalOpen(true);
   };
 
   /**
@@ -367,7 +357,6 @@ export default function CalReactAppPage() {
         events={filteredEvents}
         currentView={currentView}
         onEventClick={handleViewEvent}
-        onEventEdit={handleEditEvent}
         onEventDelete={handleDeleteEvent}
         onEventDrop={handleEventDrop}
         onEventResize={handleEventResize}
@@ -386,22 +375,6 @@ export default function CalReactAppPage() {
             setIsViewModalOpen(false);
             setSelectedEvent(null);
           }}
-          onEdit={handleEditEvent}
-        />
-      )}
-
-      {/* Modal de edición */}
-      {isEditModalOpen && (
-        <EventModal
-          isOpen={isEditModalOpen}
-          eventData={selectedEvent}
-          onClose={() => {
-            setIsEditModalOpen(false);
-            setSelectedEvent(null);
-          }}
-          onSave={handleModalSave}
-          onDelete={selectedEvent && 'id' in selectedEvent ? handleModalDelete : undefined}
-          preSelectedType={selectedEvent?.type as 'Proyecto' | 'Postventa' | 'Visita' | undefined}
         />
       )}
 
@@ -416,18 +389,6 @@ export default function CalReactAppPage() {
             setSelectedEvent(null);
           }}
           onConfirm={handleConfirmDelete}
-        />
-      )}
-
-      {/* Legacy modal - mantener por compatibilidad */}
-      {isModalOpen && (
-        <EventModal
-          isOpen={isModalOpen}
-          eventData={selectedEvent}
-          onClose={handleModalClose}
-          onSave={handleModalSave}
-          onDelete={selectedEvent && 'id' in selectedEvent ? handleModalDelete : undefined}
-          preSelectedType={selectedEvent?.type as 'Proyecto' | 'Postventa' | 'Visita' | undefined}
         />
       )}
     </AppLayout>

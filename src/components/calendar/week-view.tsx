@@ -17,7 +17,6 @@ interface WeekViewProps {
   currentDate: Date;
   events: EventType[];
   onEventClick: (event: EventType) => void;     // Ver detalles
-  onEventEdit?: (event: EventType) => void;     // Editar
   onEventDelete?: (event: EventType) => void;   // Eliminar
   onMoveEvent?: (eventId: string, newDate: Date) => void;
   weekStartsOn?: 0 | 1;
@@ -31,7 +30,6 @@ function DayColumn({
   day,
   dayEvents,
   onEventClick,
-  onEventEdit,
   onEventDelete,
   onMoveEvent,
   enableDragAndDrop,
@@ -43,7 +41,6 @@ function DayColumn({
   day: Date;
   dayEvents: EventType[];
   onEventClick: (event: EventType) => void;
-  onEventEdit?: (event: EventType) => void;
   onEventDelete?: (event: EventType) => void;
   onMoveEvent?: (eventId: string, newDate: Date) => void;
   enableDragAndDrop?: boolean;
@@ -83,7 +80,6 @@ function DayColumn({
             <CalendarEventCard
               event={event}
               onClick={onEventClick}
-              onEdit={onEventEdit}
               onDelete={onEventDelete}
               view="week"
               enableDragAndDrop={enableDragAndDrop}
@@ -110,7 +106,6 @@ export function WeekView({
   currentDate,
   events,
   onEventClick,
-  onEventEdit,
   onEventDelete,
   onMoveEvent,
   weekStartsOn = 0,
@@ -185,7 +180,6 @@ export function WeekView({
               day={day}
               dayEvents={dayEvents}
               onEventClick={onEventClick}
-              onEventEdit={onEventEdit}
               onEventDelete={onEventDelete}
               onMoveEvent={onMoveEvent}
               enableDragAndDrop={enableDragAndDrop}

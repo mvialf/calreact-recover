@@ -12,9 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format, isSameDay } from '@/lib/calendar-utils';
-import { Calendar, FileText, Edit, Phone } from 'lucide-react';
-import { ProjectSummary } from '@/components/summary/project-summary';
-import { AddressSummary } from '@/components/summary/address-summary';
+import { Calendar, FileText, Phone } from 'lucide-react';
+import { ProjectSummary, ProjectEventDetails, AddressSummary } from '@/components/summary';
 import { getStatusBadgeVariant } from '@/utils/badge-helpers';
 import { PROJECT_STATUS_OPTIONS } from '@/constants/project';
 
@@ -22,7 +21,6 @@ interface EventViewDialogProps {
   event: EventType | null;
   isOpen: boolean;
   onClose: () => void;
-  onEdit: (event: EventType) => void;
 }
 
 /**
@@ -35,19 +33,14 @@ interface EventViewDialogProps {
  * - Dirección (si aplica)
  * - Información específica según tipo (número de proyecto, cliente, etc.)
  *
- * Footer con botones: "Cerrar" y "Editar" (que cambia a modal de edición)
+ * Footer con botón: "Cerrar"
  */
 export function EventViewDialog({
   event,
   isOpen,
   onClose,
-  onEdit,
 }: EventViewDialogProps) {
   if (!event) return null;
-
-  const formatDate = (date: Date) => {
-    return format(date, 'dd/MM/yyyy');
-  };
 
   const formatDateRange = () => {
     if (isSameDay(event.startDate, event.endDate)) {
@@ -71,11 +64,6 @@ export function EventViewDialog({
       default:
         return 'hsl(var(--primary))';
     }
-  };
-
-  const handleEdit = () => {
-    onEdit(event);
-    onClose(); // Cerrar modal de vista al abrir modal de edición
   };
 
   return (
@@ -143,8 +131,11 @@ export function EventViewDialog({
             />
           )}
 
-          {/* Descripción */}
-          {event.description && (
+          {/* Detalles del Proyecto */}
+          <ProjectEventDetails event={event} />
+
+          {/* Descripción para eventos no-proyecto (Visita, Postventa) */}
+          {event.type !== 'Proyecto' && event.description && (
             <div className="flex items-start gap-3">
               <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div className="flex-1">
@@ -160,10 +151,6 @@ export function EventViewDialog({
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={onClose}>
             Cerrar
-          </Button>
-          <Button onClick={handleEdit}>
-            <Edit className="mr-2 h-4 w-4" />
-            Editar
           </Button>
         </DialogFooter>
       </DialogContent>

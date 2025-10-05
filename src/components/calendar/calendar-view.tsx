@@ -13,7 +13,6 @@ interface CalendarViewProps {
   events: EventType[];
   currentView: ViewOption;
   onEventClick: (event: EventType) => void;     // Ver detalles
-  onEventEdit?: (event: EventType) => void;     // Editar
   onEventDelete?: (event: EventType) => void;   // Eliminar
   onEventDrop?: (eventId: string, newStartDate: Date, newEndDate: Date) => void;
   onEventResize?: (eventId: string, newStartDate: Date, newEndDate: Date) => void;
@@ -28,7 +27,6 @@ export function CalendarView({
   events,
   currentView,
   onEventClick,
-  onEventEdit,
   onEventDelete,
   onEventDrop,
   onEventResize,
@@ -59,7 +57,6 @@ export function CalendarView({
           currentDate={currentDate}
           events={events}
           onEventClick={onEventClick}
-          onEventEdit={onEventEdit}
           onEventDelete={onEventDelete}
           onMoveEvent={handleMoveEvent}
           weekStartsOn={weekStartsOn}
@@ -73,7 +70,6 @@ export function CalendarView({
           currentDate={currentDate}
           events={events}
           onEventClick={onEventClick}
-          onEventEdit={onEventEdit}
           onEventDelete={onEventDelete}
           onMoveEvent={handleMoveEvent}
           weekStartsOn={weekStartsOn}
@@ -87,7 +83,6 @@ export function CalendarView({
           currentDate={currentDate}
           events={events}
           onEventClick={onEventClick}
-          onEventEdit={onEventEdit}
           onEventDelete={onEventDelete}
           onMoveEvent={handleMoveEvent}
           enableDragAndDrop={enableDragAndDrop}

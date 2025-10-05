@@ -18,7 +18,6 @@ interface MonthViewProps {
   currentDate: Date;
   events: EventType[];
   onEventClick: (event: EventType) => void;     // Ver detalles
-  onEventEdit?: (event: EventType) => void;     // Editar
   onEventDelete?: (event: EventType) => void;   // Eliminar
   onMoveEvent?: (eventId: string, newDate: Date) => void;
   weekStartsOn?: 0 | 1;
@@ -31,7 +30,6 @@ export function MonthView({
   currentDate,
   events,
   onEventClick,
-  onEventEdit,
   onEventDelete,
   onMoveEvent,
   weekStartsOn = 0, // Default to Sunday
@@ -124,7 +122,6 @@ export function MonthView({
               key={event.id}
               event={event}
               onClick={onEventClick}
-              onEdit={onEventEdit}
               onDelete={onEventDelete}
               view="month"
               enableDragAndDrop={enableDragAndDrop}
