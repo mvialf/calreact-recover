@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ProjectForm, ProjectFormData as ProjectFormValues } from '@/components/forms/ProjectForm';
 import { createProject } from '@/services/projectService';
 import { addClient } from '@/services/clientService';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { ModalLayout } from '@/components/modals/modalLayout';
 import type { ProjectType, ProjectStatus } from '@/types/project';
 import { projectLogger } from '@/lib/logger';
@@ -17,7 +17,6 @@ import { projectLogger } from '@/lib/logger';
 export function NewProjectDialog() {
   const [isOpen, setIsOpen] = React.useState(false);
   const router = useRouter();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const formRef = React.useRef<HTMLFormElement>(null);
 
@@ -33,16 +32,13 @@ export function NewProjectDialog() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
-      toast({
-        title: 'Cliente Agregado',
+      toast.success('Cliente agregado', {
         description: 'El cliente ha sido agregado exitosamente.',
       });
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error al Agregar Cliente',
+      toast.error('Error al agregar cliente', {
         description: error.message || 'Ocurrió un error al agregar el cliente.',
-        variant: 'destructive',
       });
     },
   });
@@ -64,18 +60,15 @@ export function NewProjectDialog() {
     ) => createProject(projectData),
     onSuccess: (newProject) => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
-      toast({
-        title: 'Proyecto Creado',
+      toast.success('Proyecto creado', {
         description: `El proyecto "${newProject.projectNumber}" ha sido creado exitosamente.`,
       });
       setIsOpen(false); // Cerrar el diálogo después de crear el proyecto
       router.refresh(); // Refrescar la página para mostrar el nuevo proyecto
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error al Crear Proyecto',
+      toast.error('Error al crear proyecto', {
         description: error.message || 'No se pudo crear el proyecto.',
-        variant: 'destructive',
       });
     },
   });

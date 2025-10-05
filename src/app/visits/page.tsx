@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { MapPin, Loader2 } from 'lucide-react';
 import {
   AlertDialog,
@@ -25,7 +25,6 @@ import { createVisitsColumns, VISIT_STATUS_OPTIONS } from './columns';
 
 export default function VisitsPage() {
   const router = useRouter();
-  const { toast } = useToast();
   const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,18 +42,14 @@ export default function VisitsPage() {
       } catch (err) {
         visitLogger.error('Error al cargar visitas', err);
         setError('No se pudieron cargar las visitas. Por favor, inténtalo de nuevo.');
-        toast({
-          title: 'Error',
-          description: 'No se pudieron cargar las visitas',
-          variant: 'destructive',
-        });
+        toast.error('No se pudieron cargar las visitas');
       } finally {
         setLoading(false);
       }
     };
 
     loadVisits();
-  }, [toast]);
+  }, []);
 
   const handleViewDetails = React.useCallback((visitId?: string) => {
     if (!visitId) return;
@@ -70,8 +65,7 @@ export default function VisitsPage() {
     getVisits().then(visitsData => {
       setVisits(visitsData);
       setEditingVisit(null);
-      toast({
-        title: 'Visita actualizada',
+      toast.success('Visita actualizada', {
         description: 'La visita se ha actualizado correctamente.',
       });
     });
@@ -91,17 +85,12 @@ export default function VisitsPage() {
       const updatedVisits = visits.filter(v => v.id !== visitToDelete.id);
       setVisits(updatedVisits);
 
-      toast({
-        title: 'Visita eliminada',
+      toast.success('Visita eliminada', {
         description: 'La visita ha sido eliminada correctamente.',
       });
     } catch (error) {
       visitLogger.error('Error al eliminar la visita', error);
-      toast({
-        title: 'Error',
-        description: 'No se pudo eliminar la visita. Por favor, inténtalo de nuevo.',
-        variant: 'destructive',
-      });
+      toast.error('No se pudo eliminar la visita. Por favor, inténtalo de nuevo.');
     } finally {
       setVisitToDelete(null);
     }

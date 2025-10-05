@@ -8,14 +8,13 @@ import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { VisitForm, type VisitFormValues } from '@/components/forms/VisitForm';
 import { addVisit, type VisitStatus } from '@/services/visitService';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { ModalLayout } from '@/components/modals/modalLayout';
 import { visitLogger } from '@/lib/logger';
 
 export function NewVisitDialog() {
   const [isOpen, setIsOpen] = React.useState(false);
   const router = useRouter();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const formRef = React.useRef<HTMLFormElement>(null);
 
@@ -49,8 +48,7 @@ export function NewVisitDialog() {
       // Invalidar las queries relacionadas
       queryClient.invalidateQueries({ queryKey: ['visits'] });
       
-      toast({
-        title: 'Visita Creada',
+      toast.success('Visita creada', {
         description: `La visita para ${newVisit.name} ha sido creada exitosamente.`,
       });
       
@@ -59,10 +57,8 @@ export function NewVisitDialog() {
     },
     onError: (error: Error) => {
       visitLogger.error('Error al crear la visita', error);
-      toast({
-        title: 'Error al Crear Visita',
+      toast.error('Error al crear visita', {
         description: error.message || 'No se pudo crear la visita.',
-        variant: 'destructive',
       });
     },
   });

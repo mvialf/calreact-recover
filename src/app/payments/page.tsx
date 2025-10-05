@@ -29,7 +29,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { DollarSign, Loader2 } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { formatCurrency } from '@/utils/format-utils';
 
 
@@ -39,7 +39,6 @@ interface EnrichedPayment extends Payment {
 }
 
 export default function PaymentsPage() {
-  const { toast } = useToast();
   const queryClient = useQueryClientHook();
 
   const [paymentToDelete, setPaymentToDelete] = useState<EnrichedPayment | null>(null);
@@ -83,12 +82,12 @@ export default function PaymentsPage() {
     onSuccess: (_, paymentId) => {
       queryClient.invalidateQueries({ queryKey: ['payments'] });
       queryClient.invalidateQueries({ queryKey: ['projects'] }); // Invalidate projects due to balance change
-      toast({ title: "Pago Eliminado", description: `El pago ha sido eliminado.` });
+      toast.success('Pago eliminado', { description: 'El pago ha sido eliminado.' });
       setPaymentToDelete(null);
       setIsDeleteDialogOpen(false);
     },
     onError: (err: Error) => {
-      toast({ title: "Error al Eliminar", description: `No se pudo eliminar el pago: ${err.message}`, variant: "destructive" });
+      toast.error('No se pudo eliminar el pago', { description: err.message });
       setPaymentToDelete(null);
       setIsDeleteDialogOpen(false);
     }
@@ -153,7 +152,7 @@ export default function PaymentsPage() {
         { label: 'Pagos' }
       ]}
       headerActions={
-        <Button onClick={() => toast({ title: "Próximamente", description: "El registro de nuevos pagos estará disponible pronto."})} disabled={isLoading}>
+        <Button onClick={() => toast.info("Próximamente", { description: "El registro de nuevos pagos estará disponible pronto."})} disabled={isLoading}>
           <DollarSign className="mr-2 h-5 w-5" />
           Registrar Pago
         </Button>

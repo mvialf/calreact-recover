@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ProjectForm, ProjectFormData as ProjectFormValues } from '@/components/forms/ProjectForm';
 import { Button } from '@/components/ui/button';
 import { ModalLayout } from '@/components/modals/modalLayout';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { updateProject } from '@/services/projectService';
 import type { ProjectType, ProjectStatus } from '@/types/project';
 import { DialogErrorBoundary } from '@/components/error-boundary/DialogErrorBoundary';
@@ -22,7 +22,6 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
   
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 
   // Hook useMutation siempre debe ejecutarse
@@ -47,11 +46,7 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
     onSuccess: () => {
       try {
         queryClient.invalidateQueries({ queryKey: ['projects'] });
-        toast({ 
-          title: 'Éxito', 
-          description: 'Proyecto actualizado correctamente.',
-          variant: 'default'
-        });
+        toast.success('Proyecto actualizado correctamente.');
         setIsOpen(false);
       } catch (error) {
         projectLogger.error('Error en onSuccess', error);
@@ -60,10 +55,8 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
     onError: (error) => {
       projectLogger.error('Error en mutación updateProject', error);
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-      toast({ 
-        title: 'Error al actualizar proyecto', 
+      toast.error('Error al actualizar proyecto', {
         description: `Hubo un problema al actualizar el proyecto: ${errorMessage}`,
-        variant: 'destructive',
       });
     },
   });
@@ -73,13 +66,9 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
       mutate(data);
     } catch (error) {
       projectLogger.error('Error en handleSubmit', error);
-      toast({ 
-        title: 'Error', 
-        description: 'Error inesperado al procesar el formulario',
-        variant: 'destructive',
-      });
+      toast.error('Error inesperado al procesar el formulario');
     }
-  }, [mutate, toast]);
+  }, [mutate]);
 
   // Mapeo defensivo para asegurar que ningún campo controlado reciba null o undefined.
   const initialData: Partial<ProjectFormValues> = React.useMemo(() => {
@@ -191,10 +180,8 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
     <DialogErrorBoundary
       onError={(error, errorInfo) => {
         projectLogger.error('Error en EditProjectDialog', { error, errorInfo });
-        toast({
-          title: 'Error inesperado',
+        toast.error('Error inesperado', {
           description: 'Ha ocurrido un error al cargar el diálogo. Por favor, recarga la página.',
-          variant: 'destructive',
         });
       }}
     >
@@ -208,15 +195,26 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
         title="Editar Proyecto"
         className="w-full max-w-xl"
         showDefaultButtons={true}
-        formRef={formRef}
+        onSubmit={() => formRef.current?.requestSubmit()}
         isSubmitting={isPending}
         submitButtonText={isPending ? "Actualizando..." : "Actualizar Proyecto"}
       >
-        <ProjectForm
-          onSubmit={handleSubmit}
-          defaultValues={initialData}
-          showDefaultButtons={false}
-        />
+        <div ref={(el) => {
+          if (el) {
+            const form = el.querySelector('form');
+            if (form && formRef.current !== form) {
+              (formRef as React.MutableRefObject<HTMLFormElement | null>).current = form;
+            }
+          }
+        }}>
+          <ProjectForm
+            onSubmit={handleSubmit}
+            defaultValues={initialData}
+            showDefaultButtons={false}
+            variant="modal"
+            formId="edit-project-form"
+          />
+        </div>
       </ModalLayout>
     </DialogErrorBoundary>
   );

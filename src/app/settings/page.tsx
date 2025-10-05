@@ -18,7 +18,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { useState, useEffect } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { addClient, type ClientImportData } from '@/services/clientService';
 import { createProject } from '@/services/projectService';
 import { addPayment } from '@/services/paymentService';
@@ -96,7 +96,6 @@ const paymentJsonSchemaExample = `
 
 
 export default function SettingsPage() {
-  const { toast } = useToast();
   const [clientFile, setClientFile] = useState<File | null>(null);
   const [projectFile, setProjectFile] = useState<File | null>(null);
   const [paymentFile, setPaymentFile] = useState<File | null>(null);
@@ -126,7 +125,7 @@ export default function SettingsPage() {
 
   const handleImportClients = async () => {
     if (!clientFile) {
-      toast({ title: "Error", description: "Por favor, selecciona un archivo de clientes.", variant: "destructive" });
+      toast.error('Por favor, selecciona un archivo de clientes.');
       return;
     }
     setIsImportingClients(true);
@@ -212,19 +211,16 @@ export default function SettingsPage() {
         description += ` Detalles: ${errorMessages.slice(0, 3).join('; ')}${errorMessages.length > 3 ? '...' : ''}`;
       }
 
-      toast({
-        title: "Importación de Clientes Completada",
-        description: description,
-        variant: errorCount > 0 ? "destructive" : "default",
-        duration: errorCount > 0 ? 10000 : 5000,
-      });
+      if (errorCount > 0) {
+        toast.error('Importación de clientes completada con errores', { description });
+      } else {
+        toast.success('Importación de clientes completada', { description });
+      }
 
     } catch (error: any) {
       settingsLogger.error("Error durante la importación de clientes", error);
-      toast({
-        title: "Error de Importación General",
+      toast.error('Error de importación general', {
         description: `No se pudo importar clientes: ${error.message}`,
-        variant: "destructive",
       });
     } finally {
       setIsImportingClients(false);
@@ -234,7 +230,7 @@ export default function SettingsPage() {
 
  const handleImportProjects = async () => {
     if (!projectFile) {
-      toast({ title: "Error", description: "Por favor, selecciona un archivo de proyectos.", variant: "destructive" });
+      toast.error('Por favor, selecciona un archivo de proyectos.');
       return;
     }
     setIsImportingProjects(true);
@@ -351,19 +347,16 @@ export default function SettingsPage() {
         description += ` Detalles: ${errorMessages.slice(0, 3).join('; ')}${errorMessages.length > 3 ? '...' : ''}`;
       }
 
-      toast({
-        title: "Importación de Proyectos Completada",
-        description: description,
-        variant: errorCount > 0 ? "destructive" : "default",
-        duration: errorCount > 0 ? 10000 : 5000,
-      });
+      if (errorCount > 0) {
+        toast.error('Importación de proyectos completada con errores', { description });
+      } else {
+        toast.success('Importación de proyectos completada', { description });
+      }
 
     } catch (error: any)      {
       settingsLogger.error("Error general durante la importación de proyectos", error);
-      toast({
-        title: "Error de Importación General",
+      toast.error('Error de importación general', {
         description: `No se pudo importar proyectos: ${error.message}`,
-        variant: "destructive",
       });
     } finally {
       setIsImportingProjects(false);
@@ -373,7 +366,7 @@ export default function SettingsPage() {
 
   const handleImportPayments = async () => {
     if (!paymentFile) {
-      toast({ title: "Error", description: "Por favor, selecciona un archivo de pagos.", variant: "destructive" });
+      toast.error('Por favor, selecciona un archivo de pagos.');
       return;
     }
     setIsImportingPayments(true);
@@ -487,19 +480,16 @@ export default function SettingsPage() {
         description += ` Detalles: ${errorMessages.slice(0, 3).join('; ')}${errorMessages.length > 3 ? '...' : ''}`;
       }
 
-      toast({
-        title: "Importación de Pagos Completada",
-        description: description,
-        variant: errorCount > 0 ? "destructive" : "default",
-        duration: errorCount > 0 ? 10000 : 5000,
-      });
+      if (errorCount > 0) {
+        toast.error('Importación de pagos completada con errores', { description });
+      } else {
+        toast.success('Importación de pagos completada', { description });
+      }
 
     } catch (error: any) {
       settingsLogger.error("Error general durante la importación de pagos", error);
-      toast({
-        title: "Error de Importación General",
+      toast.error('Error de importación general', {
         description: `No se pudo importar pagos: ${error.message}`,
-        variant: "destructive",
       });
     } finally {
       setIsImportingPayments(false);

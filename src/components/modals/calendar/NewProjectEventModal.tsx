@@ -9,7 +9,7 @@ import { getProjects } from '@/services/projectService';
 import { createProjectEvent } from '@/services/projectEventService';
 import { syncSingleProjectClientName } from '@/services/clientSyncService';
 import { ProjectType, ProjectEventType, ProjectStatus } from '@/types/project';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Autocomplete, type AutocompleteItem } from '@/components/ui/autocomplete';
@@ -37,7 +37,6 @@ export function NewProjectEventModal({
   isSubmitting = false,
   autoSave = true, // Por defecto guarda automáticamente
 }: NewProjectEventModalProps) {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedProject, setSelectedProject] = useState<ProjectType | null>(null);
   const [projectValidation, setProjectValidation] = useState<{isValid: boolean, warnings: string[]}>({isValid: true, warnings: []});
@@ -58,17 +57,13 @@ export function NewProjectEventModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['calendar-events'] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });
-      toast({
-        title: "Evento creado exitosamente",
+      toast.success('Evento creado exitosamente', {
         description: `El evento para ${selectedProject?.clientName || 'el proyecto'} ha sido guardado.`,
-        variant: "default"
       });
       onClose();
     },
     onError: (error: Error) => {
-      toast({
-        variant: "destructive",
-        title: "Error al crear evento",
+      toast.error('Error al crear evento', {
         description: error.message || 'Ocurrió un error inesperado',
       });
     }
@@ -138,20 +133,16 @@ export function NewProjectEventModal({
           await syncSingleProjectClientName(project.id);
           
           // Mostrar mensaje de éxito
-          toast({
-            title: "Cliente sincronizado",
-            description: "Se ha actualizado la información del cliente automáticamente.",
-            variant: "default"
+          toast.success('Cliente sincronizado', {
+            description: 'Se ha actualizado la información del cliente automáticamente.',
           });
           
           // Recargar proyecto actualizado (podríamos usar una query invalidation aquí)
           // Por ahora, asumimos que el proyecto se actualizará en el siguiente render
         } catch (error) {
 
-          toast({
-            title: "Advertencia",
-            description: "No se pudo sincronizar automáticamente el nombre del cliente.",
-            variant: "destructive"
+          toast.error('Advertencia', {
+            description: 'No se pudo sincronizar automáticamente el nombre del cliente.',
           });
         }
       }
@@ -179,14 +170,12 @@ export function NewProjectEventModal({
       
       // Mostrar advertencias si las hay
       if (validation.warnings.length > 0) {
-        toast({
-          title: "Advertencias del proyecto",
+        toast('Advertencias del proyecto', {
           description: validation.warnings.join(', '),
-          variant: "default"
         });
       }
     }
-  }, [filteredProjects, initialData?.checklist, toast]);
+  }, [filteredProjects, initialData?.checklist]);
 
   // Función para limpiar la selección
   const handleClearSelection = React.useCallback(() => {
@@ -201,10 +190,8 @@ export function NewProjectEventModal({
   const handleFormSubmit = (data: NewProjectEventFormValues) => {
     // Validar que hay un proyecto seleccionado
     if (!selectedProject) {
-      toast({
-        variant: "destructive",
-        title: "Error de validación",
-        description: "Debe seleccionar un proyecto antes de continuar.",
+      toast.error('Error de validación', {
+        description: 'Debe seleccionar un proyecto antes de continuar.',
       });
       return;
     }

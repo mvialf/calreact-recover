@@ -6,7 +6,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import type { Firestore } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
@@ -73,7 +73,6 @@ export const useFirestoreDocument = <T extends { id: string }>({
   }
 }: UseFirestoreDocumentOptions<T>): UseFirestoreDocumentReturn<T> => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const firestore = db;
 
   // Query para obtener datos
@@ -102,19 +101,12 @@ export const useFirestoreDocument = <T extends { id: string }>({
       return addFn(firestore, data);
     },
     onSuccess: (data) => {
-      toast({
-        title: 'Éxito',
-        description: successMessages.add,
-      });
+      toast.success(successMessages.add || 'Éxito');
       invalidate();
       onSuccess?.('add', data);
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: errorMessages.add,
-        variant: 'destructive',
-      });
+      toast.error(errorMessages.add || 'Error');
       onError?.('add', error);
     },
   });
@@ -126,19 +118,12 @@ export const useFirestoreDocument = <T extends { id: string }>({
       return updateFn(firestore, id, data);
     },
     onSuccess: (data) => {
-      toast({
-        title: 'Éxito',
-        description: successMessages.update,
-      });
+      toast.success(successMessages.update || 'Éxito');
       invalidate();
       onSuccess?.('update', data);
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: errorMessages.update,
-        variant: 'destructive',
-      });
+      toast.error(errorMessages.update || 'Error');
       onError?.('update', error);
     },
   });
@@ -150,19 +135,12 @@ export const useFirestoreDocument = <T extends { id: string }>({
       return deleteFn(firestore, id);
     },
     onSuccess: () => {
-      toast({
-        title: 'Éxito',
-        description: successMessages.delete,
-      });
+      toast.success(successMessages.delete || 'Éxito');
       invalidate();
       onSuccess?.('delete');
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: errorMessages.delete,
-        variant: 'destructive',
-      });
+      toast.error(errorMessages.delete || 'Error');
       onError?.('delete', error);
     },
   });

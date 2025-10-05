@@ -20,9 +20,20 @@
 			"env": {}
 		},
 		"shadcn": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://www.shadcn.io/api/mcp"]
-        }
-		
+      		"command": "npx",
+      		"args": ["-y", "mcp-remote", "https://www.shadcn.io/api/mcp"]
+        },
+		"chrome-devtools": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"chrome-devtools-mcp@latest",
+				"--executablePath",
+				"/usr/local/bin/google-chrome",
+				"--headless=false",
+				"--isolated=true"
+			]
+		}
+
     }
 }

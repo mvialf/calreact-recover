@@ -10,7 +10,7 @@ import { CalendarToolbar } from '@/components/calendar/calendar-toolbar';
 import { AppLayout } from '@/components/layout';
 import { db } from '@/lib/firebase/client'; // Importar la instancia db configurada
 import { updateProjectEvent, deleteProjectEvent } from '@/services/projectEventService';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { useCalendarEvents } from '@/hooks/useCalendarEvents';
@@ -55,7 +55,6 @@ export default function CalReactAppPage() {
   const userId = "mockUserId"; // Placeholder para desarrollo
 
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   // Usar hook de TanStack Query para eventos
   const { events, isLoading: isLoadingEvents, isError, error } = useCalendarEvents(userId);
@@ -110,14 +109,12 @@ export default function CalReactAppPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['calendar-events', userId] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });
-      toast({ title: 'Evento actualizado', variant: 'default' });
+      toast.success('Evento actualizado');
     },
     onError: (error: Error) => {
       eventLogger.error('Error al actualizar evento', error);
-      toast({
-        title: 'Error al actualizar evento',
+      toast.error('Error al actualizar evento', {
         description: error.message,
-        variant: 'destructive'
       });
     }
   });
@@ -127,16 +124,14 @@ export default function CalReactAppPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['calendar-events', userId] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });
-      toast({ title: 'Evento eliminado', variant: 'default' });
+      toast.success('Evento eliminado');
       setIsDeleteDialogOpen(false);
       setSelectedEvent(null);
     },
     onError: (error: Error) => {
       eventLogger.error('Error al eliminar evento', error);
-      toast({
-        title: 'Error al eliminar evento',
+      toast.error('Error al eliminar evento', {
         description: error.message,
-        variant: 'destructive'
       });
     }
   });
@@ -230,10 +225,8 @@ export default function CalReactAppPage() {
     if (event.type === 'Proyecto') {
       deleteEventMutation.mutate(event.id);
     } else {
-      toast({
-        title: "No disponible",
-        description: "La eliminación de este tipo de evento aún no está implementada.",
-        variant: "destructive"
+      toast.error('No disponible', {
+        description: 'La eliminación de este tipo de evento aún no está implementada.',
       });
       setIsDeleteDialogOpen(false);
       setSelectedEvent(null);
@@ -248,10 +241,8 @@ export default function CalReactAppPage() {
   const handleEventResize = async (eventId: string, newStartDate: Date, newEndDate: Date) => {
     // Deshabilitar redimensionado para eventos de proyecto
     // Los eventos de proyecto deben editarse desde su interfaz específica
-    toast({
-      title: "Edición no disponible",
-      description: "Los eventos de proyecto deben editarse desde su interfaz específica.",
-      variant: "destructive"
+    toast.error('Edición no disponible', {
+      description: 'Los eventos de proyecto deben editarse desde su interfaz específica.',
     });
   };
 
@@ -290,10 +281,8 @@ export default function CalReactAppPage() {
   const handleModalSave = async (eventToSave: Omit<EventType, 'id'> & { id?: string }) => {
     // Solo permitir visualización, no edición
     // Los eventos de proyecto deben editarse desde su interfaz específica
-    toast({ 
-      title: "Edición no disponible", 
-      description: "Los eventos de proyecto deben editarse desde su interfaz específica.", 
-      variant: "destructive" 
+    toast.error('Edición no disponible', {
+      description: 'Los eventos de proyecto deben editarse desde su interfaz específica.',
     });
     handleModalClose();
   };
@@ -301,10 +290,8 @@ export default function CalReactAppPage() {
   const handleModalDelete = async (eventId: string) => {
     // Solo permitir visualización, no eliminación
     // Los eventos de proyecto deben editarse desde su interfaz específica
-    toast({ 
-      title: "Eliminación no disponible", 
-      description: "Los eventos de proyecto deben eliminarse desde su interfaz específica.", 
-      variant: "destructive" 
+    toast.error('Eliminación no disponible', {
+      description: 'Los eventos de proyecto deben eliminarse desde su interfaz específica.',
     });
     handleModalClose();
   };

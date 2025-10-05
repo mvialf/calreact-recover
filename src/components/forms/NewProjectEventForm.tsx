@@ -10,7 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 // UI Component imports
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -92,8 +92,6 @@ export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
   isSubmitting = false,
   disabled = false,
 }) => {
-  const { toast } = useToast();
-
   // Formulario
   const form = useForm<NewProjectEventFormValues>({
     resolver: zodResolver(formSchema),

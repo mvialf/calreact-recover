@@ -1,8 +1,8 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useOptimisticUpdate } from '../useOptimisticUpdate';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
-jest.mock('@/components/ui/use-toast');
+jest.mock('sonner');
 
 describe('useOptimisticUpdate', () => {
   beforeEach(() => {

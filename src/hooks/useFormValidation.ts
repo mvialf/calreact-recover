@@ -8,7 +8,7 @@
 import { useForm, UseFormProps, UseFormReturn, FieldValues, Path } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { useState, useCallback } from 'react';
 
 export interface UseFormValidationOptions<TFormData extends FieldValues> extends Omit<UseFormProps<TFormData>, 'resolver'> {
@@ -56,7 +56,6 @@ export const useFormValidation = <TFormData extends FieldValues>({
   validateOnBlur = true,
   ...formOptions
 }: UseFormValidationOptions<TFormData>): UseFormValidationReturn<TFormData> => {
-  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -89,9 +88,8 @@ export const useFormValidation = <TFormData extends FieldValues>({
       await handleSubmit(async (data: TFormData) => {
         try {
           await onSubmit(data);
-          
-          toast({
-            title: 'Éxito',
+
+          toast.success('Éxito', {
             description: successMessage,
           });
 
@@ -103,11 +101,9 @@ export const useFormValidation = <TFormData extends FieldValues>({
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : errorMessage;
           setSubmitError(errorMsg);
-          
-          toast({
-            title: 'Error',
+
+          toast.error('Error', {
             description: errorMsg,
-            variant: 'destructive',
           });
 
           onError?.(error instanceof Error ? error : new Error(errorMsg));
@@ -119,7 +115,7 @@ export const useFormValidation = <TFormData extends FieldValues>({
     } finally {
       setIsSubmitting(false);
     }
-  }, [handleSubmit, onSubmit, toast, successMessage, errorMessage, resetOnSuccess, onSuccess, onError, reset]);
+  }, [handleSubmit, onSubmit, successMessage, errorMessage, resetOnSuccess, onSuccess, onError, reset]);
 
   // Validar un campo específico
   const validateField = useCallback(async (fieldName: Path<TFormData>): Promise<boolean> => {

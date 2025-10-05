@@ -18,6 +18,8 @@ interface ProjectSummaryProps extends React.HTMLAttributes<HTMLDivElement> {
   showClientInfo?: boolean;
   /** Variante de layout */
   layout?: 'stacked' | 'inline';
+  /** Tamaño de fuente */
+  size?: 'sm' | 'base' | 'lg' | 'xl';
   /** Clases CSS adicionales */
   className?: string;
 }
@@ -65,6 +67,7 @@ export function ProjectSummary({
   showProjectNumber = true,
   showClientInfo = true,
   layout = 'stacked',
+  size = 'sm',
   className,
   ...props
 }: ProjectSummaryProps) {
@@ -72,6 +75,14 @@ export function ProjectSummary({
   const displayClientName = project.clientName?.trim() || 'Cliente no especificado';
   // Mostrar la glosa solo si existe y es diferente al nombre del cliente
   const showGlosa = project.glosa?.trim() && project.glosa.trim() !== displayClientName;
+
+  // Mapeo de tamaños de fuente
+  const sizeClasses = {
+    sm: 'text-sm',
+    base: 'text-base',
+    lg: 'text-lg',
+    xl: 'text-xl'
+  };
 
   if (layout === 'inline') {
     // Layout en línea para espacios reducidos
@@ -81,7 +92,7 @@ export function ProjectSummary({
 
     return (
       <div
-        className={cn('text-sm text-foreground', className)}
+        className={cn(sizeClasses[size], 'text-foreground', className)}
         title={`${projectPart}${clientPart}${glosaPart}`.trim()}
         {...props}
       >
@@ -94,10 +105,10 @@ export function ProjectSummary({
   return (
     <div className={cn('space-y-1', className)} {...props}>
       {showProjectNumber && project.projectNumber && (
-        <div className="text-sm font-medium">{project.projectNumber}</div>
+        <div className={cn(sizeClasses[size], 'font-medium')}>{project.projectNumber}</div>
       )}
       {showClientInfo && (
-        <div className="text-sm">
+        <div className={sizeClasses[size]}>
           {displayClientName}
           {showGlosa && (
             <span className="text-muted-foreground"> - {project.glosa?.trim()}</span>

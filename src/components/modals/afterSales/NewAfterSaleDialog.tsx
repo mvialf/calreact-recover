@@ -8,14 +8,13 @@ import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AfterSaleForm, type AfterSaleFormValues } from '@/components/forms/AfterSaleForm';
 import { addAfterSales } from '@/services/afterSalesService';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { ModalLayout } from '@/components/modals/modalLayout';
 import { afterSalesLogger } from '@/lib/logger';
 
 export function NewAfterSaleDialog() {
   const [isOpen, setIsOpen] = React.useState(false);
   const router = useRouter();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const formRef = React.useRef<HTMLFormElement>(null);
 
@@ -44,8 +43,7 @@ export function NewAfterSaleDialog() {
       queryClient.invalidateQueries({ queryKey: ['after-sales'] });
       queryClient.invalidateQueries({ queryKey: ['aftersales'] });
       
-      toast({
-        title: 'Postventa Creada',
+      toast.success('Postventa creada', {
         description: 'La postventa ha sido creada exitosamente.',
       });
       
@@ -54,10 +52,8 @@ export function NewAfterSaleDialog() {
     },
     onError: (error: Error) => {
       afterSalesLogger.error('Error al crear la postventa', error);
-      toast({
-        title: 'Error al Crear Postventa',
+      toast.error('Error al crear postventa', {
         description: error.message || 'No se pudo crear la postventa.',
-        variant: 'destructive',
       });
     },
   });

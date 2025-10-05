@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 import { getClientById } from '@/services/clientService';
 import { getProjects, calculateProjectBalance } from '@/services/projectService';
@@ -46,7 +46,6 @@ const paymentMethods = [
 export default function NewClientPaymentPage() {
   const params = useParams();
   const router = useRouter();
-  const { toast } = useToast();
   const clientId = typeof params.clientId === 'string' ? params.clientId : '';
 
   const [client, setClient] = useState<{id: string, name: string} | null>(null);
@@ -71,10 +70,8 @@ export default function NewClientPaymentPage() {
         
         // Verificar si el clientId es válido
         if (!clientId) {
-          toast({
-            title: "Error",
+          toast.error("Error", {
             description: "ID de cliente no válido",
-            variant: "destructive"
           });
           router.push('/clients');
           return;
@@ -83,10 +80,8 @@ export default function NewClientPaymentPage() {
         // Obtener datos del cliente
         const clientData = await getClientById(clientId);
         if (!clientData) {
-          toast({
-            title: "Error",
+          toast.error("Error", {
             description: "Cliente no encontrado",
-            variant: "destructive"
           });
           router.push('/clients');
           return;
@@ -150,10 +145,8 @@ export default function NewClientPaymentPage() {
 
       } catch (error) {
         clientLogger.error("Error al cargar datos del cliente", error);
-        toast({
-          title: "Error",
+        toast.error("Error", {
           description: "No se pudieron cargar los datos. Por favor, intente de nuevo.",
-          variant: "destructive"
         });
       } finally {
         setIsLoading(false);
@@ -161,7 +154,7 @@ export default function NewClientPaymentPage() {
     }
 
     loadClientData();
-  }, [clientId, router, toast]);
+  }, [clientId, router]);
 
   const handleAllocationChange = (projectId: string, amount: number | undefined) => {
     setProjectAllocations(prev => ({ ...prev, [projectId]: Math.max(0, amount || 0) }));
@@ -215,28 +208,22 @@ export default function NewClientPaymentPage() {
       const sumOfAllocations: number = allocationsArray.reduce((sum: number, current: number) => sum + current, 0);
 
       if (sumOfAllocations > totalAmount && !isAutoPayment) {
-        toast({
-          title: "Error",
+        toast.error("Error", {
           description: "La suma de los montos asignados a los proyectos no puede exceder el monto total del pago.",
-          variant: "destructive"
         });
         return;
       }
       
       if (sumOfAllocations === 0 && totalAmount > 0) {
-        toast({
-          title: "Error",
+        toast.error("Error", {
           description: "Debe asignar el monto del pago a al menos un proyecto, o activar el pago automático.",
-          variant: "destructive"
         });
         return;
       }
       
       if (!client || !currentAllocations.length) {
-        toast({
-          title: "Error",
+        toast.error("Error", {
           description: "Faltan datos necesarios para registrar el pago.",
-          variant: "destructive"
         });
         return;
       }
@@ -259,8 +246,7 @@ export default function NewClientPaymentPage() {
         });
       }
 
-      toast({
-        title: "Éxito",
+      toast.success("Éxito", {
         description: `Pago de ${formatCurrency(totalAmount)} registrado correctamente.`,
       });
 
@@ -268,10 +254,8 @@ export default function NewClientPaymentPage() {
       router.push('/clients');
     } catch (error) {
       clientLogger.error('Error al registrar el pago', error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "No se pudo registrar el pago. Por favor, intente de nuevo.",
-        variant: "destructive"
       });
     } finally {
       setIsSaving(false);

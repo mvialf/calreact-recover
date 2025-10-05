@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { PlusCircle, Users, Loader2 } from 'lucide-react';
 import ClientModal from '@/components/client-modal';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 // Componentes Layout y DataTable
 import { AppLayout } from '@/components/layout';
@@ -28,7 +28,6 @@ import { DataTable } from '@/components/data-table/data-table';
 import { createClientsColumns } from './columns';
 
 export default function ClientsPage() {
-  const { toast } = useToast();
   const queryClientHook = useQueryClient();
   const router = useRouter();
 
@@ -47,11 +46,11 @@ export default function ClientsPage() {
     mutationFn: addClient,
     onSuccess: (newClient) => {
       queryClientHook.invalidateQueries({ queryKey: ['clients'] });
-      toast({ title: "Cliente Añadido", description: `"${newClient.name}" ha sido añadido.` });
+      toast.success('Cliente añadido', { description: `"${newClient.name}" ha sido añadido.` });
       handleCloseModal();
     },
     onError: (err: Error) => {
-      toast({ title: "Error", description: `No se pudo añadir el cliente: ${err.message}`, variant: "destructive" });
+      toast.error('No se pudo añadir el cliente', { description: err.message });
     },
   });
 
@@ -61,11 +60,11 @@ export default function ClientsPage() {
     onSuccess: (_, variables) => {
       queryClientHook.invalidateQueries({ queryKey: ['clients'] });
       const updatedClient = clients.find(c => c.id === variables.clientId);
-      toast({ title: "Cliente Actualizado", description: `"${updatedClient?.name || 'El cliente'}" ha sido actualizado.` });
+      toast.success('Cliente actualizado', { description: `"${updatedClient?.name || 'El cliente'}" ha sido actualizado.` });
       handleCloseModal();
     },
     onError: (err: Error) => {
-      toast({ title: "Error", description: `No se pudo actualizar el cliente: ${err.message}`, variant: "destructive" });
+      toast.error('No se pudo actualizar el cliente', { description: err.message });
     },
   });
 
@@ -73,7 +72,7 @@ export default function ClientsPage() {
     mutationFn: deleteClient,
     onSuccess: (_, clientId) => {
       queryClientHook.invalidateQueries({ queryKey: ['clients'] });
-      toast({ title: "Cliente Eliminado", description: `"${clientToDelete?.name || 'El cliente'}" ha sido eliminado.`, variant: "destructive" });
+      toast.success('Cliente eliminado', { description: `"${clientToDelete?.name || 'El cliente'}" ha sido eliminado.` });
       setClientToDelete(null);
       setIsDeleteDialogOpen(false);
     },
@@ -82,7 +81,7 @@ export default function ClientsPage() {
       if (err.code) {
         description += ` (Código: ${err.code})`;
       }
-      toast({ title: "Error al Eliminar", description, variant: "destructive" });
+      toast.error('Error al eliminar', { description });
       setClientToDelete(null);
       setIsDeleteDialogOpen(false);
     },
@@ -116,11 +115,10 @@ export default function ClientsPage() {
   }, [router]);
 
   const handleAccountStatement = React.useCallback(() => {
-    toast({
-      title: "Próximamente",
-      description: "La función de estado de cuenta para clientes estará disponible pronto."
+    toast('Próximamente', {
+      description: 'La función de estado de cuenta para clientes estará disponible pronto.'
     });
-  }, [toast]);
+  }, []);
 
   // Función para determinar si una fila está en estado de mutación
   const isRowMutating = React.useCallback((client: Client) => {

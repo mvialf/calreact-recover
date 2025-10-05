@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AfterSaleForm, AfterSaleFormValues } from '@/components/forms/AfterSaleForm';
 import { Button } from '@/components/ui/button';
 import { ModalLayout } from '@/components/modals/modalLayout';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { updateAfterSales } from '@/services/afterSalesService';
 import type { AfterSales } from '@/types/afterSales';
 import { DialogErrorBoundary } from '@/components/error-boundary/DialogErrorBoundary';
@@ -20,7 +20,6 @@ export function EditAfterSaleDialog({ afterSale, children }: EditAfterSaleDialog
   
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 
   // Hook useMutation siempre debe ejecutarse
@@ -57,11 +56,7 @@ export function EditAfterSaleDialog({ afterSale, children }: EditAfterSaleDialog
           queryClient.invalidateQueries({ queryKey: ['afterSalesForProject', afterSale.projectId] });
         }
         
-        toast({ 
-          title: 'Éxito', 
-          description: 'Postventa actualizada correctamente.',
-          variant: 'default'
-        });
+        toast.success('Postventa actualizada correctamente.');
         setIsOpen(false);
       } catch (error) {
 
@@ -70,10 +65,8 @@ export function EditAfterSaleDialog({ afterSale, children }: EditAfterSaleDialog
     onError: (error) => {
 
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-      toast({ 
-        title: 'Error al actualizar postventa', 
+      toast.error('Error al actualizar postventa', {
         description: `Hubo un problema al actualizar la postventa: ${errorMessage}`,
-        variant: 'destructive',
       });
     },
   });
@@ -84,13 +77,9 @@ export function EditAfterSaleDialog({ afterSale, children }: EditAfterSaleDialog
       mutate(data);
     } catch (error) {
 
-      toast({ 
-        title: 'Error', 
-        description: 'Error inesperado al procesar el formulario',
-        variant: 'destructive',
-      });
+      toast.error('Error inesperado al procesar el formulario');
     }
-  }, [mutate, toast]);
+  }, [mutate]);
 
   // Mapeo defensivo para asegurar que ningún campo controlado reciba null o undefined
   const initialData: Partial<AfterSaleFormValues> = React.useMemo(() => {
@@ -162,10 +151,8 @@ export function EditAfterSaleDialog({ afterSale, children }: EditAfterSaleDialog
     <DialogErrorBoundary
       onError={(error, errorInfo) => {
 
-        toast({
-          title: 'Error inesperado',
+        toast.error('Error inesperado', {
           description: 'Ha ocurrido un error al cargar el diálogo. Por favor, recarga la página.',
-          variant: 'destructive',
         });
       }}
     >

@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { VisitForm, VisitFormValues } from '@/components/forms/VisitForm';
 import { Button } from '@/components/ui/button';
 import { ModalLayout } from '@/components/modals/modalLayout';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { updateVisit } from '@/services/visitService';
 import type { Visit, VisitStatus } from '@/types/visit';
 import { DEFAULT_VISIT_STATUS } from '@/types/visit';
@@ -23,7 +23,6 @@ export function EditVisitDialog({ visit, children, onSuccess }: EditVisitDialogP
   
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 
   // Hook useMutation siempre debe ejecutarse
@@ -59,11 +58,7 @@ export function EditVisitDialog({ visit, children, onSuccess }: EditVisitDialogP
           queryClient.invalidateQueries({ queryKey: ['visits', visit.id] });
         }
         
-        toast({ 
-          title: 'Éxito', 
-          description: 'Visita actualizada correctamente.',
-          variant: 'default'
-        });
+        toast.success('Visita actualizada correctamente.');
         setIsOpen(false);
         onSuccess?.();
       } catch (error) {
@@ -73,10 +68,8 @@ export function EditVisitDialog({ visit, children, onSuccess }: EditVisitDialogP
     onError: (error) => {
       visitLogger.error('Error en mutación updateVisit', error);
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-      toast({ 
-        title: 'Error al actualizar visita', 
+      toast.error('Error al actualizar visita', {
         description: `Hubo un problema al actualizar la visita: ${errorMessage}`,
-        variant: 'destructive',
       });
     },
   });
@@ -86,13 +79,9 @@ export function EditVisitDialog({ visit, children, onSuccess }: EditVisitDialogP
       mutate(data);
     } catch (error) {
       visitLogger.error('Error en handleSubmit', error);
-      toast({ 
-        title: 'Error', 
-        description: 'Error inesperado al procesar el formulario',
-        variant: 'destructive',
-      });
+      toast.error('Error inesperado al procesar el formulario');
     }
-  }, [mutate, toast]);
+  }, [mutate]);
 
   // Mapeo defensivo para asegurar que ningún campo controlado reciba null o undefined
   const initialData: Partial<VisitFormValues> = React.useMemo(() => {
@@ -243,10 +232,8 @@ export function EditVisitDialog({ visit, children, onSuccess }: EditVisitDialogP
     <DialogErrorBoundary
       onError={(error, errorInfo) => {
         visitLogger.error('Error en EditVisitDialog', { error, errorInfo });
-        toast({
-          title: 'Error inesperado',
+        toast.error('Error inesperado', {
           description: 'Ha ocurrido un error al cargar el diálogo. Por favor, recarga la página.',
-          variant: 'destructive',
         });
       }}
     >

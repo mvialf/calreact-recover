@@ -384,51 +384,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
           </FormItem>
         </FormGrid>
 
-        {/* Fila 6: Ventanas + Metros Cuadrados */}
-        <FormGrid columns={2}>
-          <FormField
-            control={form.control}
-            name="windowsCount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Número de Ventanas</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                    placeholder="0"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="squareMeters"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Metros Cuadrados</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                    placeholder="0.00"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </FormGrid>
-
-        {/* Fila 7: Tags de Desinstalación */}
+        {/* Fila 6: Tags de Desinstalación */}
         <div className="space-y-4">
           <FormField
             control={form.control}
@@ -452,6 +408,50 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
             )}
           />
         </div>
+
+        {/* Fila 7: Ventanas + Metros Cuadrados */}
+        <FormGrid columns={2}>
+          <FormField
+            control={form.control}
+            name="windowsCount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Elementos</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="0"
+                    {...field}
+                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                    placeholder="0"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="squareMeters"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>m²</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    {...field}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    placeholder="0.00"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </FormGrid>
 
         {/* Fila 8: Descripción */}
         <FormField

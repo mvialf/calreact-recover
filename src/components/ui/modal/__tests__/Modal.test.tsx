@@ -8,11 +8,9 @@ import userEvent from '@testing-library/user-event';
 import { Modal, FormModal, useModalState } from '../index';
 import '@testing-library/jest-dom';
 
-// Mock para useToast
-jest.mock('@/components/ui/use-toast', () => ({
-  useToast: () => ({
-    toast: jest.fn()
-  })
+// Mock para sonner
+jest.mock('sonner', () => ({
+  toast: jest.fn()
 }));
 
 // Componente de prueba para Modal compound

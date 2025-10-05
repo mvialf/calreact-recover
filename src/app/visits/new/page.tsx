@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { addVisit } from '@/services/visitService';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { VisitForm, type VisitFormValues } from '@/components/forms/VisitForm';
 import { VisitStatus } from '@/types/visit';
 import { visitLogger } from '@/lib/logger';
@@ -31,8 +31,7 @@ export default function NewVisitPage() {
       await addVisit(visitData);
 
       // Mostrar mensaje de éxito
-      toast({
-        title: 'Visita Creada',
+      toast.success('Visita Creada', {
         description: 'La visita se ha registrado correctamente.',
       });
 
@@ -40,10 +39,8 @@ export default function NewVisitPage() {
       router.push('/visits');
     } catch (error) {
       visitLogger.error('Error al guardar la visita', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'No se pudo guardar la visita. Por favor, inténtalo de nuevo.',
-        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);

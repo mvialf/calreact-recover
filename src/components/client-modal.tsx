@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import type { Client } from '@/types/client';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 interface ClientModalProps {
   isOpen: boolean;
@@ -28,7 +28,6 @@ const ClientModal: React.FC<ClientModalProps> = ({ isOpen, onClose, onSave, clie
     email: '',
     phone: '',
   });
-  const { toast } = useToast();
 
   useEffect(() => {
     if (clientData) {
@@ -53,10 +52,8 @@ const ClientModal: React.FC<ClientModalProps> = ({ isOpen, onClose, onSave, clie
 
   const handleSave = () => {
     if (!client.name.trim()) {
-      toast({
-        title: "Validación Fallida",
+      toast.error("Validación Fallida", {
         description: "El nombre del cliente no puede estar vacío.",
-        variant: "destructive",
       });
       return;
     }

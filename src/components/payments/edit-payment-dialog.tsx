@@ -42,7 +42,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { updatePayment } from '@/services/paymentService';
 import type { Payment } from '@/types/payment';
@@ -82,7 +82,6 @@ interface EditPaymentDialogProps {
 }
 
 export function EditPaymentDialog({ open, onOpenChange, payment }: EditPaymentDialogProps) {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isCreditCard, setIsCreditCard] = useState(false);
 
@@ -145,20 +144,16 @@ export function EditPaymentDialog({ open, onOpenChange, payment }: EditPaymentDi
       return updatedPayment;
     },
     onSuccess: () => {
-      toast({
-        title: 'Pago actualizado',
+      toast.success('Pago actualizado', {
         description: 'El pago se ha actualizado correctamente.',
-        variant: 'default',
       });
       queryClient.invalidateQueries({ queryKey: ['payments'] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       onOpenChange(false);
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error al actualizar el pago',
+      toast.error('Error al actualizar el pago', {
         description: error.message || 'No se pudo actualizar el pago. Inténtalo de nuevo.',
-        variant: 'destructive',
       });
     },
   });

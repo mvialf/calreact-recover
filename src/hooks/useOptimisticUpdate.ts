@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 export interface UseOptimisticUpdateOptions<T> {
   onSuccess?: (data: T) => void;
@@ -44,22 +44,14 @@ export const useOptimisticUpdate = <T,>(
       try {
         await mutationFn(data);
 
-        toast({
-          title: "✓ Éxito",
-          description: successMessage,
-          variant: "default",
-        });
+        toast.success(successMessage);
 
         onSuccess?.(data);
       } catch (error) {
         // Rollback optimistic update
         setOptimisticData(null);
 
-        toast({
-          title: "✗ Error",
-          description: error instanceof Error ? error.message : errorMessage,
-          variant: "destructive",
-        });
+        toast.error(error instanceof Error ? error.message : errorMessage);
 
         onError?.(error as Error);
         throw error;

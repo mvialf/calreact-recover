@@ -141,8 +141,8 @@ export {
 } from './table';
 
 // ===== FEEDBACK Y ESTADO =====
-export { useToast, toast } from './use-toast';
-export { Toaster } from './toaster';
+export { toast } from 'sonner';
+export { Toaster } from './sonner';
 export { Skeleton } from './skeleton';
 export { Progress } from './progress';
 

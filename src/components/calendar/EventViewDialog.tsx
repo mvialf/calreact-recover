@@ -10,10 +10,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { format, isSameDay } from '@/lib/calendar-utils';
-import { Calendar, MapPin, FileText, Edit } from 'lucide-react';
+import { Calendar, FileText, Edit, Phone } from 'lucide-react';
 import { ProjectSummary } from '@/components/summary/project-summary';
+import { AddressSummary } from '@/components/summary/address-summary';
+import { getStatusBadgeVariant } from '@/utils/badge-helpers';
+import { PROJECT_STATUS_OPTIONS } from '@/constants/project';
 
 interface EventViewDialogProps {
   event: EventType | null;
@@ -84,74 +87,73 @@ export function EventViewDialog({
         <DialogHeader>
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <DialogTitle className="text-xl">{event.name}</DialogTitle>
-              {event.type === 'Proyecto' && (
-                <div className="mt-2">
-                  <ProjectSummary
-                    project={{
-                      projectNumber: event.projectNumber,
-                      clientName: event.clientName,
-                      glosa: event.glosa,
-                    }}
-                    showProjectNumber={true}
-                    layout="stacked"
-                  />
-                </div>
-              )}
-              {event.type !== 'Proyecto' && (
-                <DialogDescription className="mt-1">
-                  Detalles del evento
-                </DialogDescription>
+              {event.type === 'Proyecto' ? (
+                <DialogTitle>
+                  <div className="flex items-center justify-between gap-4">
+                    <ProjectSummary
+                      project={{
+                        projectNumber: event.projectNumber,
+                        clientName: event.clientName,
+                        glosa: event.glosa,
+                      }}
+                      showProjectNumber={true}
+                      layout="stacked"
+                      size="xl"
+                    />
+                    <div className="flex flex-col gap-2 text-base font-normal">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        <span>{formatDateRange()}</span>
+                      </div>
+                      {event.phone && (
+                        <div className="flex items-center gap-2">
+                          <Phone className="h-4 w-4 text-muted-foreground" />
+                          <span>{event.phone}</span>
+                        </div>
+                      )}
+                      {event.status && (
+                        <div className="flex items-center gap-2">
+                          <Badge variant={getStatusBadgeVariant(event.status)}>
+                            {PROJECT_STATUS_OPTIONS.find(opt => opt.value === event.status)?.label || event.status}
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </DialogTitle>
+              ) : (
+                <>
+                  <DialogTitle className="text-xl">{event.name}</DialogTitle>
+                  <DialogDescription className="mt-1">
+                    Detalles del evento
+                  </DialogDescription>
+                </>
               )}
             </div>
           </div>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          {/* Fecha */}
-          <div className="flex items-start gap-3">
-            <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm font-medium">Fecha</p>
-              <p className="text-sm text-muted-foreground">
-                {formatDateRange()}
-              </p>
-            </div>
-          </div>
-
           {/* Dirección */}
           {event.fullAddress && (
-            <>
-              <Separator />
-              <div className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Dirección</p>
-                  <p className="text-sm text-muted-foreground">
-                    {event.fullAddress.textoCompleto ||
-                     event.fullAddress.comune ||
-                     event.fullAddress.componentes?.comuna ||
-                     'Dirección no disponible'}
-                  </p>
-                </div>
-              </div>
-            </>
+            <AddressSummary
+              address={event.fullAddress as any}
+              layout="stacked"
+              showIcon={true}
+            />
           )}
 
           {/* Descripción */}
           {event.description && (
-            <>
-              <Separator />
-              <div className="flex items-start gap-3">
-                <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Descripción</p>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                    {event.description}
-                  </p>
-                </div>
+            <div className="flex items-start gap-3">
+              <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Descripción</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  {event.description}
+                </p>
               </div>
-            </>
+            </div>
           )}
         </div>
 

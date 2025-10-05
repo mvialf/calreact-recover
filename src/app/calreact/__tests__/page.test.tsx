@@ -15,8 +15,8 @@ jest.mock('@/lib/firebase/client', () => ({
 
 // Mock de toast
 const mockToast = jest.fn();
-jest.mock('@/components/ui/use-toast', () => ({
-  useToast: () => ({ toast: mockToast })
+jest.mock('sonner', () => ({
+  toast: mockToast
 }));
 
 // Mock de logger

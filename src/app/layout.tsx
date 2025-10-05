@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 import { utilityLogger } from '@/lib/logger';
 import { ThemeProvider } from 'next-themes';
 import './globals.css';
-import { Toaster } from '@/components/ui/toaster';
+import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppConfigProvider } from '@/contexts/AppConfigContext';
 import { GlobalErrorBoundary } from '@/components/error-boundary/GlobalErrorBoundary';
@@ -85,7 +85,7 @@ export default function RootLayout({
             >
               <AppConfigProvider>
                 {children}
-                <Toaster />
+                <SonnerToaster />
               </AppConfigProvider>
             </ThemeProvider>
           </QueryClientProvider>

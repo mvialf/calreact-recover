@@ -27,7 +27,7 @@ import { Autocomplete, type AutocompleteItem } from "@/components/ui/autocomplet
 import { CheckList, type CheckListItem } from "@/components/ui/check-list";
 import { DateInput } from "@/components/ui/date-input";
 import { format } from "date-fns";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProjectSummary } from "@/components/summary";
@@ -82,7 +82,6 @@ export function AfterSaleForm({
   showDefaultButtons = false
 }: AfterSaleFormProps) {
   const router = useRouter();
-  const { toast } = useToast();
 
   // Obtener proyectos para el autocomplete
   const { data: projects = [], isLoading: isLoadingProjects } = useQuery({
@@ -182,8 +181,7 @@ export function AfterSaleForm({
       return await addAfterSales(afterSalesData);
     },
     onSuccess: () => {
-      toast({
-        title: "Postventa creada",
+      toast.success("Postventa creada", {
         description: "La postventa se ha creado correctamente.",
       });
       if (onSubmitSuccess) {
@@ -194,11 +192,7 @@ export function AfterSaleForm({
     },
     onError: (error) => {
       formLogger.error("Error al crear la postventa", error);
-      toast({
-        title: "Error",
-        description: "No se pudo crear la postventa. Intente nuevamente.",
-        variant: "destructive",
-      });
+      toast.error("No se pudo crear la postventa. Intente nuevamente.");
     },
   });
 

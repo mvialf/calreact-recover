@@ -7,7 +7,7 @@
 
 import React, { useCallback } from 'react'
 import { Modal, type BaseModalProps } from './index'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from 'sonner'
 
 // Props para FormModal
 export interface FormModalProps<T = any> extends BaseModalProps {
@@ -72,8 +72,6 @@ export function FormModal<T = any>({
   resetOnClose = false,
   ...props
 }: FormModalProps<T>) {
-  const { toast } = useToast()
-
   // Handler mejorado para el envío del formulario
   const handleSubmit = useCallback(async (data: T) => {
     if (!onSubmit) return
@@ -90,8 +88,7 @@ export function FormModal<T = any>({
       }
       
       // Toast de éxito opcional
-      toast({
-        title: "Éxito",
+      toast.success("Éxito", {
         description: "Los datos se guardaron correctamente.",
       })
       
@@ -102,13 +99,11 @@ export function FormModal<T = any>({
       onError?.(error as Error)
       
       // Toast de error
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error instanceof Error ? error.message : "Error inesperado al guardar.",
-        variant: "destructive",
       })
     }
-  }, [onSubmit, onSuccess, onError, onClose, preventCloseOnSubmit, toast])
+  }, [onSubmit, onSuccess, onError, onClose, preventCloseOnSubmit])
 
   // Handler para cerrar con limpieza opcional
   const handleClose = useCallback(() => {

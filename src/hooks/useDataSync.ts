@@ -7,7 +7,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { Logger } from '@/lib/logger';
 
 export interface UseDataSyncOptions {
@@ -62,8 +62,7 @@ export const useDataSync = ({
   }
 }: UseDataSyncOptions): UseDataSyncReturn => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-  
+
   // Logger para sincronización de datos
   const syncLogger = new Logger('DATA_SYNC');
   
@@ -100,23 +99,16 @@ export const useDataSync = ({
       );
 
       setLastSyncTime(new Date());
-      
+
       if (showNotifications && notificationMessages.sync) {
-        toast({
-          title: 'Sincronización',
-          description: notificationMessages.sync,
-        });
+        toast.success(notificationMessages.sync);
       }
     } catch (error) {
       const syncError = error instanceof Error ? error : new Error('Error de sincronización');
       setSyncError(syncError);
-      
+
       if (showNotifications && notificationMessages.error) {
-        toast({
-          title: 'Error de sincronización',
-          description: notificationMessages.error,
-          variant: 'destructive',
-        });
+        toast.error(notificationMessages.error);
       }
       
       throw syncError;
@@ -124,13 +116,12 @@ export const useDataSync = ({
       setIsSyncing(false);
     }
   }, [
-    isSyncing, 
-    invalidateRelatedData, 
-    queryClient, 
-    relatedQueryKeys, 
-    showNotifications, 
-    notificationMessages, 
-    toast
+    isSyncing,
+    invalidateRelatedData,
+    queryClient,
+    relatedQueryKeys,
+    showNotifications,
+    notificationMessages
   ]);
 
   // Iniciar auto-sync

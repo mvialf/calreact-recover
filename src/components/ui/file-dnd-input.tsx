@@ -5,7 +5,7 @@ import { UploadCloud } from 'lucide-react';
 import type { FC, ReactNode, DragEvent, ChangeEvent } from 'react';
 import React, { useCallback, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 interface FileDndInputProps {
   id: string;
@@ -30,7 +30,6 @@ export const FileDndInput: FC<FileDndInputProps> = ({
 }) => {
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
 
   const processFile = useCallback((file: File | null) => {
     if (!file) {
@@ -65,10 +64,8 @@ export const FileDndInput: FC<FileDndInputProps> = ({
         }
       }
       if (!isAccepted) {
-        toast({
-          title: "Tipo de archivo no válido",
+        toast.error("Tipo de archivo no válido", {
           description: `Por favor, sube un archivo de tipo: ${accept}`,
-          variant: "destructive",
         });
         onFileSelected(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
@@ -78,10 +75,8 @@ export const FileDndInput: FC<FileDndInputProps> = ({
 
     // File size validation
     if (maxSize && file.size > maxSize) {
-       toast({
-        title: "Archivo demasiado grande",
+       toast.error("Archivo demasiado grande", {
         description: `El tamaño máximo permitido es ${maxSize / 1024 / 1024} MB.`,
-        variant: "destructive",
       });
       onFileSelected(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -90,7 +85,7 @@ export const FileDndInput: FC<FileDndInputProps> = ({
 
     onFileSelected(file);
      if (fileInputRef.current) fileInputRef.current.value = ""; // Reset after successful processing
-  }, [accept, maxSize, onFileSelected, toast]);
+  }, [accept, maxSize, onFileSelected]);
 
 
   const handleDragEnter = useCallback((e: DragEvent<HTMLDivElement>) => {

@@ -29,7 +29,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { EventType } from '@/types/event';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { eventLogger } from '@/lib/logger';
 import { Trash2, Save, Loader2, RefreshCw } from 'lucide-react';
 import { startOfDay, endOfDay, format } from '@/lib/calendar-utils';
@@ -67,7 +67,6 @@ export function EventModal({
   const [currentId, setCurrentId] = useState<string | undefined>(undefined);
   const [availableReferences, setAvailableReferences] = useState<ReferenceItem[]>([]);
   const [loadingReferences, setLoadingReferences] = useState(false);
-  const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   
   // Estado para controlar si se debe mostrar la modal específica de proyecto
@@ -81,17 +80,14 @@ export function EventModal({
       setAvailableReferences(references);
       
       if (references.length === 0) {
-        toast({
-          title: "Sin opciones disponibles",
+        toast.info("Sin opciones disponibles", {
           description: `No se encontraron ${selectedType.toLowerCase()}s disponibles.`,
         });
       }
     } catch (error) {
       eventLogger.error(`Error al cargar referencias de ${selectedType}`, error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: `No se pudieron cargar los ${selectedType.toLowerCase()}s disponibles.`,
-        variant: "destructive"
       });
       setAvailableReferences([]);
     } finally {
@@ -171,22 +167,22 @@ export function EventModal({
   const handleSave = (e: FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      toast({ title: "Error de Validación", description: "El nombre de la tarea es obligatorio.", variant: "destructive" });
+      toast.error("Error de Validación", { description: "El nombre de la tarea es obligatorio." });
       return;
     }
-    
+
     if (!type) {
-      toast({ title: "Error de Validación", description: "El tipo de evento es obligatorio.", variant: "destructive" });
+      toast.error("Error de Validación", { description: "El tipo de evento es obligatorio." });
       return;
     }
-    
+
     if (!referenceId) {
-      toast({ title: "Error de Validación", description: `Debe seleccionar un ${type.toLowerCase()} de referencia.`, variant: "destructive" });
+      toast.error("Error de Validación", { description: `Debe seleccionar un ${type.toLowerCase()} de referencia.` });
       return;
     }
 
     if (!startDate || !endDate) {
-      toast({ title: "Error de Validación", description: "Las fechas son obligatorias.", variant: "destructive" });
+      toast.error("Error de Validación", { description: "Las fechas son obligatorias." });
       return;
     }
 
@@ -194,7 +190,7 @@ export function EventModal({
     const finalEndDate = endOfDay(endDate);
 
     if (finalEndDate < finalStartDate) {
-      toast({ title: "Error de Validación", description: "La fecha de fin no puede ser anterior a la fecha de inicio.", variant: "destructive" });
+      toast.error("Error de Validación", { description: "La fecha de fin no puede ser anterior a la fecha de inicio." });
       return;
     }
 
