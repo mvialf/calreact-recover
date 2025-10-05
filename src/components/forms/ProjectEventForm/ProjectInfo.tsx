@@ -19,17 +19,6 @@ export const ProjectInfo = React.memo<ProjectInfoProps>(
   ({ project, className, onEditProject }) => {
     if (!project) return null;
 
-    // Determinar variante del badge según status
-    const getStatusVariant = (status: string) => {
-      const statusMap: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-        'En Progreso': 'default',
-        'Completado': 'secondary',
-        'Pendiente': 'outline',
-        'Cancelado': 'destructive',
-      };
-      return statusMap[status] || 'default';
-    };
-
     return (
       <Card className={cn('bg-muted/50', className)}>
         <CardHeader className="pb-3">
@@ -68,7 +57,7 @@ export const ProjectInfo = React.memo<ProjectInfoProps>(
           {project.status && (
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Estado:</span>
-              <Badge variant={getStatusVariant(project.status)}>
+              <Badge variant="default">
                 {project.status}
               </Badge>
             </div>
