@@ -12,13 +12,16 @@ import { ProjectType, ProjectEventType, ProjectStatus } from '@/types/project';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Autocomplete, type AutocompleteItem } from '@/components/ui/autocomplete';
+import { Combobox, type ComboboxItem } from '@/components/ui/combobox';
 import { ProjectSummary } from '@/components/summary';
-import { X, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, CheckCircle, AlertCircle, Edit } from 'lucide-react';
 
 // Importar el nuevo formulario
 import { NewProjectEventForm, type NewProjectEventFormValues } from '@/components/forms/NewProjectEventForm';
 import { validateProjectForEvents } from '@/utils/eventValidation';
+
+// ← NUEVO: Importar EditProjectDialog para modal anidado
+import { EditProjectDialog } from '@/components/modals/projects/EditProjectDialog';
 
 export interface NewProjectEventModalProps {
   isOpen: boolean;
@@ -40,6 +43,7 @@ export function NewProjectEventModal({
   const queryClient = useQueryClient();
   const [selectedProject, setSelectedProject] = useState<ProjectType | null>(null);
   const [projectValidation, setProjectValidation] = useState<{isValid: boolean, warnings: string[]}>({isValid: true, warnings: []});
+  const [isEditingProject, setIsEditingProject] = useState(false); // ← NUEVO: Estado para modal anidado
   const formRef = useRef<HTMLFormElement>(null);
   const formInstanceRef = useRef<UseFormReturn<NewProjectEventFormValues> | null>(null);
 
@@ -76,8 +80,8 @@ export function NewProjectEventModal({
     );
   }, [projects]);
 
-  // Convertir proyectos a items del autocomplete
-  const projectItems: AutocompleteItem[] = React.useMemo(() => {
+  // Convertir proyectos a items del combobox
+  const projectItems: ComboboxItem[] = React.useMemo(() => {
     return filteredProjects.map(project => ({
       value: project.id,
       label: `${project.projectNumber} - ${project.clientName || 'Cliente no especificado'}`,
@@ -102,17 +106,29 @@ export function NewProjectEventModal({
     }
   }, [isOpen]);
 
-  // Función para renderizar items del autocomplete
-  const renderProjectItem = React.useCallback((item: AutocompleteItem) => {
+  // Función para renderizar items del combobox
+  const renderProjectItem = React.useCallback((item: ComboboxItem, isSelected: boolean) => {
     if (item.project) {
       return (
-        <ProjectSummary
-          project={item.project}
-          className="w-full"
-        />
+        <div className="flex items-center gap-2 w-full">
+          <div className={`w-4 h-4 flex items-center justify-center ${isSelected ? 'opacity-100' : 'opacity-0'}`}>
+            <CheckCircle className="h-4 w-4" />
+          </div>
+          <ProjectSummary
+            project={item.project}
+            className="flex-1"
+          />
+        </div>
       );
     }
-    return <span className="truncate">{item.label}</span>;
+    return (
+      <div className="flex items-center gap-2 w-full">
+        <div className={`w-4 h-4 flex items-center justify-center ${isSelected ? 'opacity-100' : 'opacity-0'}`}>
+          <CheckCircle className="h-4 w-4" />
+        </div>
+        <span className="truncate">{item.label}</span>
+      </div>
+    );
   }, []);
 
   // Manejar selección de proyecto con validación
@@ -233,88 +249,143 @@ export function NewProjectEventModal({
     }
   };
 
-  return (
-    <ModalLayout
-      isOpen={isOpen}
-      title="Crear Evento de Proyecto"
-      onClose={onClose}
-      onSubmit={() => {
-        formRef.current?.requestSubmit();
-      }}
-      submitButtonText={(isSubmitting || createEventMutation.isPending) ? 'Guardando...' : 'Crear Evento'}
-      isSubmitting={isSubmitting || isLoadingProjects || createEventMutation.isPending}
-      className="w-full max-w-xl"
-    >
-      <div className="space-y-4">
-        {/* Autocomplete de Proyectos */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">Proyecto</Label>
-          {!selectedProject ? (
-            <Autocomplete
-              items={projectItems}
-              value={initialData?.projectId || ''}
-              onSelect={handleProjectSelect}
-              placeholder="Buscar proyecto..."
-              renderItem={renderProjectItem}
-              disabled={isLoadingProjects}
-              strictSelection={true}
-              className="w-full"
-            />
-          ) : (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
-                <ProjectSummary
-                  project={selectedProject}
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleClearSelection}
-                  className="ml-2"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              {/* Indicadores de validación del proyecto */}
-              {projectValidation.isValid ? (
-                <div className="flex items-center gap-2 text-sm text-green-600">
-                  <CheckCircle className="h-4 w-4" />
-                  <span>Proyecto válido para eventos</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 text-sm text-amber-600">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>Proyecto con advertencias</span>
-                </div>
-              )}
-              
-              {/* Mostrar advertencias si las hay */}
-              {projectValidation.warnings.length > 0 && (
-                <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border">
-                  <ul className="list-disc list-inside space-y-1">
-                    {projectValidation.warnings.map((warning, index) => (
-                      <li key={index}>{warning}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+  // ====== NUEVO: Handlers para modal de edición de proyecto ======
 
-        {/* Formulario */}
-        <NewProjectEventForm
-          formRef={formRef}
-          formInstanceRef={formInstanceRef}
-          onSubmit={handleFormSubmit}
-          initialData={initialData}
-          isSubmitting={isSubmitting}
-          //disabled={!!selectedProject}  Deshabilitar campos cuando hay proyecto seleccionado
+  // Handler para abrir modal de edición de proyecto
+  const handleEditProjectClick = React.useCallback(() => {
+    setIsEditingProject(true);
+  }, []);
+
+  // Handler para cuando se actualiza el proyecto exitosamente
+  const handleProjectUpdated = React.useCallback(() => {
+    // Cache se invalida automáticamente en EditProjectDialog
+    // Solo necesitamos cerrar el modal secundario
+    setIsEditingProject(false);
+
+    toast.success('Proyecto actualizado', {
+      description: 'Los datos del proyecto se han actualizado correctamente'
+    });
+
+    // Re-fetch del proyecto actualizado para actualizar el formulario
+    queryClient.invalidateQueries({ queryKey: ['projects'] });
+  }, [queryClient]);
+
+  // Handler para cerrar modal de edición sin guardar
+  const handleEditProjectClose = React.useCallback(() => {
+    setIsEditingProject(false);
+  }, []);
+
+  return (
+    <>
+      {/* Modal principal: Crear evento */}
+      <ModalLayout
+        isOpen={isOpen}
+        title="Crear Evento de Proyecto"
+        onClose={onClose}
+        onSubmit={() => {
+          formRef.current?.requestSubmit();
+        }}
+        submitButtonText={(isSubmitting || createEventMutation.isPending) ? 'Guardando...' : 'Crear Evento'}
+        isSubmitting={isSubmitting || isLoadingProjects || createEventMutation.isPending}
+        className="w-full max-w-xl"
+      >
+        <div className="space-y-4">
+          {/* Autocomplete de Proyectos */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Proyecto</Label>
+            {!selectedProject ? (
+              <Combobox
+                items={projectItems}
+                value={initialData?.projectId || ''}
+                onSelect={handleProjectSelect}
+                placeholder="Buscar proyecto..."
+                searchPlaceholder="Buscar por número o cliente..."
+                renderItem={renderProjectItem}
+                disabled={isLoadingProjects}
+                isLoading={isLoadingProjects}
+                emptyText="No se encontraron proyectos"
+                className="w-full"
+              />
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
+                  <ProjectSummary
+                    project={selectedProject}
+                    className="flex-1"
+                  />
+
+                  {/* Botones de acción */}
+                  <div className="flex items-center gap-2 ml-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleEditProjectClick}
+                      aria-label="Editar datos del proyecto"
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Editar Proyecto
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleClearSelection}
+                      aria-label="Limpiar selección de proyecto"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Indicadores de validación del proyecto */}
+                {projectValidation.isValid ? (
+                  <div className="flex items-center gap-2 text-sm text-green-600">
+                    <CheckCircle className="h-4 w-4" />
+                    <span>Proyecto válido para eventos</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 text-sm text-amber-600">
+                    <AlertCircle className="h-4 w-4" />
+                    <span>Proyecto con advertencias</span>
+                  </div>
+                )}
+
+                {/* Mostrar advertencias si las hay */}
+                {projectValidation.warnings.length > 0 && (
+                  <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border">
+                    <ul className="list-disc list-inside space-y-1">
+                      {projectValidation.warnings.map((warning, index) => (
+                        <li key={index}>{warning}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Formulario */}
+          <NewProjectEventForm
+            formRef={formRef}
+            formInstanceRef={formInstanceRef}
+            onSubmit={handleFormSubmit}
+            initialData={initialData}
+            isSubmitting={isSubmitting}
+            //disabled={!!selectedProject}  Deshabilitar campos cuando hay proyecto seleccionado
+          />
+        </div>
+      </ModalLayout>
+
+      {/* Modal anidado: Editar proyecto (renderizado condicionalmente) */}
+      {isEditingProject && selectedProject && (
+        <EditProjectDialog
+          project={selectedProject}
+          isOpenControlled={true}
+          onCloseControlled={handleEditProjectClose}
+          onSuccess={handleProjectUpdated}
         />
-      </div>
-    </ModalLayout>
+      )}
+    </>
   );
 }

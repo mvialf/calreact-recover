@@ -46,6 +46,7 @@ export interface ContainerProps {
 export interface ProjectInfoProps {
   project?: ProjectType;
   className?: string;
+  onEditProject?: () => void; // ← Callback para editar proyecto
 }
 
 /**

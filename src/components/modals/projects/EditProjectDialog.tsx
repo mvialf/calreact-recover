@@ -14,15 +14,30 @@ import { projectLogger } from '@/lib/logger';
 
 interface EditProjectDialogProps {
   project: ProjectType;
-  children: React.ReactNode;
+  children?: React.ReactNode; // ← Ahora opcional
+
+  // NUEVO: Soporte para control externo
+  isOpenControlled?: boolean;
+  onCloseControlled?: () => void;
+  onSuccess?: () => void;
 }
 
-export function EditProjectDialog({ project, children }: EditProjectDialogProps) {
+export function EditProjectDialog({
+  project,
+  children,
+  isOpenControlled,
+  onCloseControlled,
+  onSuccess
+}: EditProjectDialogProps) {
   // 🔥 TODOS LOS HOOKS AL INICIO - ANTES DE CUALQUIER EARLY RETURN
-  
-  const [isOpen, setIsOpen] = useState(false);
+
+  const [isOpenInternal, setIsOpenInternal] = useState(false);
   const queryClient = useQueryClient();
   const formRef = useRef<HTMLFormElement>(null);
+
+  // Determinar si está controlado externamente o internamente
+  const isControlled = isOpenControlled !== undefined;
+  const isOpen = isControlled ? isOpenControlled : isOpenInternal;
 
   // Hook useMutation siempre debe ejecutarse
   const { mutate, isPending } = useMutation({
@@ -47,7 +62,18 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
       try {
         queryClient.invalidateQueries({ queryKey: ['projects'] });
         toast.success('Proyecto actualizado correctamente.');
-        setIsOpen(false);
+
+        // NUEVO: Callback onSuccess externo
+        if (onSuccess) {
+          onSuccess();
+        }
+
+        // Cerrar modal (modo controlado o interno)
+        if (isControlled && onCloseControlled) {
+          onCloseControlled();
+        } else {
+          setIsOpenInternal(false);
+        }
       } catch (error) {
         projectLogger.error('Error en onSuccess', error);
       }
@@ -154,19 +180,26 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
 
   const handleClose = React.useCallback(() => {
     try {
-      setIsOpen(false);
+      if (isControlled && onCloseControlled) {
+        onCloseControlled(); // Modo controlado
+      } else {
+        setIsOpenInternal(false); // Modo interno
+      }
     } catch (error) {
       projectLogger.error('Error al cerrar modal', error);
     }
-  }, []);
+  }, [isControlled, onCloseControlled]);
 
   const handleOpen = React.useCallback(() => {
     try {
-      setIsOpen(true);
+      // Solo aplicable en modo trigger-based (cuando hay children)
+      if (!isControlled) {
+        setIsOpenInternal(true);
+      }
     } catch (error) {
       projectLogger.error('Error al abrir modal', error);
     }
-  }, []);
+  }, [isControlled]);
 
   // 🔥 AHORA SÍ SE PUEDEN HACER EARLY RETURNS
   
@@ -185,9 +218,12 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
         });
       }}
     >
-      <div onClick={handleOpen}>
-        {children}
-      </div>
+      {/* Trigger solo si hay children (modo trigger-based) */}
+      {children && (
+        <div onClick={handleOpen}>
+          {children}
+        </div>
+      )}
 
       <ModalLayout
         isOpen={isOpen}

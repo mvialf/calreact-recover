@@ -8,14 +8,15 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Info } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Info, Edit } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ProjectInfoProps } from './types';
 
 // ✅ OPTIMIZACIÓN: React.memo con comparador personalizado
 // Solo re-renderiza si project.id o className cambian
 export const ProjectInfo = React.memo<ProjectInfoProps>(
-  ({ project, className }) => {
+  ({ project, className, onEditProject }) => {
     if (!project) return null;
 
     // Determinar variante del badge según status
@@ -32,10 +33,27 @@ export const ProjectInfo = React.memo<ProjectInfoProps>(
     return (
       <Card className={cn('bg-muted/50', className)}>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Info className="h-4 w-4 text-muted-foreground" />
-            Información del Proyecto
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Info className="h-4 w-4 text-muted-foreground" />
+              Información del Proyecto
+            </CardTitle>
+
+            {/* Botón "Editar Proyecto" (solo si se proporciona callback) */}
+            {onEditProject && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onEditProject}
+                aria-label="Editar datos del proyecto"
+                className="h-8"
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Editar Proyecto
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
           {/* Cliente */}
@@ -87,11 +105,12 @@ export const ProjectInfo = React.memo<ProjectInfoProps>(
       </Card>
     );
   },
-  // Comparador: solo re-renderiza si project.id o className cambian
+  // Comparador: solo re-renderiza si project.id, className o onEditProject cambian
   (prevProps, nextProps) => {
     return (
       prevProps.project?.id === nextProps.project?.id &&
-      prevProps.className === nextProps.className
+      prevProps.className === nextProps.className &&
+      prevProps.onEditProject === nextProps.onEditProject
     );
   }
 );
