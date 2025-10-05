@@ -185,6 +185,30 @@ export const preprocessedInteger = (fieldName: string, defaultValue: number = 0)
 /**
  * Campos comunes para proyectos y eventos de proyecto
  */
+/**
+ * Preprocessor para convertir Firestore Timestamp a Date
+ */
+const timestampToDatePreprocessor = (val: any) => {
+  // Si es null o undefined, retornar como está
+  if (!val) return val;
+
+  // Si ya es Date, retornar como está
+  if (val instanceof Date) return val;
+
+  // Si es Firestore Timestamp (tiene método toDate)
+  if (val && typeof val === 'object' && typeof val.toDate === 'function') {
+    return val.toDate();
+  }
+
+  // Si es string ISO date, parsear
+  if (typeof val === 'string') {
+    const date = new Date(val);
+    return isNaN(date.getTime()) ? undefined : date;
+  }
+
+  return undefined;
+};
+
 export const commonProjectFields = {
   description: optionalString,
   phone: phoneSchema,
@@ -195,7 +219,10 @@ export const commonProjectFields = {
     id: z.string(),
     name: z.string(),
     color: z.string(),
-    createdAt: z.date().optional()
+    createdAt: z.preprocess(
+      timestampToDatePreprocessor,
+      z.date().optional()
+    )
   })).optional().default([]),
 };
 

@@ -29,11 +29,23 @@ import type { ProjectStatus, FormattedAddress } from '@/types/project';
 // Hooks imports
 import { useUninstallTags } from '@/hooks/useUninstallTags';
 
-// Helper para convertir UninstallTag a Tag
-const convertUninstallTagToTag = (uninstallTag: any): Tag => ({
-  ...uninstallTag,
-  color: uninstallTag.color as Tag['color'] // Cast string to TagColor
-});
+// Helper para convertir UninstallTag a Tag con validación defensiva
+const convertUninstallTagToTag = (uninstallTag: any): Tag | null => {
+  // Validación defensiva: verificar que el tag existe y tiene estructura válida
+  if (!uninstallTag || typeof uninstallTag !== 'object') {
+    return null;
+  }
+
+  // Verificar campos requeridos
+  if (!uninstallTag.id || !uninstallTag.name || !uninstallTag.color) {
+    return null;
+  }
+
+  return {
+    ...uninstallTag,
+    color: uninstallTag.color as Tag['color'] // Cast string to TagColor
+  };
+};
 
 // Constants imports
 import { PROJECT_STATUS_OPTIONS } from '@/constants/project';
@@ -139,11 +151,22 @@ export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
     onSubmit(data);
   };
 
+  // Handler para errores de validación
+  const handleValidationError = (errors: any) => {
+    // Mostrar toast con el primer error encontrado
+    const firstError = Object.values(errors)[0] as any;
+    if (firstError?.message) {
+      toast.error(`Error de validación: ${firstError.message}`);
+    } else {
+      toast.error("Por favor, revisa los campos del formulario");
+    }
+  };
+
   return (
     <Form {...form}>
       <form 
         ref={formRef} 
-        onSubmit={form.handleSubmit(handleFormSubmit)} 
+        onSubmit={form.handleSubmit(handleFormSubmit, handleValidationError)}
         className="space-y-6"
       >
 
@@ -304,8 +327,12 @@ export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
                   <FormLabel>Tags de Desinstalación</FormLabel>
                   <FormControl>
                     <TagSelector
-                      selectedTags={(field.value || []).map(convertUninstallTagToTag)}
-                      availableTags={uninstallTags.map(convertUninstallTagToTag)}
+                      selectedTags={(field.value || [])
+                        .map(convertUninstallTagToTag)
+                        .filter((tag): tag is Tag => tag !== null)}
+                      availableTags={(uninstallTags || [])
+                        .map(convertUninstallTagToTag)
+                        .filter((tag): tag is Tag => tag !== null)}
                       onTagsChange={field.onChange}
                       onCreateTag={createUninstallTag}
                       onEditTag={editUninstallTag}
