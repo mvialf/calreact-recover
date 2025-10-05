@@ -147,7 +147,7 @@ export function Combobox({
             )}
             <CommandList>
               <CommandEmpty>{emptyText}</CommandEmpty>
-              <CommandGroup className="max-h-48 overflow-y-auto">
+              <CommandGroup className="w-full overflow-y-auto">
                 {filteredItems.map((item) => (
                   <CommandItem
                     key={item.value}

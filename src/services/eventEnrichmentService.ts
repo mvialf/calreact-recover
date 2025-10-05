@@ -59,10 +59,10 @@ class EventEnrichmentService {
       
       // Obtener proyecto directamente desde Firestore
       const project = await getProjectById(event.projectId);
-      
+
       if (project) {
         this.stats.successful++;
-        
+
         const enrichedEvent = this.composeEnrichedEvent(event, project);
         
         logger.debug('Evento enriquecido exitosamente', {
