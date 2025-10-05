@@ -3,7 +3,6 @@
 import React, { useState, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ProjectForm, ProjectFormData as ProjectFormValues } from '@/components/forms/ProjectForm';
-import { Button } from '@/components/ui/button';
 import { ModalLayout } from '@/components/modals/modalLayout';
 import { toast } from 'sonner';
 import { updateProject } from '@/services/projectService';
@@ -33,7 +32,7 @@ export function EditProjectDialog({
 
   const [isOpenInternal, setIsOpenInternal] = useState(false);
   const queryClient = useQueryClient();
-  const formRef = useRef<HTMLFormElement>(null);
+  const formRef = useRef<HTMLFormElement | null>(null);
 
   // Determinar si está controlado externamente o internamente
   const isControlled = isOpenControlled !== undefined;
@@ -150,7 +149,14 @@ export function EditProjectDialog({
           }
         },
         description: project.description ?? '',
-        uninstallTags: Array.isArray(project.uninstallTags) ? project.uninstallTags : [],
+        uninstallTags: Array.isArray(project.uninstallTags)
+          ? project.uninstallTags.map(tag => ({
+              ...tag,
+              createdAt: tag.createdAt instanceof Date
+                ? tag.createdAt
+                : (tag.createdAt as any)?.toDate?.() || new Date()
+            }))
+          : [],
       };
     } catch (error) {
       projectLogger.error('Error al mapear datos iniciales', error);
@@ -231,15 +237,29 @@ export function EditProjectDialog({
         title="Editar Proyecto"
         className="w-full max-w-xl"
         showDefaultButtons={true}
-        onSubmit={() => formRef.current?.requestSubmit()}
+        onSubmit={() => {
+          if (formRef.current) {
+            formRef.current.requestSubmit();
+          } else {
+            // Fallback: intentar buscar por ID
+            const formById = document.getElementById('edit-project-form') as HTMLFormElement;
+            if (formById) {
+              formById.requestSubmit();
+            } else {
+              toast.error('Error', {
+                description: 'No se pudo encontrar el formulario.',
+              });
+            }
+          }
+        }}
         isSubmitting={isPending}
         submitButtonText={isPending ? "Actualizando..." : "Actualizar Proyecto"}
       >
         <div ref={(el) => {
           if (el) {
             const form = el.querySelector('form');
-            if (form && formRef.current !== form) {
-              (formRef as React.MutableRefObject<HTMLFormElement | null>).current = form;
+            if (form) {
+              formRef.current = form;
             }
           }
         }}>
