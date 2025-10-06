@@ -70,7 +70,7 @@ export function AddressSummary({
   // Manejar caso de dirección nula o indefinida
   if (!address) {
     return (
-      <div className={cn('text-sm text-muted-foreground', className)} {...props}>
+      <div className={cn('text-sm', className)} {...props}>
         Sin dirección
       </div>
     );
@@ -111,7 +111,7 @@ export function AddressSummary({
         title={address.textoCompleto}
         {...props}
       >
-        {showIcon && <MapPin className="inline h-3.5 w-3.5 mr-1.5 text-muted-foreground" />}
+        {showIcon && <MapPin className="inline h-4 w-4 mr-1" />}
         {displayText}
       </div>
     );
@@ -122,7 +122,7 @@ export function AddressSummary({
     <div className={cn('space-y-1', className)} {...props}>
       {/* Línea principal: Dirección + Info adicional */}
       <div className="flex items-center gap-2 text-sm">
-        {showIcon && <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />}
+        {showIcon && <MapPin className="h-4 w-4 flex-shrink-0" />}
 
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <span className="font-medium truncate">
@@ -131,7 +131,7 @@ export function AddressSummary({
 
           {/* Información adicional inline (depto, block, etc.) */}
           {infoAdicional && !compact && (
-            <div className="flex items-center gap-1 text-muted-foreground flex-shrink-0">
+            <div className="flex items-center gap-1 flex-shrink-0">
               <Building className="h-3.5 w-3.5" />
               <span className="text-sm truncate">{infoAdicional}</span>
             </div>

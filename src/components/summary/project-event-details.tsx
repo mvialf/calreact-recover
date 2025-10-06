@@ -1,5 +1,9 @@
-import { Ruler, Tag as TagIcon, FileText } from 'lucide-react';
+import { FileText, Phone, Grid2x2 } from 'lucide-react';
 import { TagBadge } from '@/components/ui/tag-badge';
+import { Badge } from '@/components/ui/badge';
+import { getStatusBadgeVariant } from '@/utils/badge-helpers';
+import { PROJECT_STATUS_OPTIONS } from '@/constants/project';
+import { AddressSummary } from '@/components/summary/address-summary';
 import type { EventType } from '@/types/event';
 
 interface ProjectEventDetailsProps {
@@ -29,54 +33,86 @@ export function ProjectEventDetails({ event }: ProjectEventDetailsProps) {
   const hasTechnicalDetails = event.windowsCount || event.squareMeters;
   const hasUninstallTags = event.uninstallTags && event.uninstallTags.length > 0;
 
-  // Si no hay datos técnicos, tags ni descripción, no renderiza nada
-  if (!hasTechnicalDetails && !hasUninstallTags && !event.description) {
+  // Si no hay datos para mostrar, no renderiza nada
+  if (!hasTechnicalDetails && !hasUninstallTags && !event.description && !event.phone && !event.status && !event.fullAddress) {
     return null;
   }
 
   return (
-    <div className="space-y-3">
-      {/* Detalles Técnicos */}
-      {hasTechnicalDetails && (
-        <div className="flex items-start gap-3">
-          <Ruler className="h-5 w-5 text-muted-foreground mt-0.5" />
-          <div className="flex-1">
-            <p className="text-sm font-medium">Detalles Técnicos</p>
-            <div className="text-sm text-muted-foreground space-y-1">
-              {event.windowsCount && (
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">Ventanas:</span>
-                  <span>{event.windowsCount}</span>
-                </div>
-              )}
-              {event.squareMeters && (
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">Superficie:</span>
-                  <span>{event.squareMeters} m²</span>
-                </div>
-              )}
+    <div className="space-y-2">
+      {/* Teléfono y Estado */}
+      {(event.phone || event.status) && (
+        <div className="flex flex-row gap-4 text-sm">
+          {event.phone && (
+            <div className="flex items-center gap-2">
+              <Phone className="h-4 w-4" />
+              <span>{event.phone}</span>
             </div>
-          </div>
+          )}
+          {event.status && (
+            <div className="flex items-center gap-2">
+              <Badge variant={getStatusBadgeVariant(event.status)}>
+                {PROJECT_STATUS_OPTIONS.find(opt => opt.value === event.status)?.label || event.status}
+              </Badge>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Tags de Desinstalación */}
-      {hasUninstallTags && (
-        <div className="flex items-start gap-3">
-          <TagIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
-          <div className="flex-1">
-            <p className="text-sm font-medium">Tags de Desinstalación</p>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {event.uninstallTags!.map((tag) => (
-                <TagBadge key={tag.id} tag={tag} />
-              ))}
-            </div>
-          </div>
-        </div>
+      {/* Dirección */}
+      {event.fullAddress && (
+        <AddressSummary
+          address={{
+            placeId: '',
+            textoCompleto: event.fullAddress.textoCompleto || '',
+            coordenadas: event.fullAddress.coordenadas || { latitude: 0, longitude: 0 },
+            componentes: event.fullAddress.componentes,
+            informacionAdicional: event.fullAddress.informacionAdicional,
+            comune: event.fullAddress.comune
+          }}
+        />
       )}
 
+      <div className='flex flex-row gap-1      '>
+         <Grid2x2 className="h-5 w-5 pt-1" />
+         <div className='space-y-2'>
+        {hasUninstallTags && event.uninstallTags && event.uninstallTags.length > 0 && (
+          <div className="flex items-start gap-3">
+            <div className="flex-1">
+              <p className="text-sm">Desinstalación</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {event.uninstallTags.map((tag) => (
+                  <TagBadge key={tag.id} tag={tag} />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Detalles Técnicos */}
+        {hasTechnicalDetails && (
+          <div className="flex flex-wrap gap-2 items-start gap-3">
+
+              <div className="flex flex-row text-sm gap-4">
+                {event.windowsCount && (
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">Elementos:</span>
+                    <span>{event.windowsCount}</span>
+                  </div>
+                )}
+                {event.squareMeters && (
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">Superficie:</span>
+                    <span>{event.squareMeters} m²</span>
+                  </div>
+                )}
+              </div>
+            </div>
+    
+        )}
+        </div>
+      </div>
       {/* Descripción */}
-      {event.description && (
+      {event.description && event.description.trim() && (
         <div className="flex items-start gap-3">
           <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
           <div className="flex-1">
