@@ -14,7 +14,8 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Combobox, type ComboboxItem } from '@/components/ui/combobox';
 import { ProjectSummary } from '@/components/summary';
-import { X, CheckCircle, AlertCircle, Edit } from 'lucide-react';
+import { ProjectEventDetails } from '@/components/summary/project-event-details';
+import { CheckCircle, AlertCircle, Edit, X } from 'lucide-react';
 
 // Importar el nuevo formulario
 import { NewProjectEventForm, type NewProjectEventFormValues } from '@/components/forms/NewProjectEventForm';
@@ -22,6 +23,7 @@ import { validateProjectForEvents } from '@/utils/eventValidation';
 
 // ← NUEVO: Importar EditProjectDialog para modal anidado
 import { EditProjectDialog } from '@/components/modals/projects/EditProjectDialog';
+import type { EventType } from '@/types/event';
 
 export interface NewProjectEventModalProps {
   isOpen: boolean;
@@ -163,23 +165,16 @@ export function NewProjectEventModal({
         }
       }
       
-      // Auto-completar datos del formulario usando setValue de React Hook Form
+      // ✅ Auto-completar SOLO campos del evento en el formulario
       if (formInstanceRef.current) {
         const { setValue, trigger } = formInstanceRef.current;
-        
-        // Establecer valores del proyecto en el formulario
+
+        // Establecer valores del EVENTO (fuente única de verdad)
         setValue('projectId', project.id);
-        setValue('description', project.description || '');
-        setValue('phone', project.phone || '');
-        setValue('fullAddress', project.fullAddress || undefined);
         setValue('status', project.status);
-        setValue('windowsCount', project.windowsCount || 0);
-        setValue('squareMeters', project.squareMeters || 0);
-        setValue('uninstallTags', project.uninstallTags || []);
-        setValue('clientName', project.clientName);
-        setValue('checklist', initialData?.checklist || []);
         setValue('eventDate', new Date()); // Fecha por defecto es hoy
-        
+        setValue('checklist', initialData?.checklist || []);
+
         // Trigger validación después de establecer los valores
         trigger();
       }
@@ -275,6 +270,32 @@ export function NewProjectEventModal({
     setIsEditingProject(false);
   }, []);
 
+  // Transformar ProjectType a EventType para ProjectEventDetails
+  const transformProjectToEvent = React.useCallback((project: ProjectType): EventType => {
+    return {
+      id: project.id,
+      name: project.clientName || 'Cliente pendiente',
+      startDate: new Date(),
+      endDate: new Date(),
+      type: 'Proyecto',
+      color: '#3b82f6',
+      referenceId: project.id,
+      description: project.description,
+      phone: project.phone,
+      status: project.status,
+      fullAddress: project.fullAddress ? {
+        textoCompleto: project.fullAddress.textoCompleto,
+        comune: project.fullAddress.comune,
+        coordenadas: project.fullAddress.coordenadas,
+        componentes: project.fullAddress.componentes as Record<string, string> | undefined,
+        informacionAdicional: project.fullAddress.informacionAdicional,
+      } : undefined,
+      windowsCount: project.windowsCount,
+      squareMeters: project.squareMeters,
+      uninstallTags: project.uninstallTags,
+    };
+  }, []);
+
   return (
     <>
       {/* Modal principal: Crear evento */}
@@ -307,49 +328,39 @@ export function NewProjectEventModal({
                 className="w-full"
               />
             ) : (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
+              <div className="space-y-3">
+                {/* ✅ Resumen del proyecto con botones de acción */}
+                <div className="flex items-center gap-2">
                   <ProjectSummary
                     project={selectedProject}
                     className="flex-1"
                   />
-
-                  {/* Botones de acción */}
-                  <div className="flex items-center gap-2 ml-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleEditProjectClick}
-                      aria-label="Editar datos del proyecto"
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      Editar Proyecto
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleClearSelection}
-                      aria-label="Limpiar selección de proyecto"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleEditProjectClick}
+                    aria-label="Editar proyecto"
+                    className="shrink-0"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearSelection}
+                    aria-label="Limpiar selección de proyecto"
+                    className="shrink-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
 
-                {/* Indicadores de validación del proyecto */}
-                {projectValidation.isValid ? (
-                  <div className="flex items-center gap-2 text-sm text-green-600">
-                    <CheckCircle className="h-4 w-4" />
-                    <span>Proyecto válido para eventos</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 text-sm text-amber-600">
-                    <AlertCircle className="h-4 w-4" />
-                    <span>Proyecto con advertencias</span>
-                  </div>
-                )}
+                {/* Detalles del proyecto seleccionado */}
+                <div>
+                  <ProjectEventDetails event={transformProjectToEvent(selectedProject)} />
+                </div>
 
                 {/* Mostrar advertencias si las hay */}
                 {projectValidation.warnings.length > 0 && (
