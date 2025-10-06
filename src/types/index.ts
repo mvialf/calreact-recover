@@ -15,22 +15,6 @@ export * from './afterSales';
 // ===== TIPOS DE EVENTOS =====
 export * from './event';
 
-// ProjectEvent types (selectivos para evitar conflictos)
-export type {
-  ProjectEventMinimal,
-  ProjectSnapshot,
-  CreateProjectEventData,
-  UpdateProjectEventData,
-} from './projectEvent';
-
-export type {
-  ProjectEventMinimalDocument,
-  ProjectSnapshotDocument,
-  ChecklistItemDocument,
-  checklistItemToDocument,
-  checklistItemFromDocument,
-} from './projectEvent.document';
-
 // ===== TIPOS DE UTILIDADES =====
 export * from './tags';
 
