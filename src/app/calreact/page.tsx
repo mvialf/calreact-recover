@@ -5,6 +5,7 @@ import type { EventType, ViewOption } from '@/types/event';
 import { CalendarView } from '@/components/calendar/calendar-view';
 import { EventViewDialog } from '@/components/calendar/EventViewDialog';
 import { EventDeleteDialog } from '@/components/calendar/EventDeleteDialog';
+import { NewProjectEventModal } from '@/components/modals/calendar/NewProjectEventModal';
 import { CalendarToolbar } from '@/components/calendar/calendar-toolbar';
 import { AppLayout } from '@/components/layout';
 import { db } from '@/lib/firebase/client'; // Importar la instancia db configurada
@@ -375,6 +376,15 @@ export default function CalReactAppPage() {
             setIsViewModalOpen(false);
             setSelectedEvent(null);
           }}
+        />
+      )}
+
+      {/* Modal de crear/editar evento de proyecto */}
+      {isModalOpen && selectedEvent?.type === 'Proyecto' && (
+        <NewProjectEventModal
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          autoSave={true}
         />
       )}
 

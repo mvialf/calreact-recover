@@ -69,7 +69,7 @@ export function EventViewDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-2xl bg-card border-l-[16px]"
+        className="max-w-md bg-card border-l-[16px]"
         style={{ borderLeftColor: getEventColor() }}
       >
         <DialogHeader>
@@ -86,32 +86,19 @@ export function EventViewDialog({
                       }}
                       showProjectNumber={true}
                       layout="stacked"
-                      size="xl"
+                      size="sm"
                     />
-                    <div className="flex flex-col gap-2 text-base font-normal">
+                    <div className="flex flex-col gap-2 text-sm text-base font-normal">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
                         <span>{formatDateRange()}</span>
                       </div>
-                      {event.phone && (
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-4 w-4 text-muted-foreground" />
-                          <span>{event.phone}</span>
-                        </div>
-                      )}
-                      {event.status && (
-                        <div className="flex items-center gap-2">
-                          <Badge variant={getStatusBadgeVariant(event.status)}>
-                            {PROJECT_STATUS_OPTIONS.find(opt => opt.value === event.status)?.label || event.status}
-                          </Badge>
-                        </div>
-                      )}
                     </div>
                   </div>
                 </DialogTitle>
               ) : (
                 <>
-                  <DialogTitle className="text-xl">{event.name}</DialogTitle>
+                  <DialogTitle className="text-sm">{event.name}</DialogTitle>
                   <DialogDescription className="mt-1">
                     Detalles del evento
                   </DialogDescription>
@@ -121,16 +108,8 @@ export function EventViewDialog({
           </div>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {/* Dirección */}
-          {event.fullAddress && (
-            <AddressSummary
-              address={event.fullAddress as any}
-              layout="stacked"
-              showIcon={true}
-            />
-          )}
-
+        <div className="space-y-2 py-4">
+          
           {/* Detalles del Proyecto */}
           <ProjectEventDetails event={event} />
 

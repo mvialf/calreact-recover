@@ -41,13 +41,7 @@ function convertProjectEventToCalendarEvent(projectEvent: ProjectEventType): Eve
     name: getEventName(),
     startDate: projectEvent.eventDate,
     endDate: projectEvent.eventDate, // Eventos de proyecto son de un día
-    description: [
-      projectEvent.description,
-      projectEvent.windowsCount ? `Ventanas: ${projectEvent.windowsCount}` : '',
-      projectEvent.squareMeters ? `M²: ${projectEvent.squareMeters}` : '',
-      projectEvent.uninstallTags && projectEvent.uninstallTags.length > 0 ? 'Requiere desinstalación' : '',
-      projectEvent.phone ? `Tel: ${projectEvent.phone}` : '',
-    ].filter(Boolean).join(' • '),
+    description: projectEvent.description || '',
     color: getProjectColor(),
     type: 'Proyecto',
     referenceId: projectEvent.projectId,
