@@ -41,15 +41,6 @@ export interface ContainerProps {
 }
 
 /**
- * Props de ProjectInfo (Card de información del proyecto)
- */
-export interface ProjectInfoProps {
-  project?: ProjectType;
-  className?: string;
-  onEditProject?: () => void; // ← Callback para editar proyecto
-}
-
-/**
  * Context para compartir estado entre componentes
  */
 export interface ProjectEventFormContext {

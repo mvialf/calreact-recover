@@ -6,7 +6,6 @@
  * @example
  * // Modo Lean (referencia + overrides)
  * <ProjectEventForm.Container mode="lean" project={project} onSubmit={handleSubmit}>
- *   <ProjectEventForm.ProjectInfo />
  *   <ProjectEventForm.BaseFields />
  *   <ProjectEventForm.OverrideFields />
  *   <ProjectEventForm.ChecklistSection />
@@ -22,7 +21,6 @@
  */
 
 import { Container } from './Container';
-import { ProjectInfo } from './ProjectInfo';
 import { BaseFields } from './BaseFields';
 import { FullFields } from './FullFields';
 import { OverrideFields } from './OverrideFields';
@@ -31,7 +29,6 @@ import { FormErrorBoundary } from './FormErrorBoundary';
 
 export const ProjectEventForm = {
   Container,
-  ProjectInfo,
   BaseFields,
   FullFields,
   OverrideFields,
@@ -42,7 +39,6 @@ export const ProjectEventForm = {
 export type {
   FormMode,
   ContainerProps,
-  ProjectInfoProps,
   BaseFormComponentProps,
   ProjectEventFormContext,
 } from './types';
