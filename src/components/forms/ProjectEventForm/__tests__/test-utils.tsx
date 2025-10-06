@@ -24,6 +24,7 @@ export const createMockLeanFormValues = (overrides: Partial<ProjectEventFormValu
   eventNotes: 'Test event notes',
   customDescription: 'Custom description for testing',
   customPhone: '+34 600 000 000',
+  customStatus: 'En Progreso',
   ...overrides,
 });
 
@@ -143,7 +144,7 @@ export const createProjectWithEvents = (eventCount = 3) => {
     createMockProjectEvent({
       projectId: project.id,
       eventDate: new Date(`2024-0${index + 1}-01`),
-      description: `Event ${index + 1} notes`,
+      eventNotes: `Event ${index + 1} notes`,
     })
   );
 

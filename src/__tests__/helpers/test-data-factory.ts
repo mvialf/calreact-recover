@@ -1,7 +1,7 @@
 // test-data-factory.ts - Factory para generar datos de prueba
 // Centraliza la creación de datos mock para tests
 
-import type { ProjectType as Project, ProjectEventType as ProjectEvent, Client } from '@/types';
+import type { ProjectType as Project, ProjectEventLean as ProjectEvent, Client } from '@/types';
 
 // Factory para proyectos
 export const createMockProject = (overrides: Partial<Project> = {}): Project => ({
@@ -29,7 +29,6 @@ export const createMockProjectEvent = (overrides: Partial<ProjectEvent> = {}): P
   id: 'mock-event-id',
   projectId: 'mock-project-id',
   eventDate: new Date('2024-06-15'),
-  status: 'programar', // Campo requerido en ProjectEventType
   checklist: [
     {
       id: 'check-1',
@@ -38,7 +37,8 @@ export const createMockProjectEvent = (overrides: Partial<ProjectEvent> = {}): P
       createdAt: new Date('2024-01-01'),
     }
   ],
-  description: 'Descripción del evento',
+  customDescription: 'Descripción del evento',
+  eventNotes: 'Notas del evento',
   createdAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),
   ...overrides,

@@ -219,6 +219,7 @@ describe('ProjectEventForm - Lean Mode Integration', () => {
         eventNotes: 'Notas iniciales',
         customDescription: 'Descripción inicial',
         customPhone: '+34 555 444 333',
+        customStatus: 'montaje',
       };
 
       render(
