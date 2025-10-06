@@ -3,17 +3,8 @@ import type { Timestamp } from 'firebase/firestore';
 import type { ProjectStatusConstant } from '@/constants/project';
 import type { UninstallTag } from './uninstall-tags';
 
-// Re-export lean types for convenience
-export type { 
-  ProjectEventLean, 
-  ChecklistItem, 
-  ComposedProjectEvent,
-  EventCompositionConfig,
-  EventLeanFilters,
-  EventLeanQueryOptions,
-  EventLeanQueryResponse,
-  CreateProjectEventLeanData
-} from '@/types/projectEventLean';
+// NOTA: ProjectEventLean types eliminados - usar ProjectEventType en su lugar
+// Ver: src/types/project.ts para arquitectura actual
 
 // Tipo para las coordenadas geográficas
 export interface GeoCoordinates {

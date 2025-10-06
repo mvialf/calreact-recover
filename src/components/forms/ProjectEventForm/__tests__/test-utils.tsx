@@ -144,7 +144,6 @@ export const createProjectWithEvents = (eventCount = 3) => {
     createMockProjectEvent({
       projectId: project.id,
       eventDate: new Date(`2024-0${index + 1}-01`),
-      eventNotes: `Event ${index + 1} notes`,
     })
   );
 
