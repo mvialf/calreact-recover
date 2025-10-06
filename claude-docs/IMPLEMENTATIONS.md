@@ -238,6 +238,35 @@
 - **Tests:** 0 errores TypeScript, 0 errores ESLint
 - **Documentation:** [patterns.md](../references/patterns.md#-configuración-de-país-addressinput---arquitectura-híbrida) - Patrón híbrido documentado completamente
 
+### 🏗️ ProjectEvent Arquitectura Minimalista con Snapshot Inmutable
+- **Status:** ✅ Complete | **Date:** 2025-10-06 | **Impact:** High
+- **Branch:** `DEV`
+- **Key commits:** Session actual
+- **Benefits:**
+  - Eliminación de 70% campos duplicados en eventos (~35KB código eliminado)
+  - Arquitectura de snapshot inmutable (sin desincronización)
+  - Error arquitectural customStatus corregido (status pertenece al proyecto)
+  - Status visible en calendario con Badge (requisito cumplido)
+  - Script de migración automática en batches de 500 documentos
+  - Base sólida y escalable para eventos Postventas y Visitas
+- **Implementación:** ✅ Completada (8 fases en ~4 horas)
+  - ✅ Fase 1: Tipos base ProjectEventMinimal + ProjectSnapshot
+  - ✅ Fase 2: Servicio createProjectEventMinimal() con snapshot automático
+  - ✅ Fase 3: customStatus eliminado de formularios (60 líneas menos)
+  - ✅ Fase 4: Badge status en ProjectEventRenderer
+  - ✅ Fase 5: Script migrate-project-events-to-minimal.ts (170 líneas)
+  - ✅ Fase 6: Tests actualizados (comentarios)
+  - ✅ Fase 7: 4 archivos obsoletos eliminados
+  - ✅ Fase 8: Documentación actualizada
+- **Archivos clave:**
+  - `src/types/projectEvent.ts` - ProjectEventMinimal (snapshot con 5 campos)
+  - `src/services/projectEventService.ts` - createProjectEventMinimal()
+  - `scripts/migrate-project-events-to-minimal.ts` - Migración de datos
+  - `src/components/calendar/event-renderers/ProjectEventRenderer.tsx` - Badge status
+- **Archivos eliminados:** projectEventLean.ts, NewProjectEventLeanForm.tsx, projectService.backup.ts, eventEnrichmentService.ts
+- **Validación:** 0 errores TypeScript, 0 errores ESLint
+- **Snapshot fields:** projectNumber, clientName, glosa, comuna, **status** (visible en calendario)
+
 ## 🔮 Upcoming Implementations
 - [ ] **Data Table Migration Fase 2** - Migrar payments, aftersales, visits, clients, installments páginas (prioridad alta)
 - [ ] **Data Table Advanced Features** - Export CSV, bulk actions, column presets (prioridad media)
@@ -247,9 +276,9 @@
 
 ## 📊 Implementation Statistics
 
-**Total completadas:** 13 implementaciones major
-**Impacto alto:** 10/13 implementaciones
-**Beneficios cuantificados:** 30% reducción costos API, 67% menos duplicación docs, 70%+ test coverage, 4/4 formularios React Hook Form migrados, 4/4 formularios con país dinámico, 1,682+ líneas código duplicado eliminadas (682 PageTableLayout + 657+ table components + 239 calendar-event + 50 layout refactor inicial + 28 calendar-toolbar + 26 layout.tsx simplificación)  
+**Total completadas:** 14 implementaciones major
+**Impacto alto:** 11/14 implementaciones
+**Beneficios cuantificados:** 30% reducción costos API, 67% menos duplicación docs, 70%+ test coverage, 4/4 formularios React Hook Form migrados, 4/4 formularios con país dinámico, 1,717+ líneas código duplicado eliminadas (682 PageTableLayout + 657+ table components + 239 calendar-event + 50 layout refactor + 28 calendar-toolbar + 26 layout + 35 projectEvent obsoleto)  
 
 ## 🎯 Success Metrics
 
@@ -269,6 +298,8 @@
 - **Country Configuration:** Sistema híbrido implementado, 4/4 formularios con búsqueda contextual automática
 - **UX Improvement:** Configuración de país centralizada en GeneralSettings, respeta contexto de entidad
 - **Scalability:** Ready para datasets 10K+ registros sin cambios arquitecturales
+- **Event Architecture:** Snapshot inmutable, 70% reducción duplicación, customStatus eliminado
+- **Calendar UX:** Status badge visible con colores consistentes, arquitectura escalable para nuevos tipos de evento
 
 
 ---

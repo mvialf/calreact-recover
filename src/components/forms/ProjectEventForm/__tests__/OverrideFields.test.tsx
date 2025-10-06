@@ -3,9 +3,10 @@
  *
  * Verifica:
  * - Rendering condicional (solo en modo lean)
- * - Select de status con opción del proyecto
- * - Campos custom (customDescription, customPhone, customStatus)
+ * - Campos custom (customDescription, customPhone)
  * - Disabled state propagation
+ *
+ * NOTA: customStatus fue eliminado (error arquitectural - el status pertenece al proyecto)
  */
 
 import React from 'react';
