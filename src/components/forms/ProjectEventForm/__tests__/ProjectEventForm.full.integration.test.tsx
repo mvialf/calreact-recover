@@ -39,17 +39,12 @@ describe('ProjectEventForm - Full Mode Integration', () => {
           project={mockProject}
           onSubmit={mockOnSubmit}
         >
-          <ProjectEventForm.ProjectInfo project={mockProject} />
           <ProjectEventForm.BaseFields />
           <Suspense fallback={<div>Loading...</div>}>
             <ProjectEventForm.FullFields />
           </Suspense>
         </ProjectEventForm.Container>
       );
-
-      // ProjectInfo card debe estar presente
-      expect(screen.getByText('PRJ-002')).toBeInTheDocument();
-      expect(screen.getByText('Cliente Full')).toBeInTheDocument();
 
       // BaseFields deben estar presentes
       expect(screen.getByLabelText(/Fecha del Evento/i)).toBeInTheDocument();
