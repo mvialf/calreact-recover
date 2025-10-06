@@ -64,15 +64,12 @@ export const projectEventBaseSchema = z.object({
  * Schema para eventos tipo "Lean" - Solo almacena referencias y overrides
  *
  * Filosofía: Hereda del proyecto, solo guarda diferencias
+ * NOTA: customStatus fue eliminado - el status pertenece al proyecto, no al evento
  */
 export const projectEventLeanSchema = projectEventBaseSchema.extend({
   // Overrides opcionales - solo se usan si difieren del proyecto
   customDescription: optionalString,
   customPhone: phoneSchema,
-  customStatus: dynamicEnum(
-    PROJECT_STATUS_OPTIONS.map(opt => opt.value),
-    'un estado'
-  ).optional(),
 });
 
 export type ProjectEventLeanFormValues = z.infer<typeof projectEventLeanSchema>;
@@ -113,7 +110,7 @@ export type ProjectEventFormValues = ProjectEventLeanFormValues | ProjectEventFu
  * Type guard para detectar modelo lean
  */
 export function isLeanEventData(data: ProjectEventFormValues): data is ProjectEventLeanFormValues {
-  return 'customDescription' in data || 'customPhone' in data || 'customStatus' in data;
+  return 'customDescription' in data || 'customPhone' in data;
 }
 
 /**
