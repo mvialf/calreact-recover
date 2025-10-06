@@ -24,24 +24,16 @@ import {
   serverTimestamp,
   getDoc,
   Firestore,
-  DocumentSnapshot,
-  Timestamp
+  DocumentSnapshot
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import type { ProjectEventType, ProjectEventDocument, ProjectType } from '@/types/project';
-import type {
-  ProjectEventMinimal,
-  CreateProjectEventData,
-  ProjectSnapshot,
-} from '@/types/projectEvent';
-import type { ProjectEventMinimalDocument } from '@/types/projectEvent.document';
-import { checklistItemToDocument } from '@/types/projectEvent.document';
 import { createFirestoreFunction } from '@/lib/firebase/di';
-import {
-  docSnapshotToEntity,
-  timestampToDate,
-  prepareDataForFirestore,
-  dateToTimestamp
+import { 
+  docSnapshotToEntity, 
+  timestampToDate, 
+  prepareDataForFirestore, 
+  dateToTimestamp 
 } from '@/utils/firestore-helpers';
 import { getProjectById } from './projectService';
 import { syncSingleProjectClientName } from './clientSyncService';
@@ -265,146 +257,6 @@ export const createProjectEvent = async (
     
   } catch (error) {
     eventLogger.error('Error al crear evento de proyecto', error);
-    throw error;
-  }
-};
-
-// ============================================================================
-// NUEVA ARQUITECTURA MINIMALISTA CON SNAPSHOT INMUTABLE
-// ============================================================================
-
-/**
- * Crea snapshot inmutable del proyecto para el evento
- * @private
- */
-const createProjectSnapshot = (project: ProjectType): ProjectSnapshot => {
-  return {
-    projectNumber: project.projectNumber,
-    clientName: project.clientName || '',
-    glosa: project.glosa,
-    comuna: project.fullAddress?.componentes?.comuna,
-    status: project.status,
-  };
-};
-
-/**
- * Crea un nuevo evento de proyecto con arquitectura de snapshot minimalista
- *
- * @description
- * Nueva implementación que usa ProjectEventMinimal con snapshot inmutable.
- * El snapshot captura el estado del proyecto AL MOMENTO de crear el evento,
- * garantizando inmutabilidad histórica.
- *
- * Flujo:
- * 1. Valida projectId
- * 2. Obtiene proyecto padre
- * 3. Sincroniza clientName si es necesario
- * 4. Crea snapshot inmutable del proyecto
- * 5. Construye evento con snapshot
- * 6. Guarda en Firestore con timestamps automáticos
- *
- * @example
- * ```typescript
- * const newEvent = await createProjectEventMinimal({
- *   projectId: 'project-123',
- *   eventDate: new Date('2025-02-15'),
- *   checklist: [],
- *   eventNotes: 'Instalación programada 9:00 AM',
- *   customPhone: '+56912345678'
- * });
- * ```
- *
- * @param eventData - Datos del evento (sin id, snapshot, ni metadata)
- * @param firestore - Instancia de Firestore (opcional, usa db por defecto)
- * @returns Promise que resuelve con el evento creado completo
- *
- * @throws {Error} Cuando projectId no existe
- * @throws {Error} Cuando falla la operación de guardado
- *
- * @since v3.0.0 - Arquitectura minimalista con snapshot
- */
-export const createProjectEventMinimal = async (
-  eventData: CreateProjectEventData,
-  firestore: Firestore = db
-): Promise<ProjectEventMinimal> => {
-  try {
-    eventLogger.debug('Creando evento con arquitectura minimalista', {
-      projectId: eventData.projectId,
-    });
-
-    // 1. Validar projectId
-    if (!eventData.projectId) {
-      throw new Error('ID del proyecto es requerido');
-    }
-
-    // 2. Obtener proyecto padre
-    let project = await getProjectById(eventData.projectId);
-    if (!project) {
-      throw new Error(`Proyecto ${eventData.projectId} no encontrado`);
-    }
-
-    // 3. Sincronizar clientName si es necesario
-    if (project.clientId && !project.clientName) {
-      await syncSingleProjectClientName(eventData.projectId, firestore);
-      const updatedProject = await getProjectById(eventData.projectId);
-      project = updatedProject || project;
-    }
-
-    // 4. Crear snapshot inmutable del proyecto
-    const projectSnapshot = createProjectSnapshot(project);
-
-    // 5. Construir evento completo con snapshot
-    const eventToSave: Omit<ProjectEventMinimal, 'id'> = {
-      projectId: eventData.projectId,
-      eventDate: eventData.eventDate,
-      checklist: eventData.checklist,
-      eventNotes: eventData.eventNotes,
-      customPhone: eventData.customPhone,
-      projectSnapshot,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    // 6. Convertir a formato Firestore
-    const docData: ProjectEventMinimalDocument = {
-      projectId: eventToSave.projectId,
-      eventDate: Timestamp.fromDate(eventToSave.eventDate),
-      checklist: eventToSave.checklist.map(checklistItemToDocument),
-      eventNotes: eventToSave.eventNotes,
-      customPhone: eventToSave.customPhone,
-      projectSnapshot: eventToSave.projectSnapshot,
-      createdAt: serverTimestamp() as Timestamp,
-      updatedAt: serverTimestamp() as Timestamp,
-    };
-
-    // 7. Guardar en Firestore
-    const eventsRef = collection(firestore, PROJECT_EVENTS_COLLECTION);
-    const docRef = await addDoc(eventsRef, docData);
-
-    // 8. Obtener documento creado
-    const createdDoc = await getDoc(docRef);
-    const createdData = createdDoc.data() as ProjectEventMinimalDocument;
-
-    const newEvent: ProjectEventMinimal = {
-      id: docRef.id,
-      projectId: createdData.projectId,
-      eventDate: createdData.eventDate.toDate(),
-      checklist: eventToSave.checklist, // Ya están en formato correcto
-      eventNotes: createdData.eventNotes,
-      customPhone: createdData.customPhone,
-      projectSnapshot: createdData.projectSnapshot,
-      createdAt: createdData.createdAt?.toDate(),
-      updatedAt: createdData.updatedAt?.toDate(),
-    };
-
-    eventLogger.info('Evento minimalista creado exitosamente', {
-      eventId: newEvent.id,
-      projectId: eventData.projectId,
-    });
-
-    return newEvent;
-  } catch (error) {
-    eventLogger.error('Error al crear evento minimalista', error);
     throw error;
   }
 };
