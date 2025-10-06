@@ -2,9 +2,6 @@
 import type { EventType } from '@/types/event';
 import { ProjectSummary } from '@/components/summary';
 import { EventActionsDropdown } from '../EventActionsDropdown';
-import { Badge } from '@/components/ui/badge';
-import { getStatusBadgeVariant } from '@/utils/badge-helpers';
-import { PROJECT_STATUS_OPTIONS } from '@/constants/project';
 
 /**
  * Props para todos los event renderers
@@ -25,7 +22,6 @@ export interface EventRendererProps {
  *
  * Renderiza:
  * - ProjectSummary con número, cliente y glosa
- * - Badge de status del proyecto (con colores según estado)
  * - Comuna del proyecto (fullAddress.comune o componentes.comuna como fallback)
  * - Botón de acciones (dropdown) en esquina superior derecha
  *
@@ -70,16 +66,6 @@ export const ProjectEventRenderer: React.FC<EventRendererProps> = ({
           }}
           className="text-foreground text-xs"
         />
-
-        {/* Badge de status del proyecto */}
-        {event.status && (
-          <Badge
-            variant={getStatusBadgeVariant(event.status)}
-            className="text-xs"
-          >
-            {PROJECT_STATUS_OPTIONS.find(opt => opt.value === event.status)?.label || event.status}
-          </Badge>
-        )}
 
         {/* Mostrar comuna si está disponible */}
         {event.fullAddress?.comune && (

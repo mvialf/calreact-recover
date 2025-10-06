@@ -86,6 +86,7 @@ export const Container = forwardRef<FormRef<ProjectEventFormValues>, ContainerPr
           ...base,
           customDescription: (initialData as ProjectEventLeanFormValues)?.customDescription,
           customPhone: (initialData as ProjectEventLeanFormValues)?.customPhone,
+          customStatus: (initialData as ProjectEventLeanFormValues)?.customStatus,
         };
       } else {
         return {
