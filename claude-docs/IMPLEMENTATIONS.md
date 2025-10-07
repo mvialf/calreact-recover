@@ -47,6 +47,59 @@
   - **Impacto:** Schema Full alineado con ProjectEventType, 0 inconsistencias tipo vs schema
   - **Validación post-cleanup:** ✅ TypeScript: 0 errores | ✅ ESLint: 0 críticos | ✅ Build: exitoso | ✅ Referencias residuales: 0
 
+### 🧹 Legacy Code Complete Elimination
+- **Status:** ✅ Complete | **Date:** 2025-01-07 | **Impact:** High
+- **Branch:** `DEV`
+- **Key commits:** Current session
+- **Quick diff:** Ver cambios en session actual
+- **Benefits:**
+  - **1,258 líneas de código legacy eliminadas** (748 Full mode + 380 FormModal + 115 tests + 15 firebase config)
+  - Arquitectura simplificada: modo lean-only en ProjectEventForm
+  - Sistema modal unificado: eliminado FormModal deprecated en favor de ModalLayout
+  - Imports optimizados: capa de re-exportación firebase eliminada
+  - Tests actualizados: eliminados 4 archivos de tests obsoletos
+  - 0 breaking changes en funcionalidad productiva
+- **Implementación:** ✅ Completada (4 fases ejecutadas)
+  - **Fase 1: Modo Full (748 líneas)**
+    - Archivos eliminados (3): `FullFields.tsx` (272 líneas), `FullFields.test.tsx` (125 líneas), `ProjectEventForm.full.integration.test.tsx` (351 líneas)
+    - `src/schemas/project-event.schemas.ts` - projectEventFullSchema eliminado completamente
+    - `src/components/forms/ProjectEventForm/Container.tsx` - Simplificado a lean-only (sin conditional schema)
+    - `src/components/forms/ProjectEventForm/index.ts` - FullFields export removido
+    - `src/components/forms/ProjectEventForm/types.ts` - FormMode ahora literal 'lean'
+    - Tests actualizados: Container.test.tsx (3 instancias mode="full" → mode="lean"), accessibility.test.tsx, FormErrorBoundary.test.tsx
+    - `src/components/forms/ProjectEventForm/__tests__/test-utils.tsx` - Mock factories actualizados (Full → Lean)
+  - **Fase 2: FormModal System (380 líneas)**
+    - Archivos eliminados (2): `FormModal.tsx` (190 líneas), `useModalManager.ts` (190 líneas)
+    - `src/components/ui/modal/index.tsx` - FormModal exports removidos
+    - `src/components/ui/index.ts` - Sección FormModal system eliminada
+  - **Fase 3: Firebase Config (15 líneas)**
+    - Archivo eliminado: `src/lib/firebase/config.ts`
+    - `scripts/seedVisits.ts` - Import actualizado a usar `@/constants/firebase` y `@/lib/firebase/validation`
+  - **Fase 4: Validación y Tests (115 líneas)**
+    - `src/components/ui/modal/__tests__/Modal.test.tsx` - Tests FormModal eliminados (describe blocks completos)
+    - Validación TypeScript: ✅ 0 errores
+    - Validación ESLint: ✅ 0 errores críticos
+    - Build producción: ✅ Exitoso
+- **Archivos modificados (8 total):**
+  - `src/schemas/project-event.schemas.ts` - Schema Full eliminado
+  - `src/components/forms/ProjectEventForm/Container.tsx` - Lean-only
+  - `src/components/forms/ProjectEventForm/index.ts` - Sin FullFields
+  - `src/components/forms/ProjectEventForm/types.ts` - FormMode literal
+  - `src/components/forms/ProjectEventForm/__tests__/test-utils.tsx` - Mocks actualizados
+  - `src/components/forms/ProjectEventForm/__tests__/Container.test.tsx` - Tests lean-only
+  - `src/components/ui/index.ts` - Sin FormModal
+  - `scripts/seedVisits.ts` - Import firebase actualizado
+- **Archivos eliminados (9 total):**
+  - 3 archivos Full mode (ProjectEventForm/)
+  - 2 archivos FormModal system (ui/modal/)
+  - 1 archivo firebase config deprecated
+  - 3 archivos de tests obsoletos
+- **Validación final:** ✅ TypeScript: 0 errores | ✅ ESLint: 0 críticos | ✅ Build: exitoso | ✅ Tests: Modal.test.tsx limpiado
+- **Impacto arquitectural:**
+  - ProjectEventForm ahora **exclusivamente lean mode** (single mode system)
+  - Modal system **unificado en ModalLayout** (FormModal deprecated eliminado)
+  - Firebase imports **directos desde constants** (sin capa intermedia)
+
 ### 🗺️ Google Places API Migration
 - **Status:** ✅ Complete | **Date:** 2025-09 | **Impact:** High
 - **Branch:** `feature/google-places-migration` 

@@ -89,14 +89,6 @@ export {
   type BaseModalProps
 } from './modal';
 
-// @deprecated - FormModal system (preserved, not in active use)
-export {
-  FormModal,
-  ConfirmationModal,
-  InfoModal,
-  type FormModalProps
-} from './modal/FormModal';
-
 export {
   AlertDialog,
   AlertDialogAction,

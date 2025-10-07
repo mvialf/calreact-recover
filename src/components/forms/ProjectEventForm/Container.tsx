@@ -16,10 +16,7 @@ import { useOptimisticUpdate } from '@/hooks/useOptimisticUpdate';
 import { useFocusManagement } from '@/hooks/useFocusManagement';
 import {
   projectEventLeanSchema,
-  projectEventFullSchema,
   type ProjectEventFormValues,
-  type ProjectEventLeanFormValues,
-  type ProjectEventFullFormValues,
 } from '@/schemas/project-event.schemas';
 import type { ContainerProps, ProjectEventFormContext } from './types';
 import { FormErrorBoundary } from './FormErrorBoundary';
@@ -69,41 +66,21 @@ export const Container = forwardRef<FormRef<ProjectEventFormValues>, ContainerPr
     const [announcement, setAnnouncement] = useState('');
     const formRef = useRef<HTMLFormElement>(null);
 
-    // Seleccionar schema según modo
-    const schema = mode === 'lean' ? projectEventLeanSchema : projectEventFullSchema;
-
-    // Valores por defecto según modo
-    const getDefaultValues = () => {
-      const base = {
+    // Valores por defecto (solo modo Lean)
+    const getDefaultValues = (): ProjectEventFormValues => {
+      return {
         projectId: project?.id || initialData?.projectId || '',
         eventDate: initialData?.eventDate || new Date(),
         checklist: initialData?.checklist || [],
         eventNotes: initialData?.eventNotes || '',
+        customDescription: initialData?.customDescription,
+        customPhone: initialData?.customPhone,
+        customStatus: initialData?.customStatus,
       };
-
-      if (mode === 'lean') {
-        return {
-          ...base,
-          customDescription: (initialData as ProjectEventLeanFormValues)?.customDescription,
-          customPhone: (initialData as ProjectEventLeanFormValues)?.customPhone,
-          customStatus: (initialData as ProjectEventLeanFormValues)?.customStatus,
-        };
-      } else {
-        return {
-          ...base,
-          description: (initialData as ProjectEventFullFormValues)?.description || project?.description || '',
-          phone: (initialData as ProjectEventFullFormValues)?.phone || project?.phone || '',
-          fullAddress: (initialData as ProjectEventFullFormValues)?.fullAddress || project?.fullAddress,
-          // status removido - alineación con ProjectEventType
-          windowsCount: (initialData as ProjectEventFullFormValues)?.windowsCount || project?.windowsCount || 0,
-          squareMeters: (initialData as ProjectEventFullFormValues)?.squareMeters || project?.squareMeters || 0,
-          uninstallTags: (initialData as ProjectEventFullFormValues)?.uninstallTags || [],
-        };
-      }
     };
 
     const form = useForm<ProjectEventFormValues>({
-      resolver: zodResolver(schema),
+      resolver: zodResolver(projectEventLeanSchema),
       defaultValues: getDefaultValues(),
     });
 
@@ -116,14 +93,12 @@ export const Container = forwardRef<FormRef<ProjectEventFormValues>, ContainerPr
         await onSubmit(data);
       },
       {
-        successMessage: mode === 'lean'
-          ? 'Evento guardado exitosamente'
-          : 'Evento creado exitosamente',
+        successMessage: 'Evento guardado exitosamente',
         errorMessage: 'Error al guardar el evento',
         onSuccess: () => {
           form.reset();
           // ✅ ACCESIBILIDAD: Anunciar éxito
-          setAnnouncement(mode === 'lean' ? 'Evento guardado exitosamente' : 'Evento creado exitosamente');
+          setAnnouncement('Evento guardado exitosamente');
           setTimeout(() => setAnnouncement(''), 3000);
         },
         onError: () => {
@@ -184,11 +159,7 @@ export const Container = forwardRef<FormRef<ProjectEventFormValues>, ContainerPr
                 {/* Loading Overlay cuando está enviando */}
                 <LoadingOverlay
                   visible={isSubmitting || isExecuting}
-                  message={
-                    mode === 'lean'
-                      ? 'Guardando evento...'
-                      : 'Creando evento...'
-                  }
+                  message="Guardando evento..."
                   opacity="medium"
                 />
 

@@ -5,8 +5,6 @@
 import type { Control, FieldErrors, UseFormReturn } from 'react-hook-form';
 import type { ProjectType } from '@/types/project';
 import type {
-  ProjectEventLeanFormValues,
-  ProjectEventFullFormValues,
   ProjectEventFormValues,
 } from '@/schemas/project-event.schemas';
 
@@ -14,9 +12,9 @@ import type {
 export type { ProjectEventFormValues };
 
 /**
- * Modo de operación del formulario
+ * Modo de operación del formulario (solo Lean disponible)
  */
-export type FormMode = 'lean' | 'full';
+export type FormMode = 'lean';
 
 /**
  * Props base compartidas por todos los componentes

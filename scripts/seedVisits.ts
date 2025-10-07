@@ -1,7 +1,8 @@
 import { seedExampleVisits } from '../src/services/visitService';
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
-import { firebaseConfig, isFirebaseConfigured } from '../src/lib/firebase/config';
+import { FIREBASE_CONFIG as firebaseConfig } from '../src/constants/firebase';
+import { isFirebaseConfigured } from '../src/lib/firebase/validation';
 
 // Verificar la configuración de Firebase
 if (!isFirebaseConfigured) {

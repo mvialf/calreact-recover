@@ -117,18 +117,6 @@ describe('ProjectEventForm - Accessibility', () => {
       expect(description).toHaveAttribute('id');
       expect(description.getAttribute('id')).toMatch(/field-eventDate-.*-description/);
     });
-
-    it('debe tener aria-label en campos numéricos (FullFields)', () => {
-      render(
-        <ProjectEventForm.Container mode="full" project={mockProject} onSubmit={jest.fn()}>
-          <ProjectEventForm.FullFields />
-        </ProjectEventForm.Container>
-      );
-
-      const windowsInput = screen.getByLabelText(/número de ventanas del proyecto/i);
-      expect(windowsInput).toHaveAttribute('aria-label');
-      expect(windowsInput.getAttribute('aria-label')).toBe('Número de ventanas del proyecto');
-    });
   });
 
   describe('Live Regions', () => {

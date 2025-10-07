@@ -38,7 +38,6 @@ import { ModalHeader, type ModalHeaderProps } from './ModalHeader'
 import { ModalBody, type ModalBodyProps } from './ModalBody'
 import { ModalFooter, type ModalFooterProps } from './ModalFooter'
 import { ModalActions, ModalAction, type ModalActionsProps, type ModalActionProps } from './ModalActions'
-import { FormModal, ConfirmationModal, InfoModal, type FormModalProps } from './FormModal'
 
 // Re-exports de componentes individuales
 export { ModalRoot, type ModalRootProps }
@@ -47,7 +46,6 @@ export { ModalHeader, type ModalHeaderProps }
 export { ModalBody, type ModalBodyProps }
 export { ModalFooter, type ModalFooterProps }
 export { ModalActions, ModalAction, type ModalActionsProps, type ModalActionProps }
-export { FormModal, ConfirmationModal, InfoModal, type FormModalProps }
 
 // Compound Components Pattern - Interface principal
 export const Modal = {

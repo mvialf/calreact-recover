@@ -56,14 +56,14 @@ describe('Container', () => {
       expect(screen.getByTestId('is-disabled')).toHaveTextContent('false');
     });
 
-    it('debe proporcionar context correctamente en modo full', () => {
+    it('debe proporcionar context correctamente', () => {
       render(
-        <Container mode="full" project={mockProject} onSubmit={mockOnSubmit}>
+        <Container mode="lean" project={mockProject} onSubmit={mockOnSubmit}>
           <TestConsumer />
         </Container>
       );
 
-      expect(screen.getByTestId('mode')).toHaveTextContent('full');
+      expect(screen.getByTestId('mode')).toHaveTextContent('lean');
       expect(screen.getByTestId('project-id')).toHaveTextContent(mockProject.id);
     });
 
@@ -123,9 +123,9 @@ describe('Container', () => {
       expect(container.querySelector('form')).toBeInTheDocument();
     });
 
-    it('debe inicializar form en modo full con todos los campos', () => {
+    it('debe inicializar form correctamente', () => {
       const { container } = render(
-        <Container mode="full" project={mockProject} onSubmit={mockOnSubmit}>
+        <Container mode="lean" project={mockProject} onSubmit={mockOnSubmit}>
           <form data-testid="form" />
         </Container>
       );
@@ -163,7 +163,7 @@ describe('Container', () => {
       });
 
       render(
-        <Container mode="full" project={projectWithData} onSubmit={mockOnSubmit}>
+        <Container mode="lean" project={projectWithData} onSubmit={mockOnSubmit}>
           <TestConsumer />
         </Container>
       );

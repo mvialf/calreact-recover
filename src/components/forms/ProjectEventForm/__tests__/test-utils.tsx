@@ -24,29 +24,7 @@ export const createMockLeanFormValues = (overrides: Partial<ProjectEventFormValu
   eventNotes: 'Test event notes',
   customDescription: 'Custom description for testing',
   customPhone: '+34 600 000 000',
-  customStatus: 'En Progreso',
-  ...overrides,
-});
-
-/**
- * Factory para valores de formulario en modo full
- */
-export const createMockFullFormValues = (overrides: Partial<ProjectEventFormValues> = {}): ProjectEventFormValues => ({
-  projectId: 'mock-project-id',
-  eventDate: new Date('2024-06-15'),
-  checklist: [],
-  eventNotes: 'Test event notes',
-  description: 'Full description for testing',
-  phone: '+34 600 000 000',
-  fullAddress: {
-    textoCompleto: 'Calle Test 123, Madrid, España',
-    placeId: 'ChIJtest123',
-    coordenadas: { latitude: 40.4168, longitude: -3.7038 },
-  },
-  // status removido - alineación con ProjectEventType
-  windowsCount: 5,
-  squareMeters: 100,
-  uninstallTags: [],
+  customStatus: 'montaje' as const,
   ...overrides,
 });
 
@@ -122,14 +100,14 @@ export const mockFormContext = {
 };
 
 /**
- * Mock del contexto para modo full
+ * Mock del contexto para modo lean
  */
-export const mockFullFormContext = {
+export const mockLeanFormContext = {
   ...mockFormContext,
-  mode: 'full' as const,
+  mode: 'lean' as const,
   form: {
     ...mockFormContext.form,
-    getValues: jest.fn().mockReturnValue(createMockFullFormValues()),
+    getValues: jest.fn().mockReturnValue(createMockLeanFormValues()),
   } as unknown as UseFormReturn<ProjectEventFormValues>,
 };
 

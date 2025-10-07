@@ -55,16 +55,6 @@ describe('FormErrorBoundary', () => {
 
       expect(screen.getByText('Normal content')).toBeInTheDocument();
     });
-
-    it('debe renderizar children con formMode prop', () => {
-      render(
-        <FormErrorBoundary formMode="full">
-          <div>Full mode content</div>
-        </FormErrorBoundary>
-      );
-
-      expect(screen.getByText('Full mode content')).toBeInTheDocument();
-    });
   });
 
   describe('Error handling', () => {
