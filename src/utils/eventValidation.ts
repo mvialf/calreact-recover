@@ -145,7 +145,7 @@ export const sanitizeProjectEventData = (
     description: eventData.description || projectData.description || '',
     phone: eventData.phone || projectData.phone || '',
     fullAddress: eventData.fullAddress || projectData.fullAddress || undefined,
-    status: eventData.status || projectData.status,
+    // status eliminado - se obtiene del proyecto padre
     windowsCount,
     squareMeters,
     uninstallTags,
@@ -178,10 +178,9 @@ export const generateEventDisplayName = (
     parts.push(clientName);
   }
 
-  // Agregar estado si es relevante
-  const status = eventData?.status || projectData.status;
-  if (status && status !== 'ingresado') {
-    parts.push(`(${status})`);
+  // Agregar estado si es relevante (solo del proyecto)
+  if (projectData.status && projectData.status !== 'ingresado') {
+    parts.push(`(${projectData.status})`);
   }
 
   return parts.length > 0 ? parts.join(' - ') : 'Evento de proyecto';
@@ -201,7 +200,7 @@ export const detectEventChanges = (
 
   // Campos importantes a comparar
   const fieldsToCheck: Array<keyof ProjectEventType> = [
-    'eventDate', 'status', 'windowsCount', 'squareMeters',
+    'eventDate', 'windowsCount', 'squareMeters',
     'uninstallTags', 'phone', 'description', 'clientName'
   ];
 

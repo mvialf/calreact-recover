@@ -215,7 +215,6 @@ export function NewProjectEventModal({
 
         // Campos específicos del evento (del formulario)
         eventDate: data.eventDate || new Date(),
-        status: data.status as ProjectStatus,
         checklist: data.checklist || [],
 
         // Campos del proyecto (fuente única: selectedProject)

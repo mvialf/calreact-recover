@@ -103,7 +103,7 @@ export interface ProjectEventType {
   description?: string;
   phone?: string;
   fullAddress?: FormattedAddress;
-  status?: ProjectStatus; // Opcional durante transición - será eliminado en Fase 2
+  // status removido - se obtiene del proyecto padre
   windowsCount?: number;
   squareMeters?: number;
   uninstallTags?: UninstallTag[];

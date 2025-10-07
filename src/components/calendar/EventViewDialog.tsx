@@ -44,15 +44,13 @@ export function EventViewDialog({
   isOpen,
   onClose,
 }: EventViewDialogProps) {
-  if (!event) return null;
-
   const queryClient = useQueryClient();
 
   // Fetch del proyecto solo si es evento de tipo 'Proyecto'
   const { data: project, isLoading: isLoadingProject } = useQuery({
-    queryKey: ['project', (event as any).projectId],
+    queryKey: ['project', (event as any)?.projectId],
     queryFn: () => getProjectById((event as any).projectId),
-    enabled: event.type === 'Proyecto' && !!(event as any).projectId,
+    enabled: !!event && event.type === 'Proyecto' && !!(event as any).projectId,
   });
 
   // Mutation para actualizar status
@@ -76,6 +74,9 @@ export function EventViewDialog({
   const handleStatusChange = (projectId: string, newStatus: string) => {
     updateStatusMutation.mutate({ projectId, status: newStatus });
   };
+
+  // Early return después de todos los hooks
+  if (!event) return null;
 
   const formatDateRange = () => {
     if (isSameDay(event.startDate, event.endDate)) {

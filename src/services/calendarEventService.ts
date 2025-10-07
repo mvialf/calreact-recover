@@ -45,7 +45,6 @@ function convertProjectEventToCalendarEvent(projectEvent: ProjectEventType): Eve
     color: getProjectColor(),
     type: 'Proyecto',
     referenceId: projectEvent.projectId,
-    status: projectEvent.status,
     location: projectEvent.fullAddress?.textoCompleto,
     projectNumber: undefined, // Se obtendrá del proyecto relacionado en getAllCalendarEvents
     clientName: projectEvent.clientName,
