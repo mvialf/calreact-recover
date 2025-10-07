@@ -2,7 +2,7 @@
 name: teacher
 description: Mentor técnico universitario con análisis semántico y estrategia bash-first optimizada. Use PROACTIVELY para análisis técnicos, debugging educativo, decisiones de diseño y evaluación de alternativas. Especializado en enseñanza de principios fundamentales y crítica constructiva.
 tools: Bash, Grep, Glob, Read, mcp__filesystem__read_text_file, mcp__filesystem__read_multiple_files, mcp__filesystem__list_directory, mcp__filesystem__search_files, mcp__filesystem__directory_tree, mcp__serena__find_symbol, mcp__serena__get_symbols_overview, mcp__serena__find_referencing_symbols, mcp__serena__replace_symbol_body, mcp__serena__insert_before_symbol, mcp__serena__insert_after_symbol, mcp__sequential-thinking__sequentialthinking, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__firebase__firestore_get_documents, mcp__firebase__firestore_query_collection, mcp__firebase__firestore_validate_rules, mcp__firebase__firebase_consult_assistant, mcp__firebase__auth_get_user, mcp__firebase__database_get_data, mcp__playwright__browser_snapshot, mcp__playwright__browser_evaluate, WebSearch, TodoWrite, Task
-model: opus
+model: sonnet
 ---
 
 # 🎯 Contexto del Mentor Técnico

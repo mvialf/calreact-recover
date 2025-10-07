@@ -16,22 +16,38 @@ Para **dependencias de testing:** [dependencias.md](../references/dependencias.m
 - Verificar comportamiento desde **perspectiva del usuario**
 - Usar `getByRole`, `getByText` antes que `getByTestId`
 
-### 🏗️ **Pirámide de Testing Moderna**
+### 🏗️ **Estrategia E2E-First (Actualizado Octubre 2025)**
 ```
-           🔺 E2E (Pocos)
-         🔶 Integration (Algunos)  
-       🔷 Unit Tests (Muchos)
+           🔺 E2E (MÁS - Prioridad alta)
+         🔶 Integration (Algunos - críticos)
+       🔷 Unit Tests (MENOS - solo lógica pura)
 ```
 
-### 📊 **Estrategia Híbrida Optimizada**
+**Filosofía:** Priorizar tests E2E con Playwright sobre tests unitarios complejos de hooks/componentes.
 
-| Funcionalidad | Tipo de Test | Herramientas | Justificación |
-|---------------|--------------|--------------|---------------|
-| **Lógica de negocio pura** | Unitarios | Jest + Mocks | Rápido, aislado, predictible |
-| **Servicios Firebase críticos** | Integración | Emulator + SDK Testing | Comportamiento real de Firebase |
-| **APIs externas (Google Maps)** | Unitarios | Mocks avanzados | Evita dependencias externas |
-| **Componentes UI** | Unitarios | React Testing Library | Enfoque en comportamiento usuario |
-| **Flujos completos** | E2E | Playwright | Validación end-to-end |
+### 📊 **Estrategia de Testing por Tipo de Código**
+
+| Código a Testear | Estrategia Recomendada | Herramientas | Justificación |
+|------------------|------------------------|--------------|---------------|
+| **Hooks con UI (useGooglePlaces, useFormValidation)** | E2E del componente que lo usa | Playwright | Testing real sin mocking complejo |
+| **Flujos de usuario completos** | E2E | Playwright | Validación comportamiento end-to-end |
+| **Lógica pura (utils, helpers)** | Unitarios | Jest | Rápido, sin dependencias externas |
+| **Servicios Firebase críticos** | Integración | Emulator + SDK | Comportamiento real de Firebase |
+| **Componentes UI aislados** | Unitarios | React Testing Library | Solo si no están en E2E |
+
+### ✅ **Cuándo usar E2E vs Unitarios**
+
+**USAR E2E cuando:**
+- Hook interactúa con UI (formularios, inputs, selects)
+- Funcionalidad requiere integración de múltiples componentes
+- Validación de flujo completo de usuario
+- APIs externas (Google Maps, etc.) se usan en UI
+
+**USAR Unitarios cuando:**
+- Lógica pura sin dependencias (utils, validadores)
+- Funciones de transformación de datos
+- Helpers que NO requieren DOM
+- Performance crítica (tests muy rápidos)
 
 ---
 
@@ -157,21 +173,48 @@ src/
 
 e2e/
 ├── tests/
-│   ├── address-selection.spec.ts
-│   ├── auth.e2e.ts
-│   ├── projects.e2e.ts
-│   └── smoke.spec.ts
+│   ├── address-selection.spec.ts              # Tests legacy de dirección
+│   ├── address-input-integration.spec.ts      # 🆕 Tests completos AddressInput + useGooglePlaces
+│   ├── auth.e2e.ts                            # Tests de autenticación
+│   ├── projects.e2e.ts                        # Tests de proyectos
+│   ├── payments-flow.spec.ts                  # 🆕 Tests flujo completo pagos + usePaymentsData
+│   ├── form-validation-flow.spec.ts           # 🆕 Tests validación formularios + useFormValidation
+│   ├── smoke.spec.ts                          # Smoke tests básicos
+│   ├── calendar-drag-drop.spec.ts             # Tests drag & drop calendario
+│   ├── calendar-drag-drop-specific.spec.ts    # Tests específicos calendario
+│   └── uninstall-tags-flow.spec.ts            # Tests flujo uninstall tags
 ├── fixtures/          # Estado de autenticación
 ├── helpers/           # Utilidades E2E
 └── types/             # Tipos específicos E2E
 ```
 
-### 📊 **Cobertura Actual**
-- **Tests unitarios**: 8 archivos organizados en estructura unit/integration
-- **Tests E2E**: 4 archivos
+### 📊 **Cobertura Actual (Actualizado Octubre 2025)**
+- **Tests unitarios**: 30+ archivos organizados en estructura unit/integration
+- **Tests E2E**: 10 archivos (3 nuevos para hooks críticos)
 - **Setup centralizado**: 5 archivos en `/src/__tests__/`
 - **Objetivo de cobertura**: >70% en código nuevo
 - **Directorios excluidos**: `/e2e/`, `/coverage/`, `/.next/`, `/src/__tests__/`
+
+### 🆕 **Nuevos Tests E2E (Octubre 2025)**
+1. **`payments-flow.spec.ts`** - Flujo completo de pagos
+   - Renderizado de tabla con datos enriquecidos (usePaymentsData)
+   - Creación de nuevo pago con validación
+   - Filtrado de pagos por cliente
+   - Actualización de tabla después de crear pago
+
+2. **`address-input-integration.spec.ts`** - Integration Google Places
+   - Autocomplete de Google Places (useGooglePlaces)
+   - Selección de dirección y extracción de componentes
+   - Configuración de país desde Settings
+   - Uso de país de entidad al editar
+   - Performance y cache de búsquedas
+
+3. **`form-validation-flow.spec.ts`** - Validación de formularios
+   - Validación en tiempo real (useFormValidation)
+   - Mensajes de error personalizados
+   - Validación cross-field
+   - Accesibilidad (atributos ARIA)
+   - Loading states durante submit
 
 ---
 

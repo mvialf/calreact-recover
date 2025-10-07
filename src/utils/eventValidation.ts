@@ -28,9 +28,7 @@ export const validateProjectEventData = (
     warnings.push('La fecha del evento está en el pasado');
   }
 
-  if (!eventData.status) {
-    errors.push('Estado del evento es requerido');
-  }
+  // Validación de status eliminada - status viene del proyecto
 
   // Validaciones de datos numéricos
   if (eventData.windowsCount !== undefined) {

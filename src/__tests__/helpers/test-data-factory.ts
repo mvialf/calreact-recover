@@ -29,7 +29,7 @@ export const createMockProjectEvent = (overrides: Partial<ProjectEvent> = {}): P
   id: 'mock-event-id',
   projectId: 'mock-project-id',
   eventDate: new Date('2024-06-15'),
-  status: 'ingresado', // Campo obligatorio
+  status: 'ingresado', // Temporal - será eliminado en Fase 2
   checklist: [
     {
       id: 'check-1',
