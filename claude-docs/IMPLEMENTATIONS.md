@@ -1,8 +1,36 @@
 # 🚀 Implementation Log - CalReact
 
-*Última actualización: Septiembre 2025*
+*Última actualización: Octubre 2025*
 
 ## 📋 Quick Reference Index
+
+### 🔄 Event Status Field Elimination
+- **Status:** ✅ Complete | **Date:** 2025-10-07 | **Impact:** High
+- **Branch:** `feature/eliminar-status-eventos`
+- **Key commits:** `7c8b5f4` (Fase 0), `8d3a1e9` (Fase 1), `1c6e405` (Fase 2)
+- **Quick diff:** `git diff 7c8b5f4~1..1c6e405`
+- **Benefits:**
+  - Eliminación completa de duplicación de status entre ProjectType y ProjectEventType
+  - Single Source of Truth (SSOT): status solo en ProjectType
+  - Computed properties pattern: eventos enriquecidos en runtime con project.status
+  - Nueva funcionalidad: dropdown en EventViewDialog para editar status del proyecto desde modal de evento
+  - Arquitectura simplificada: 0 sincronización de status requerida
+  - Performance: Map-based lookup O(1) para enriquecer eventos
+- **Implementación:** ✅ 3 fases completadas incrementalmente
+  - **Fase 0 (Preparación):** Status opcional, validación legacy eliminada, checkpoint TypeScript ✅
+  - **Fase 1 (Compensaciones):** EventViewDialog con dropdown + query/mutation, project-event-details acepta status prop, calreact/page.tsx enriquece eventos con projectsMap
+  - **Fase 2 (Limpieza final):** Status eliminado de ProjectEventType, 6 archivos actualizados (types, validación, modal, servicio, tests, dialog), hooks fix (Rules of Hooks)
+- **Archivos modificados:**
+  - `src/types/project.ts` - Status eliminado de ProjectEventType (línea 106)
+  - `src/components/calendar/EventViewDialog.tsx` - Dropdown status + useQuery/useMutation + hooks fix
+  - `src/components/summary/project-event-details.tsx` - Acepta status como prop computada
+  - `src/app/calreact/page.tsx` - Enriquecimiento de eventos con projectsMap
+  - `src/utils/eventValidation.ts` - 3 ubicaciones limpiadas (sanitize, generateName, detectChanges)
+  - `src/__tests__/helpers/test-data-factory.ts` - Mock sin status
+  - `src/components/modals/calendar/NewProjectEventModal.tsx` - Sin asignar status al crear
+  - `src/services/calendarEventService.ts` - Sin status en conversión EventType
+- **Validación:** ✅ TypeScript: 0 errores, ESLint: 0 errores críticos, 3 checkpoints superados
+- **Documentation:** `docs/technical/eliminar-status-eventos-plan.md`, `ELIMINAR-STATUS-EVENTOS-README.md`, `eliminar-status-eventos-snippets.md`
 
 ### 🗺️ Google Places API Migration
 - **Status:** ✅ Complete | **Date:** 2025-09 | **Impact:** High
@@ -247,9 +275,9 @@
 
 ## 📊 Implementation Statistics
 
-**Total completadas:** 13 implementaciones major
-**Impacto alto:** 10/13 implementaciones
-**Beneficios cuantificados:** 30% reducción costos API, 67% menos duplicación docs, 70%+ test coverage, 4/4 formularios React Hook Form migrados, 4/4 formularios con país dinámico, 1,682+ líneas código duplicado eliminadas (682 PageTableLayout + 657+ table components + 239 calendar-event + 50 layout refactor inicial + 28 calendar-toolbar + 26 layout.tsx simplificación)  
+**Total completadas:** 14 implementaciones major
+**Impacto alto:** 11/14 implementaciones
+**Beneficios cuantificados:** 30% reducción costos API, 67% menos duplicación docs, 70%+ test coverage, 4/4 formularios React Hook Form migrados, 4/4 formularios con país dinámico, 1,682+ líneas código duplicado eliminadas (682 PageTableLayout + 657+ table components + 239 calendar-event + 50 layout refactor inicial + 28 calendar-toolbar + 26 layout.tsx simplificación), arquitectura SSOT para eventos implementada  
 
 ## 🎯 Success Metrics
 
@@ -269,19 +297,21 @@
 - **Country Configuration:** Sistema híbrido implementado, 4/4 formularios con búsqueda contextual automática
 - **UX Improvement:** Configuración de país centralizada en GeneralSettings, respeta contexto de entidad
 - **Scalability:** Ready para datasets 10K+ registros sin cambios arquitecturales
+- **Event Architecture:** Single Source of Truth implementado, 0 duplicación status, computed properties pattern
+- **Data Synchronization:** Eliminada necesidad de sincronizar status entre ProjectType y ProjectEventType
 
 
 ---
 
-**📊 Última actualización:** Septiembre 2025
-**🌟 Branch actual:** `DEV`
+**📊 Última actualización:** Octubre 2025
+**🌟 Branch actual:** `feature/eliminar-status-eventos`
 **📋 Commits recientes:**
 ```
+1c6e405 refactor(events): Eliminar campo status de ProjectEventType completamente
+8d3a1e9 refactor(events): Implementar compensaciones para eliminar status field
+7c8b5f4 refactor(events): Preparar código legacy para eliminar status field
 532c159 docs: Integrar metodología bash-first en workflow de desarrollo
 23456cf docs: Actualizar CLAUDE.md con metodología bash-first
-8921876 feat: Optimizar comando /ask con estrategia bash-first
-218b69d docs: Reorganizar documentación de migraciones y templates
-9854e40 feat: Completar implementación Google Maps API para addressInput
 ```
 
 **📝 Para agregar nuevas implementaciones:** Seguir formato existente en este archivo
