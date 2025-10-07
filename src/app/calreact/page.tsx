@@ -10,9 +10,10 @@ import { CalendarToolbar } from '@/components/calendar/calendar-toolbar';
 import { AppLayout } from '@/components/layout';
 import { db } from '@/lib/firebase/client'; // Importar la instancia db configurada
 import { updateProjectEvent, deleteProjectEvent } from '@/services/projectEventService';
+import { getProjects } from '@/services/projectService';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { useCalendarEvents } from '@/hooks/useCalendarEvents';
 import {
   DropdownMenu,
@@ -58,6 +59,29 @@ export default function CalReactAppPage() {
 
   // Usar hook de TanStack Query para eventos
   const { events, isLoading: isLoadingEvents, isError, error } = useCalendarEvents(userId);
+
+  // Query para proyectos (necesario para enriquecer eventos con status)
+  const { data: projects } = useQuery({
+    queryKey: ['projects'],
+    queryFn: () => getProjects(),
+  });
+
+  // Mapear proyectos para lookup rápido
+  const projectsMap = useMemo(
+    () => new Map(projects?.map(p => [p.id, p]) || []),
+    [projects]
+  );
+
+  // Enriquecer eventos con status del proyecto
+  const eventsWithStatus = useMemo(
+    () => events?.map(event => ({
+      ...event,
+      status: event.type === 'Proyecto'
+        ? projectsMap.get((event as any).projectId)?.status
+        : undefined
+    })),
+    [events, projectsMap]
+  );
 
   const [currentDate, setCurrentDate] = useState<Date | undefined>(undefined); // Se inicializará en useEffect
   const [isClient, setIsClient] = useState(false);
@@ -137,19 +161,19 @@ export default function CalReactAppPage() {
 
   const filteredEvents = useMemo(() => {
     if (!filterTerm.trim()) {
-      return events;
+      return eventsWithStatus;
     }
     const searchTerm = normalizeSearchText(filterTerm);
-    return events.filter(event => {
+    return eventsWithStatus?.filter(event => {
       const title = normalizeSearchText(event.name);
       const description = event.description ? normalizeSearchText(event.description) : '';
       const location = event.location ? normalizeSearchText(event.location) : '';
-      
+
       return title.includes(searchTerm) ||
              description.includes(searchTerm) ||
              location.includes(searchTerm);
-    });
-  }, [events, filterTerm]);
+    }) || [];
+  }, [eventsWithStatus, filterTerm]);
 
   const handleDateChange = (newDate: Date) => {
     setCurrentDate(newDate);

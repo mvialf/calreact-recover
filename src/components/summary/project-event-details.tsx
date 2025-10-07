@@ -8,6 +8,7 @@ import type { EventType } from '@/types/event';
 
 interface ProjectEventDetailsProps {
   event: EventType;
+  status?: string; // Status del proyecto (opcional, computado)
 }
 
 /**
@@ -26,7 +27,7 @@ interface ProjectEventDetailsProps {
  * <ProjectEventDetails event={projectEvent} />
  * ```
  */
-export function ProjectEventDetails({ event }: ProjectEventDetailsProps) {
+export function ProjectEventDetails({ event, status }: ProjectEventDetailsProps) {
   // Solo renderiza para eventos de tipo Proyecto
   if (event.type !== 'Proyecto') return null;
 
@@ -34,14 +35,14 @@ export function ProjectEventDetails({ event }: ProjectEventDetailsProps) {
   const hasUninstallTags = event.uninstallTags && event.uninstallTags.length > 0;
 
   // Si no hay datos para mostrar, no renderiza nada
-  if (!hasTechnicalDetails && !hasUninstallTags && !event.description && !event.phone && !event.status && !event.fullAddress) {
+  if (!hasTechnicalDetails && !hasUninstallTags && !event.description && !event.phone && !status && !event.fullAddress) {
     return null;
   }
 
   return (
     <div className="space-y-2">
       {/* Teléfono y Estado */}
-      {(event.phone || event.status) && (
+      {(event.phone || status) && (
         <div className="flex flex-row gap-4 text-sm">
           {event.phone && (
             <div className="flex items-center gap-2">
@@ -49,10 +50,10 @@ export function ProjectEventDetails({ event }: ProjectEventDetailsProps) {
               <span>{event.phone}</span>
             </div>
           )}
-          {event.status && (
+          {status && (
             <div className="flex items-center gap-2">
-              <Badge variant={getStatusBadgeVariant(event.status)}>
-                {PROJECT_STATUS_OPTIONS.find(opt => opt.value === event.status)?.label || event.status}
+              <Badge variant={getStatusBadgeVariant(status)}>
+                {PROJECT_STATUS_OPTIONS.find(opt => opt.value === status)?.label || status}
               </Badge>
             </div>
           )}

@@ -14,8 +14,12 @@ import { Badge } from "@/components/ui/badge";
 import { format, isSameDay } from '@/lib/calendar-utils';
 import { Calendar, FileText, Phone } from 'lucide-react';
 import { ProjectSummary, ProjectEventDetails, AddressSummary } from '@/components/summary';
+import { ProjectStatusDropdown } from '@/components/summary/project-status-dropdown';
 import { getStatusBadgeVariant } from '@/utils/badge-helpers';
 import { PROJECT_STATUS_OPTIONS } from '@/constants/project';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getProjectById, updateProject } from '@/services/projectService';
+import { toast } from 'sonner';
 
 interface EventViewDialogProps {
   event: EventType | null;
@@ -41,6 +45,37 @@ export function EventViewDialog({
   onClose,
 }: EventViewDialogProps) {
   if (!event) return null;
+
+  const queryClient = useQueryClient();
+
+  // Fetch del proyecto solo si es evento de tipo 'Proyecto'
+  const { data: project, isLoading: isLoadingProject } = useQuery({
+    queryKey: ['project', (event as any).projectId],
+    queryFn: () => getProjectById((event as any).projectId),
+    enabled: event.type === 'Proyecto' && !!(event as any).projectId,
+  });
+
+  // Mutation para actualizar status
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ projectId, status }: { projectId: string; status: string }) =>
+      updateProject(projectId, { status: status as any }),
+    onSuccess: () => {
+      toast.success('Status actualizado', {
+        description: 'El estado del proyecto se actualizó correctamente.',
+      });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['calendar-events'] });
+    },
+    onError: (err: Error) => {
+      toast.error('Error al actualizar', {
+        description: `${err.message}`,
+      });
+    },
+  });
+
+  const handleStatusChange = (projectId: string, newStatus: string) => {
+    updateStatusMutation.mutate({ projectId, status: newStatus });
+  };
 
   const formatDateRange = () => {
     if (isSameDay(event.startDate, event.endDate)) {
@@ -93,6 +128,15 @@ export function EventViewDialog({
                         <Calendar className="h-4 w-4" />
                         <span>{formatDateRange()}</span>
                       </div>
+                      {/* Dropdown de status */}
+                      {project && (
+                        <ProjectStatusDropdown
+                          projectId={(event as any).projectId}
+                          currentStatus={project.status}
+                          onStatusChange={handleStatusChange}
+                          isPending={updateStatusMutation.isPending}
+                        />
+                      )}
                     </div>
                   </div>
                 </DialogTitle>
@@ -111,7 +155,10 @@ export function EventViewDialog({
         <div className="space-y-2 py-4">
           
           {/* Detalles del Proyecto */}
-          <ProjectEventDetails event={event} />
+          <ProjectEventDetails
+            event={event}
+            status={project?.status}
+          />
 
           {/* Descripción para eventos no-proyecto (Visita, Postventa) */}
           {event.type !== 'Proyecto' && event.description && (
