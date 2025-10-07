@@ -171,7 +171,6 @@ export function NewProjectEventModal({
 
         // Establecer valores del EVENTO (fuente única de verdad)
         setValue('projectId', project.id);
-        setValue('status', project.status);
         setValue('eventDate', new Date()); // Fecha por defecto es hoy
         setValue('checklist', initialData?.checklist || []);
 

@@ -11,26 +11,17 @@ import { z } from 'zod';
 
 // UI Component imports
 import { toast } from 'sonner';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { DateInput } from '@/components/ui/date-input';
 import { format } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
 
-// Types imports
-import type { ProjectStatus } from '@/types/project';
-
-// Constants imports
-import { PROJECT_STATUS_OPTIONS } from '@/constants/project';
-import { DEFAULT_PROJECT_STATUS } from '@/constants/defaults';
-
 // Esquemas de validación centralizados
-import { optionalString, requiredString } from '@/utils/validation-schemas';
+import { optionalString } from '@/utils/validation-schemas';
 
 // ✅ Schema simplificado: SOLO campos del evento
 const formSchema = z.object({
   projectId: optionalString,
-  status: requiredString("El estado"),
   eventDate: z.date().optional(),
   eventNotes: optionalString, // Notas específicas del evento
 });
@@ -69,7 +60,6 @@ export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       projectId: initialData?.projectId || "",
-      status: initialData?.status || DEFAULT_PROJECT_STATUS,
       eventDate: initialData?.eventDate || undefined,
       eventNotes: initialData?.eventNotes || "",
       checklist: Array.isArray(initialData?.checklist) ? initialData.checklist : [],
@@ -107,33 +97,7 @@ export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
         className="space-y-6"
       >
         {/* Campos del EVENTO */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* Estado */}
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Estado</FormLabel>
-                <FormControl>
-                  <Select value={field.value} onValueChange={field.onChange} disabled={disabled}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar estado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PROJECT_STATUS_OPTIONS.map((status) => (
-                        <SelectItem key={status.value} value={status.value}>
-                          {status.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
+        <div className="space-y-4">
           {/* Fecha del Evento */}
           <FormField
             control={form.control}
