@@ -83,13 +83,17 @@ export type ProjectEventLeanFormValues = z.infer<typeof projectEventLeanSchema>;
  * Schema para eventos tipo "Full" - Duplica todos los datos del proyecto
  *
  * Filosofía: Snapshot inmutable del proyecto en el momento del evento
+ *
+ * @deprecated Modo Full no usado en producción. Solo mantenido para compatibilidad
+ * con tests legacy. Considerar eliminación completa en Q4 2025.
+ * Producción usa modo "lean" con computed properties para status.
  */
 export const projectEventFullSchema = projectEventBaseSchema.extend({
   // Campos completos del proyecto (duplicados)
   description: optionalString,
   phone: phoneSchema,
   fullAddress: fullAddressSchema,
-  status: requiredString('El estado'),
+  // status removido - alineación con ProjectEventType (no tiene status)
   windowsCount: preprocessedInteger('Número de ventanas'),
   squareMeters: preprocessedNumber('Metros cuadrados'),
   uninstallTags: z.array(z.object({

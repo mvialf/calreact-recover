@@ -320,33 +320,9 @@ describe('ProjectEventForm - Full Mode Integration', () => {
       expect(screen.getByLabelText(/Teléfono/i)).toBeInTheDocument();
     });
 
-    it('debe usar status (no customStatus) en full mode', async () => {
-      const user = userEvent.setup();
-
-      render(
-        <ProjectEventForm.Container
-          mode="full"
-          project={mockProject}
-          onSubmit={mockOnSubmit}
-        >
-          <ProjectEventForm.FullFields />
-          <button type="submit" form="event-form">Submit</button>
-        </ProjectEventForm.Container>
-      );
-
-      // Submit formulario
-      const submitButton = screen.getByRole('button', { name: /Submit/i });
-      await user.click(submitButton);
-
-      await waitFor(() => {
-        expect(mockOnSubmit).toHaveBeenCalled();
-      });
-
-      // Verificar que usa 'status' (full mode) no 'customStatus' (lean mode)
-      const submittedData = mockOnSubmit.mock.calls[0][0];
-      expect(submittedData).toHaveProperty('status');
-      expect(submittedData).not.toHaveProperty('customStatus');
-    });
+    // NOTE: Test de campo 'status' eliminado - campo removido de ProjectEventType
+    // para implementar Single Source of Truth (status solo en ProjectType).
+    // Ver: docs/technical/eliminar-status-eventos-plan.md
   });
 
   describe('isSubmitting state', () => {

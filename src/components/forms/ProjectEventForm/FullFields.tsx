@@ -10,7 +10,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescripti
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PROJECT_STATUS_OPTIONS } from '@/constants/project';
+// PROJECT_STATUS_OPTIONS import removido - campo status eliminado
 import { useProjectEventFormContext } from './Container';
 import { useNumericInput } from '@/hooks/useNumericInput';
 import { useFormAccessibility } from '@/hooks/useFormAccessibility';
@@ -32,7 +32,7 @@ export const FullFields: React.FC<BaseFormComponentProps> = ({ className }) => {
   const descriptionA11y = useFormAccessibility('description', form);
   const phoneA11y = useFormAccessibility('phone', form);
   const fullAddressA11y = useFormAccessibility('fullAddress', form);
-  const statusA11y = useFormAccessibility('status', form, { required: true });
+  // statusA11y removido - campo status eliminado de schema Full
   const windowsCountA11y = useFormAccessibility('windowsCount', form, {
     ariaLabel: 'Número de ventanas del proyecto',
   });
@@ -57,16 +57,7 @@ export const FullFields: React.FC<BaseFormComponentProps> = ({ className }) => {
     onChange: (value) => form.setValue('squareMeters', value),
   });
 
-  // ✅ OPTIMIZACIÓN: Memoizar opciones de status (se calcula una sola vez)
-  const statusOptions = useMemo(
-    () =>
-      PROJECT_STATUS_OPTIONS.map((option) => (
-        <SelectItem key={option.value} value={option.value}>
-          {option.label}
-        </SelectItem>
-      )),
-    []
-  );
+  // statusOptions removido - campo status eliminado de schema Full
 
   return (
     <div className={className}>
@@ -162,46 +153,9 @@ export const FullFields: React.FC<BaseFormComponentProps> = ({ className }) => {
         )}
       />
 
-      {/* Estado del Proyecto */}
-      <FormField
-        control={form.control}
-        name="status"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel htmlFor={statusA11y.fieldId}>
-              Estado
-              <span className="sr-only">Campo requerido</span>
-            </FormLabel>
-            <Select
-              onValueChange={field.onChange}
-              defaultValue={field.value}
-              disabled={disabled}
-            >
-              <FormControl>
-                <SelectTrigger
-                  id={statusA11y.fieldId}
-                  aria-required={statusA11y.ariaAttributes['aria-required']}
-                  aria-invalid={statusA11y.ariaAttributes['aria-invalid']}
-                  aria-describedby={statusA11y.ariaAttributes['aria-describedby']}
-                >
-                  <SelectValue placeholder="Seleccione un estado" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {statusOptions}
-              </SelectContent>
-            </Select>
-            <FormDescription id={statusA11y.descriptionId}>
-              Estado actual del proyecto
-            </FormDescription>
-            {errors.status && (
-              <FormMessage id={statusA11y.errorId} role="alert">
-                {errors.status.message}
-              </FormMessage>
-            )}
-          </FormItem>
-        )}
-      />
+      {/* NOTE: Campo 'status' eliminado - removido de ProjectEventType
+          para implementar Single Source of Truth (status solo en ProjectType).
+          Ver: docs/technical/eliminar-status-eventos-plan.md */}
 
       {/* Número de Ventanas */}
       <FormField

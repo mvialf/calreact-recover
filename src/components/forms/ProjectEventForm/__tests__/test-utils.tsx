@@ -43,7 +43,7 @@ export const createMockFullFormValues = (overrides: Partial<ProjectEventFormValu
     placeId: 'ChIJtest123',
     coordenadas: { latitude: 40.4168, longitude: -3.7038 },
   },
-  status: 'ingresado',
+  // status removido - alineación con ProjectEventType
   windowsCount: 5,
   squareMeters: 100,
   uninstallTags: [],

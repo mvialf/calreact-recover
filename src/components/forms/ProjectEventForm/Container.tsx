@@ -94,7 +94,7 @@ export const Container = forwardRef<FormRef<ProjectEventFormValues>, ContainerPr
           description: (initialData as ProjectEventFullFormValues)?.description || project?.description || '',
           phone: (initialData as ProjectEventFullFormValues)?.phone || project?.phone || '',
           fullAddress: (initialData as ProjectEventFullFormValues)?.fullAddress || project?.fullAddress,
-          status: (initialData as ProjectEventFullFormValues)?.status || project?.status || 'ingresado',
+          // status removido - alineación con ProjectEventType
           windowsCount: (initialData as ProjectEventFullFormValues)?.windowsCount || project?.windowsCount || 0,
           squareMeters: (initialData as ProjectEventFullFormValues)?.squareMeters || project?.squareMeters || 0,
           uninstallTags: (initialData as ProjectEventFullFormValues)?.uninstallTags || [],

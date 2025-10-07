@@ -35,6 +35,17 @@
   - `src/components/summary/project-status-dropdown.tsx` - UI limpiada con variant ghost, eliminado background redundante
 - **Validación:** ✅ TypeScript: 0 errores, ESLint: 0 errores críticos, 3 checkpoints superados
 - **Documentation:** `docs/technical/eliminar-status-eventos-plan.md`, `ELIMINAR-STATUS-EVENTOS-README.md`, `eliminar-status-eventos-snippets.md`
+- **🧹 Post-Implementation Cleanup:** ✅ Complete | **Date:** 2025-01-07
+  - **Objetivo:** Eliminar deuda técnica arquitectural (schema Full inconsistente con tipos)
+  - **Archivos limpiados (5 total):**
+    - `src/schemas/project-event.schemas.ts` - Campo status removido, comentario DEPRECATED agregado
+    - `src/components/forms/ProjectEventForm/Container.tsx` - Inicialización de status eliminada
+    - `src/components/forms/ProjectEventForm/FullFields.tsx` - FormField status eliminado, variables y import limpiados
+    - `src/components/forms/ProjectEventForm/__tests__/ProjectEventForm.full.integration.test.tsx` - Test obsoleto eliminado
+    - `src/components/forms/ProjectEventForm/__tests__/FullFields.test.tsx` - Tests de status removidos
+    - `src/components/forms/ProjectEventForm/__tests__/test-utils.tsx` - Mock sin campo status
+  - **Impacto:** Schema Full alineado con ProjectEventType, 0 inconsistencias tipo vs schema
+  - **Validación post-cleanup:** ✅ TypeScript: 0 errores | ✅ ESLint: 0 críticos | ✅ Build: exitoso | ✅ Referencias residuales: 0
 
 ### 🗺️ Google Places API Migration
 - **Status:** ✅ Complete | **Date:** 2025-09 | **Impact:** High

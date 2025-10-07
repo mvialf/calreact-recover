@@ -104,20 +104,9 @@ describe('FullFields', () => {
     });
   });
 
-  describe('Project status select', () => {
-    it('debe renderizar select de status', () => {
-      render(<FullFields />);
-
-      const statusSelect = screen.getByLabelText(/Estado \*/i);
-      expect(statusSelect).toBeInTheDocument();
-    });
-
-    it('debe mostrar placeholder en status select', () => {
-      render(<FullFields />);
-
-      expect(screen.getByText(/Seleccione un estado/i)).toBeInTheDocument();
-    });
-  });
+  // NOTE: Tests de campo 'status' eliminados - campo removido de ProjectEventType
+  // para implementar Single Source of Truth (status solo en ProjectType).
+  // Ver: docs/technical/eliminar-status-eventos-plan.md
 
   describe('Disabled state', () => {
     it('debe deshabilitar todos los campos cuando disabled=true', () => {
