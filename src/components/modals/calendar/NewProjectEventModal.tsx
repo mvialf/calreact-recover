@@ -5,7 +5,7 @@ import type { UseFormReturn } from 'react-hook-form';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 
 import { ModalLayout } from '../modalLayout';
-import { getProjects } from '@/services/projectService';
+import { getProjects, updateProject } from '@/services/projectService';
 import { createProjectEvent } from '@/services/projectEventService';
 import { syncSingleProjectClientName } from '@/services/clientSyncService';
 import { ProjectType, ProjectEventType, ProjectStatus } from '@/types/project';
@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Combobox, type ComboboxItem } from '@/components/ui/combobox';
 import { ProjectSummary } from '@/components/summary';
 import { ProjectEventDetails } from '@/components/summary/project-event-details';
+import { ProjectStatusDropdown } from '@/components/summary/project-status-dropdown';
 import { CheckCircle, AlertCircle, Edit, X } from 'lucide-react';
 
 // Importar el nuevo formulario
@@ -73,6 +74,24 @@ export function NewProjectEventModal({
         description: error.message || 'Ocurrió un error inesperado',
       });
     }
+  });
+
+  // Mutación para actualizar status del proyecto
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ projectId, status }: { projectId: string; status: string }) =>
+      updateProject(projectId, { status: status as any }),
+    onSuccess: () => {
+      toast.success('Status actualizado', {
+        description: 'El estado del proyecto se actualizó correctamente.',
+      });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['calendar-events'] });
+    },
+    onError: (err: Error) => {
+      toast.error('Error al actualizar', {
+        description: `${err.message}`,
+      });
+    },
   });
 
   // Filtrar proyectos: excluir completados y pagados
@@ -195,6 +214,11 @@ export function NewProjectEventModal({
       formInstanceRef.current.reset(initialData || {});
     }
   }, [initialData]);
+
+  // Handler para cambiar el status del proyecto
+  const handleStatusChange = (projectId: string, newStatus: string) => {
+    updateStatusMutation.mutate({ projectId, status: newStatus });
+  };
 
   // Manejar el envío del formulario con guardado automático
   const handleFormSubmit = (data: NewProjectEventFormValues) => {
@@ -382,6 +406,11 @@ export function NewProjectEventModal({
             initialData={initialData}
             isSubmitting={isSubmitting}
             //disabled={!!selectedProject}  Deshabilitar campos cuando hay proyecto seleccionado
+            // Props para dropdown de status
+            projectId={selectedProject?.id}
+            currentStatus={selectedProject?.status}
+            onStatusChange={handleStatusChange}
+            isUpdatingStatus={updateStatusMutation.isPending}
           />
         </div>
       </ModalLayout>

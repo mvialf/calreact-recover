@@ -48,9 +48,9 @@ export function EventViewDialog({
 
   // Fetch del proyecto solo si es evento de tipo 'Proyecto'
   const { data: project, isLoading: isLoadingProject } = useQuery({
-    queryKey: ['project', (event as any)?.projectId],
-    queryFn: () => getProjectById((event as any).projectId),
-    enabled: !!event && event.type === 'Proyecto' && !!(event as any).projectId,
+    queryKey: ['project', (event as any)?.referenceId],
+    queryFn: () => getProjectById((event as any).referenceId),
+    enabled: !!event && event.type === 'Proyecto' && !!(event as any).referenceId,
   });
 
   // Mutation para actualizar status
@@ -132,7 +132,7 @@ export function EventViewDialog({
                       {/* Dropdown de status */}
                       {project && (
                         <ProjectStatusDropdown
-                          projectId={(event as any).projectId}
+                          projectId={(event as any).referenceId}
                           currentStatus={project.status}
                           onStatusChange={handleStatusChange}
                           isPending={updateStatusMutation.isPending}
