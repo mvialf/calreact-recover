@@ -85,8 +85,8 @@ export const ProjectStatusDropdown: React.FC<ProjectStatusDropdownProps> = ({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="secondary"
-          className="p-0 h-auto font-normal"
+          variant="ghost"
+          className="p-0 h-auto font-normal hover:bg-transparent"
           disabled={isPending}
         >
           <Badge variant={variant} className="cursor-pointer">

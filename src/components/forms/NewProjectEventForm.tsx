@@ -15,6 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { DateInput } from '@/components/ui/date-input';
 import { format } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
+import { ProjectStatusDropdown } from '@/components/summary/project-status-dropdown';
 
 // Esquemas de validación centralizados
 import { optionalString } from '@/utils/validation-schemas';
@@ -45,6 +46,11 @@ export interface NewProjectEventFormProps {
   initialData?: Partial<NewProjectEventFormValues>;
   isSubmitting?: boolean;
   disabled?: boolean;
+  // Props para dropdown de status
+  projectId?: string;
+  currentStatus?: string;
+  onStatusChange?: (projectId: string, newStatus: string) => void;
+  isUpdatingStatus?: boolean;
 }
 
 export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
@@ -54,6 +60,10 @@ export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
   initialData,
   isSubmitting = false,
   disabled = false,
+  projectId,
+  currentStatus,
+  onStatusChange,
+  isUpdatingStatus = false,
 }) => {
   // Formulario con campos simplificados
   const form = useForm<NewProjectEventFormValues>({
@@ -98,28 +108,45 @@ export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
       >
         {/* Campos del EVENTO */}
         <div className="space-y-4">
-          {/* Fecha del Evento */}
-          <FormField
-            control={form.control}
-            name="eventDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Fecha del Evento</FormLabel>
-                <FormControl>
-                  <DateInput
-                    value={field.value ? format(field.value, 'yyyy-MM-dd') : ''}
-                    onChange={(e) => {
-                      const date = e.target.value ? new Date(e.target.value) : undefined
-                      field.onChange(date)
-                    }}
-                    disabled={disabled}
-                    placeholder="Seleccionar fecha"
+          {/* Fecha del Evento y Status */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* Fecha del Evento */}
+            <FormField
+              control={form.control}
+              name="eventDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Fecha del Evento</FormLabel>
+                  <FormControl>
+                    <DateInput
+                      value={field.value ? format(field.value, 'yyyy-MM-dd') : ''}
+                      onChange={(e) => {
+                        const date = e.target.value ? new Date(e.target.value) : undefined
+                        field.onChange(date)
+                      }}
+                      disabled={disabled}
+                      placeholder="Seleccionar fecha"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Dropdown de Status */}
+            {projectId && currentStatus && onStatusChange && (
+              <div className="flex items-center">
+                <div className="scale-[1.5] origin-left">
+                  <ProjectStatusDropdown
+                    projectId={projectId}
+                    currentStatus={currentStatus}
+                    onStatusChange={onStatusChange}
+                    isPending={isUpdatingStatus}
                   />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+                </div>
+              </div>
             )}
-          />
+          </div>
         </div>
 
         {/* Notas del Evento */}

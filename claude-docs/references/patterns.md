@@ -502,6 +502,53 @@ const className = cn(
 );
 ```
 
+### Escalado de Componentes UI
+```typescript
+// ✅ PATRÓN para escalar componentes visualmente importantes
+// Caso de uso: Mejorar visibilidad de componentes críticos sin modificar su código interno
+
+// Escalado 1.5x (50% más grande) - Balance entre visibilidad y espacio
+<div className="flex items-center">
+  <div className="scale-[1.5] origin-left">
+    <ImportantComponent {...props} />
+  </div>
+</div>
+
+// Escalado 2x (doble tamaño) - Para componentes muy pequeños
+<div className="flex items-center">
+  <div className="scale-[2] origin-center">
+    <TinyComponent {...props} />
+  </div>
+</div>
+
+// ⚠️ IMPORTANTE: Usar origin-left/center/right según necesidad
+// - origin-left: Escala desde lado izquierdo (evita expansión hacia ambos lados)
+// - origin-center: Escala desde centro (componentes centrados)
+// - origin-right: Escala desde lado derecho (alineación derecha)
+```
+
+### Wrappers Transparentes (Ghost Variant)
+```typescript
+// ✅ USAR variant="ghost" para botones que wrappean otros componentes
+// Elimina backgrounds redundantes manteniendo interactividad
+
+<Button
+  variant="ghost"
+  className="p-0 h-auto font-normal hover:bg-transparent"
+  disabled={isPending}
+>
+  <Badge variant={variant} className="cursor-pointer">
+    {content}
+  </Badge>
+</Button>
+
+// ❌ EVITAR variant="secondary" - causa doble background
+<Button variant="secondary"> {/* Background gris extra */}
+  <Badge variant="primary"> {/* Su propio background */}
+  </Badge>
+</Button>
+```
+
 ## 🔧 Hooks Personalizados
 
 ### Patrones de Hooks Establecidos

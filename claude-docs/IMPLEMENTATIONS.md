@@ -16,6 +16,8 @@
   - Nueva funcionalidad: dropdown en EventViewDialog para editar status del proyecto desde modal de evento
   - Arquitectura simplificada: 0 sincronización de status requerida
   - Performance: Map-based lookup O(1) para enriquecer eventos
+  - UX mejorada: dropdown status integrado en formulario de creación con visibilidad optimizada (escala 1.5x)
+  - UI refinada: eliminado background redundante en badge de status (variant ghost)
 - **Implementación:** ✅ 3 fases completadas incrementalmente
   - **Fase 0 (Preparación):** Status opcional, validación legacy eliminada, checkpoint TypeScript ✅
   - **Fase 1 (Compensaciones):** EventViewDialog con dropdown + query/mutation, project-event-details acepta status prop, calreact/page.tsx enriquece eventos con projectsMap
@@ -29,6 +31,8 @@
   - `src/__tests__/helpers/test-data-factory.ts` - Mock sin status
   - `src/components/modals/calendar/NewProjectEventModal.tsx` - Sin asignar status al crear
   - `src/services/calendarEventService.ts` - Sin status en conversión EventType
+  - `src/components/forms/NewProjectEventForm.tsx` - Dropdown status integrado con escala 1.5x, layout grid 2 columnas
+  - `src/components/summary/project-status-dropdown.tsx` - UI limpiada con variant ghost, eliminado background redundante
 - **Validación:** ✅ TypeScript: 0 errores, ESLint: 0 errores críticos, 3 checkpoints superados
 - **Documentation:** `docs/technical/eliminar-status-eventos-plan.md`, `ELIMINAR-STATUS-EVENTOS-README.md`, `eliminar-status-eventos-snippets.md`
 
