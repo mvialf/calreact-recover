@@ -286,7 +286,20 @@ export const createPaymentsColumns = ({
       <DataTableColumnHeader column={column} title="Fecha" />
     ),
     cell: ({ row }) => {
-      const date = row.getValue("date") as Date | null
+      const data = row.original
+
+      // Si es batch, usar summary.date
+      if (isBatchGroup(data)) {
+        return (
+          <div className="text-sm">
+            {formatDateForTable(data.summary.date)}
+          </div>
+        )
+      }
+
+      // Payment individual
+      const payment = data as EnrichedPayment
+      const date = payment.date
 
       return (
         <div className="text-sm">
