@@ -367,6 +367,35 @@
 - **Validación:** ✅ TypeScript: 0 errores | ✅ ESLint: 0 críticos | ✅ Build: exitoso
 - **Documentation:** [CLAUDE.md](../../docs/deletions/CLAUDE.md) - Proceso completo | [DELETIONS.md](../../docs/deletions/DELETIONS.md) - Registro histórico
 
+### 🔄 Payment Types Consolidation - Eliminación de Duplicación Arquitectural
+- **Status:** ✅ Complete | **Date:** 2025-10-08 | **Impact:** Medium-High
+- **Branch:** `DEV`
+- **Key commits:** Current session
+- **Quick diff:** `git diff HEAD`
+- **Benefits:**
+  - **100% eliminación de duplicación** (5 elementos: PaymentMethod, PaymentTypeOption, Payment, PaymentDocument, PaymentImportData)
+  - **68% reducción** en constants/payment.ts (47→15 líneas)
+  - Single Source of Truth (SSOT) establecido entre constants/ y types/
+  - Arquitectura alineada con patrón del proyecto (constants vs types separation)
+  - Versión desactualizada de Payment interface eliminada (sin campos batch)
+  - Zero breaking changes (nadie importaba los duplicados)
+  - Documentación inline clara sobre ubicación de tipos
+- **Implementación:** ✅ Completada en ~7 minutos
+  - **Archivo modificado:** `src/constants/payment.ts`
+    - Eliminados: 5 duplicados (2 types, 3 interfaces)
+    - Conservados: Solo constantes puras (PAYMENT_METHODS, PAYMENT_TYPES)
+    - Agregados: Comentarios JSDoc indicando ubicación de tipos derivados
+  - **Arquitectura resultante:**
+    - `constants/payment.ts` → Solo constantes runtime (15 líneas)
+    - `types/payment.ts` → Fuente única de tipos e interfaces (89 líneas)
+    - Separación clara siguiendo SoC (Separation of Concerns)
+- **Contexto histórico:**
+  - Commit `50cd74e` (Sept 2025) intentó consolidar pero quedó incompleto
+  - Alguien recreó constants/payment.ts con duplicados posteriormente
+  - Esta implementación completa la consolidación original
+- **Validación:** ✅ TypeScript: 0 errores | ✅ ESLint: 0 errores críticos | ✅ Imports: Sin cambios requeridos (12 archivos)
+- **Patrón establecido:** Consistente con constants/project.ts + types/project.ts del proyecto
+
 ## 🔮 Upcoming Implementations
 - [ ] **Data Table Migration Fase 2** - Migrar payments, aftersales, visits, clients, installments páginas (prioridad alta)
 - [ ] **Data Table Advanced Features** - Export CSV, bulk actions, column presets (prioridad media)
@@ -376,9 +405,9 @@
 
 ## 📊 Implementation Statistics
 
-**Total completadas:** 15 implementaciones major
-**Impacto alto:** 12/15 implementaciones
-**Beneficios cuantificados:** 30% reducción costos API, 67% menos duplicación docs, 70%+ test coverage, 4/4 formularios React Hook Form migrados, 4/4 formularios con país dinámico, 1,682+ líneas código duplicado eliminadas (682 PageTableLayout + 657+ table components + 239 calendar-event + 50 layout refactor inicial + 28 calendar-toolbar + 26 layout.tsx simplificación), arquitectura SSOT para eventos implementada, +596 líneas documentación proceso eliminación código legacy  
+**Total completadas:** 16 implementaciones major
+**Impacto alto:** 13/16 implementaciones
+**Beneficios cuantificados:** 30% reducción costos API, 67% menos duplicación docs, 70%+ test coverage, 4/4 formularios React Hook Form migrados, 4/4 formularios con país dinámico, 1,714+ líneas código duplicado eliminadas (682 PageTableLayout + 657+ table components + 239 calendar-event + 50 layout refactor inicial + 28 calendar-toolbar + 26 layout.tsx simplificación + 32 payment types consolidation), arquitectura SSOT para eventos implementada, +596 líneas documentación proceso eliminación código legacy  
 
 ## 🎯 Success Metrics
 
@@ -403,6 +432,8 @@
 - **Documentation Process:** Zero Deprecated Policy implementado, proceso estandarizado en 4 pasos
 - **Code Cleanup Efficiency:** Sistema de triggers automáticos para detectar código obsoleto
 - **Technical Debt Management:** Registro arqueológico completo con 3 ejemplos históricos documentados
+- **Type System Quality:** SSOT establecido entre constants/ y types/, 100% duplicación eliminada (5 elementos)
+- **Architecture Consistency:** Patrón constants vs types aplicado consistentemente (payments alineado con projects)
 
 
 ---
