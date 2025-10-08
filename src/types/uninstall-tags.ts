@@ -10,6 +10,7 @@ import type { BaseFirestoreDocument, BaseEntity } from '@/utils/firestore-helper
 export interface UninstallTagDocument extends BaseFirestoreDocument {
   name: string;
   color: string; // TagColor as string for Firebase
+  abbreviation?: string; // Abreviatura de 2 letras (ej: "AL") - Opcional para backward compatibility
 }
 
 // Entidad uninstall tag que combina Tag con BaseEntity para timestamps

@@ -32,6 +32,7 @@ const convertUninstallTagDocument = (data: UninstallTagDocument, id: string): Pa
   return {
     name: data.name,
     color: data.color as TagColor,
+    abbreviation: data.abbreviation,
   };
 };
 
@@ -50,14 +51,18 @@ export const getUninstallTags = async (): Promise<UninstallTag[]> => {
 
 /**
  * Crea una nueva tag de desinstalación
+ * Auto-genera abbreviation si no se proporciona
  */
 export const createUninstallTag = async (
   name: string,
-  color: TagColor
+  color: TagColor,
+  abbreviation?: string
 ): Promise<string> => {
+  const trimmedName = name.trim();
   const tagData: Omit<UninstallTagDocument, 'createdAt' | 'updatedAt'> = {
-    name: name.trim(),
+    name: trimmedName,
     color,
+    abbreviation: abbreviation?.trim().toUpperCase() || trimmedName.substring(0, 2).toUpperCase(),
   };
 
   const docRef = await addDoc(
@@ -73,12 +78,21 @@ export const createUninstallTag = async (
  */
 export const updateUninstallTag = async (
   tagId: string,
-  updates: Partial<Pick<UninstallTag, 'name' | 'color'>>
+  updates: Partial<Pick<UninstallTag, 'name' | 'color' | 'abbreviation'>>
 ): Promise<void> => {
   const docRef = doc(db, UNINSTALL_TAGS_COLLECTION, tagId);
+
+  // Normalizar abbreviation si se proporciona
+  const normalizedUpdates = {
+    ...updates,
+    ...(updates.abbreviation !== undefined && {
+      abbreviation: updates.abbreviation.trim().toUpperCase()
+    })
+  };
+
   await updateDoc(
     docRef,
-    prepareDataForFirestore(updates, true) // true = actualizar (solo updatedAt)
+    prepareDataForFirestore(normalizedUpdates, true) // true = actualizar (solo updatedAt)
   );
 };
 

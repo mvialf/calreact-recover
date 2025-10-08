@@ -10,18 +10,21 @@ export const mockUninstallTags: UninstallTag[] = [
     id: 'tag-1',
     name: 'Cortina',
     color: 'sky',
+    abbreviation: 'CO',
     createdAt: new Date('2025-01-01'),
   },
   {
     id: 'tag-2',
     name: 'Persiana',
     color: 'complete',
+    abbreviation: 'PE',
     createdAt: new Date('2025-01-02'),
   },
   {
     id: 'tag-3',
     name: 'Toldo',
     color: 'destructive',
+    abbreviation: 'TO',
     createdAt: new Date('2025-01-03'),
   },
 ];
@@ -34,10 +37,12 @@ export const createMockUseUninstallTags = (
   loading: false,
   error: null,
   createTag: jest.fn().mockImplementation(async (tagData: Partial<UninstallTag>) => {
+    const name = tagData.name || 'Nueva Tag';
     const newTag: UninstallTag = {
       id: `tag-${Date.now()}`,
-      name: tagData.name || 'Nueva Tag',
+      name,
       color: tagData.color || 'primary',
+      abbreviation: tagData.abbreviation || name.substring(0, 2).toUpperCase(),
       createdAt: new Date(),
     };
     return newTag;
@@ -79,23 +84,29 @@ export const resetUninstallTagsMocks = () => {
 };
 
 // Factory para crear tags de prueba
-export const createTestUninstallTag = (overrides: Partial<UninstallTag> = {}): UninstallTag => ({
-  id: `test-tag-${Math.random().toString(36).substr(2, 9)}`,
-  name: 'Test Tag',
-  color: 'primary',
-  createdAt: new Date(),
-  ...overrides,
-});
+export const createTestUninstallTag = (overrides: Partial<UninstallTag> = {}): UninstallTag => {
+  const name = overrides.name || 'Test Tag';
+  return {
+    id: `test-tag-${Math.random().toString(36).substr(2, 9)}`,
+    name,
+    color: 'primary',
+    abbreviation: name.substring(0, 2).toUpperCase(),
+    createdAt: new Date(),
+    ...overrides,
+  };
+};
 
 // Factory para crear arrays de tags de prueba
 export const createTestUninstallTags = (count: number = 3): UninstallTag[] => {
-  return Array.from({ length: count }, (_, index) =>
-    createTestUninstallTag({
+  return Array.from({ length: count }, (_, index) => {
+    const name = `Test Tag ${index + 1}`;
+    return createTestUninstallTag({
       id: `test-tag-${index + 1}`,
-      name: `Test Tag ${index + 1}`,
+      name,
       color: ['sky', 'complete', 'destructive', 'yellow', 'purple'][index % 5] as any,
-    })
-  );
+      abbreviation: `T${index + 1}`,
+    });
+  });
 };
 
 // Tests básicos para verificar que los helpers funcionan

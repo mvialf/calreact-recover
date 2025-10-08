@@ -65,6 +65,7 @@ const projectFormSchema = z.object({
     id: z.string(),
     name: z.string(),
     color: z.enum(['yellow', 'sky', 'orange', 'brown', 'complete', 'purple', 'primary', 'secondary', 'destructive']),
+    abbreviation: z.string().optional(),
     createdAt: z.date().optional()
   })).optional(),
   glosa: z.string().optional(),

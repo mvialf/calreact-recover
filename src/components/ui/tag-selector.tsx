@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TagBadge } from "@/components/ui/tag-badge";
 import { CreateTagModal } from "@/components/ui/create-tag-modal";
+import { EditTagModal } from "@/components/ui/edit-tag-modal";
 import type { TagSelectorProps, Tag, TagColor, CreateTagData } from "@/types/tags";
 
 /**
@@ -35,7 +36,9 @@ export const TagSelector = React.forwardRef<HTMLDivElement, TagSelectorProps>(
   }, ref) => {
     const [isOpen, setIsOpen] = React.useState(false);
     const [isCreatingTag, setIsCreatingTag] = React.useState(false);
-    
+    const [isEditingTag, setIsEditingTag] = React.useState(false);
+    const [tagToEdit, setTagToEdit] = React.useState<Tag | null>(null);
+
     // Estado temporal para las selecciones en el diálogo
     const [tempSelectedTags, setTempSelectedTags] = React.useState<Tag[]>([]);
 
@@ -74,14 +77,30 @@ export const TagSelector = React.forwardRef<HTMLDivElement, TagSelectorProps>(
       onTagsChange(selectedTags.filter(tag => tag.id !== tagId));
     };
 
-    const handleCreateTag = (name: string, color: TagColor) => {
+    const handleCreateTag = (name: string, color: TagColor, abbreviation: string) => {
       if (!onCreateTag) return;
-      
-      // Crear la nueva etiqueta
-      onCreateTag(name, color);
-      
-      // Nota: onCreateTag no retorna la nueva etiqueta, 
+
+      // Crear la nueva etiqueta con abbreviation (obligatoria)
+      onCreateTag(name, color, abbreviation);
+
+      // Nota: onCreateTag no retorna la nueva etiqueta,
       // la etiqueta se agregará automáticamente a availableTags
+    };
+
+    const handleEditTag = (tagId: string, name: string, color: TagColor, abbreviation: string) => {
+      if (!onEditTag) return;
+
+      // Actualizar la etiqueta
+      onEditTag(tagId, name, color, abbreviation);
+
+      // Cerrar modal de edición
+      setIsEditingTag(false);
+      setTagToEdit(null);
+    };
+
+    const handleOpenEditModal = (tag: Tag) => {
+      setTagToEdit(tag);
+      setIsEditingTag(true);
     };
 
     return (
@@ -133,8 +152,12 @@ export const TagSelector = React.forwardRef<HTMLDivElement, TagSelectorProps>(
                                 onCheckedChange={() => handleTagToggle(tag)}
                                 className="shrink-0"
                               />
-                              <TagBadge tag={tag} className="w-full py-2" />
-                              
+                              {/* Mostrar badges: nombre completo + abbreviation */}
+                              <div className="flex-1 flex items-center gap-2 py-2">
+                                <TagBadge tag={{ ...tag, abbreviation: undefined }} className="text-sm" />
+                                <TagBadge tag={tag} className="text-sm" />
+                              </div>
+
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button
@@ -151,7 +174,7 @@ export const TagSelector = React.forwardRef<HTMLDivElement, TagSelectorProps>(
                                     <DropdownMenuItem
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        onEditTag(tag.id, tag.name, tag.color);
+                                        handleOpenEditModal(tag);
                                       }}
                                     >
                                       <Edit className="mr-2 h-4 w-4" />
@@ -220,7 +243,7 @@ export const TagSelector = React.forwardRef<HTMLDivElement, TagSelectorProps>(
             {selectedTags.map((tag) => (
               <TagBadge
                 key={tag.id}
-                tag={tag}
+                tag={{ ...tag, abbreviation: undefined }}
                 removable
                 onRemove={handleRemoveTag}
               />
@@ -234,6 +257,17 @@ export const TagSelector = React.forwardRef<HTMLDivElement, TagSelectorProps>(
             isOpen={isCreatingTag}
             onOpenChange={setIsCreatingTag}
             onCreateTag={handleCreateTag}
+            existingTags={availableTags}
+          />
+        )}
+
+        {/* Modal de edición de etiquetas */}
+        {onEditTag && (
+          <EditTagModal
+            isOpen={isEditingTag}
+            onOpenChange={setIsEditingTag}
+            onEditTag={handleEditTag}
+            tag={tagToEdit}
             existingTags={availableTags}
           />
         )}

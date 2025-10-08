@@ -44,11 +44,13 @@ export const useTags = ({
   const [selectedTags, setSelectedTagsState] = React.useState<Tag[]>(initialSelected);
 
   // Funciones para manejar etiquetas disponibles
-  const addAvailableTag = React.useCallback((name: string, color: TagColor) => {
+  const addAvailableTag = React.useCallback((name: string, color: TagColor, abbreviation?: string) => {
+    const trimmedName = name.trim();
     const newTag: Tag = {
       id: `tag-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      name: name.trim(),
+      name: trimmedName,
       color,
+      abbreviation: abbreviation || trimmedName.substring(0, 2).toUpperCase(),
       createdAt: new Date()
     };
     setAvailableTags(prev => [...prev, newTag]);

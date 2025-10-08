@@ -23,13 +23,13 @@ export const TagSystemDemo: React.FC = () => {
     clearSelectedTags
   } = useTags({
     initialTags: [
-      { id: "1", name: "Urgente", color: "destructive" },
-      { id: "2", name: "En Progreso", color: "sky" },
-      { id: "3", name: "Completado", color: "complete" },
-      { id: "4", name: "Revisión", color: "orange" },
-      { id: "5", name: "Cliente VIP", color: "purple" },
-      { id: "6", name: "Pendiente", color: "yellow" },
-      { id: "7", name: "Importante", color: "brown" }
+      { id: "1", name: "Urgente", color: "destructive", abbreviation: "UR" },
+      { id: "2", name: "En Progreso", color: "sky", abbreviation: "EP" },
+      { id: "3", name: "Completado", color: "complete", abbreviation: "CO" },
+      { id: "4", name: "Revisión", color: "orange", abbreviation: "RE" },
+      { id: "5", name: "Cliente VIP", color: "purple", abbreviation: "VIP" },
+      { id: "6", name: "Pendiente", color: "yellow", abbreviation: "PE" },
+      { id: "7", name: "Importante", color: "brown", abbreviation: "IM" }
     ]
   });
 

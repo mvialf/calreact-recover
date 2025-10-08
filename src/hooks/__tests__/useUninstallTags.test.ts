@@ -43,6 +43,7 @@ describe('useUninstallTags', () => {
       id: 'tag-1',
       name: 'Aluminio',
       color: 'primary',
+      abbreviation: 'AL',
       createdAt: new Date('2025-01-01'),
       updatedAt: new Date('2025-01-01')
     },
@@ -50,6 +51,7 @@ describe('useUninstallTags', () => {
       id: 'tag-2',
       name: 'PVC',
       color: 'secondary',
+      abbreviation: 'PV',
       createdAt: new Date('2025-01-02'),
       updatedAt: new Date('2025-01-02')
     }
@@ -125,6 +127,7 @@ describe('useUninstallTags', () => {
         id: 'new-tag-id',
         name: 'Acero',
         color: 'brown' as TagColor,
+        abbreviation: 'AC',
         createdAt: new Date(),
         updatedAt: new Date()
       }];
@@ -138,7 +141,7 @@ describe('useUninstallTags', () => {
       });
 
       await act(async () => {
-        await result.current.createTag('Acero', 'brown');
+        await result.current.createTag('Acero', 'brown', 'AC');
       });
 
       expect(mockedCreateUninstallTag).toHaveBeenCalledWith('Acero', 'brown');
@@ -158,7 +161,7 @@ describe('useUninstallTags', () => {
 
       await expect(async () => {
         await act(async () => {
-          await result.current.createTag('Error Tag', 'destructive');
+          await result.current.createTag('Error Tag', 'destructive', 'ER');
         });
       }).rejects.toThrow('Creation failed');
 
@@ -184,7 +187,7 @@ describe('useUninstallTags', () => {
       });
 
       await act(async () => {
-        await result.current.editTag('tag-1', 'Aluminio Modificado', 'orange');
+        await result.current.editTag('tag-1', 'Aluminio Modificado', 'orange', 'AM');
       });
 
       expect(mockedUpdateUninstallTag).toHaveBeenCalledWith('tag-1', {

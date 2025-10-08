@@ -178,8 +178,7 @@ export function EditProjectDialog({
           coordenadas: { latitude: 0, longitude: 0 }
         },
         description: '',
-        uninstall: false,
-        uninstallTypes: [],
+        uninstallTags: [],
       };
     }
   }, [project]);

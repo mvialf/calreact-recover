@@ -31,8 +31,8 @@ interface UseUninstallTagsReturn {
   getTagById: (tagId: string) => Tag | undefined;
 
   // Extiende con operaciones Firebase
-  createTag: (name: string, color: TagColor) => Promise<void>;
-  editTag: (tagId: string, name: string, color: TagColor) => Promise<void>;
+  createTag: (name: string, color: TagColor, abbreviation: string) => Promise<void>;
+  editTag: (tagId: string, name: string, color: TagColor, abbreviation: string) => Promise<void>;
   deleteTag: (tagId: string) => Promise<void>;
   refreshTags: () => Promise<void>;
   loading: boolean;
@@ -80,10 +80,10 @@ export const useUninstallTags = ({
     }
   }, []);
 
-  const createTag = React.useCallback(async (name: string, color: TagColor) => {
+  const createTag = React.useCallback(async (name: string, color: TagColor, abbreviation: string) => {
     try {
       setError(null);
-      await createUninstallTag(name, color);
+      await createUninstallTag(name, color, abbreviation);
       await refreshTags(); // Recargar lista
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al crear tag';
@@ -92,10 +92,10 @@ export const useUninstallTags = ({
     }
   }, [refreshTags]);
 
-  const editTag = React.useCallback(async (tagId: string, name: string, color: TagColor) => {
+  const editTag = React.useCallback(async (tagId: string, name: string, color: TagColor, abbreviation: string) => {
     try {
       setError(null);
-      await updateUninstallTag(tagId, { name, color });
+      await updateUninstallTag(tagId, { name, color, abbreviation });
       await refreshTags();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al editar tag';

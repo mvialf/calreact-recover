@@ -12,6 +12,7 @@ describe('Uninstall System Migration Validation', () => {
         id: 'test-tag-1',
         name: 'Cortina Test',
         color: 'sky',
+        abbreviation: 'CO',
         createdAt: new Date('2025-01-01'),
       };
 
@@ -52,6 +53,7 @@ describe('Uninstall System Migration Validation', () => {
         id: 'preserve-test',
         name: 'Preservación Test',
         color: 'complete',
+        abbreviation: 'PR',
         createdAt: new Date('2025-01-15'),
       };
 
@@ -72,6 +74,7 @@ describe('Uninstall System Migration Validation', () => {
         id: 'structure-test',
         name: 'Estructura Test',
         color: 'primary',
+        abbreviation: 'ES',
         createdAt: new Date(),
       };
 
@@ -118,12 +121,14 @@ describe('Uninstall System Migration Validation', () => {
             id: 'tag-1',
             name: 'Cortina',
             color: 'sky',
+            abbreviation: 'CO',
             createdAt: new Date(),
           },
           {
             id: 'tag-2',
             name: 'Persiana',
             color: 'complete',
+            abbreviation: 'PE',
             createdAt: new Date(),
           },
         ] as UninstallTag[]
@@ -153,8 +158,8 @@ describe('Uninstall System Migration Validation', () => {
       // El nuevo sistema equivalente sería:
       const modernData = {
         uninstallTags: [
-          { id: '1', name: 'Cortina', color: 'sky', createdAt: new Date() },
-          { id: '2', name: 'Persiana', color: 'complete', createdAt: new Date() }
+          { id: '1', name: 'Cortina', color: 'sky', abbreviation: 'CO', createdAt: new Date() },
+          { id: '2', name: 'Persiana', color: 'complete', abbreviation: 'PE', createdAt: new Date() }
         ] as UninstallTag[]
       };
 
@@ -184,9 +189,9 @@ describe('Uninstall System Migration Validation', () => {
 
     it('debe manejar arrays con múltiples tags', () => {
       const multipleTags: UninstallTag[] = [
-        { id: '1', name: 'Tag 1', color: 'sky', createdAt: new Date() },
-        { id: '2', name: 'Tag 2', color: 'complete', createdAt: new Date() },
-        { id: '3', name: 'Tag 3', color: 'destructive', createdAt: new Date() },
+        { id: '1', name: 'Tag 1', color: 'sky', abbreviation: 'T1', createdAt: new Date() },
+        { id: '2', name: 'Tag 2', color: 'complete', abbreviation: 'T2', createdAt: new Date() },
+        { id: '3', name: 'Tag 3', color: 'destructive', abbreviation: 'T3', createdAt: new Date() },
       ];
 
       expect(multipleTags).toHaveLength(3);
@@ -204,9 +209,9 @@ describe('Uninstall System Migration Validation', () => {
 
     it('debe preservar unicidad de IDs', () => {
       const tagsWithUniqueIds: UninstallTag[] = [
-        { id: 'unique-1', name: 'Tag A', color: 'primary', createdAt: new Date() },
-        { id: 'unique-2', name: 'Tag B', color: 'secondary', createdAt: new Date() },
-        { id: 'unique-3', name: 'Tag C', color: 'purple', createdAt: new Date() },
+        { id: 'unique-1', name: 'Tag A', color: 'primary', abbreviation: 'TA', createdAt: new Date() },
+        { id: 'unique-2', name: 'Tag B', color: 'secondary', abbreviation: 'TB', createdAt: new Date() },
+        { id: 'unique-3', name: 'Tag C', color: 'purple', abbreviation: 'TC', createdAt: new Date() },
       ];
 
       const convertedTags = tagsWithUniqueIds.map(convertUninstallTagToTag);

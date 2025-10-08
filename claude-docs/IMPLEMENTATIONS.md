@@ -334,6 +334,39 @@
 - **Tests:** 0 errores TypeScript, 0 errores ESLint
 - **Documentation:** [patterns.md](../references/patterns.md#-configuración-de-país-addressinput---arquitectura-híbrida) - Patrón híbrido documentado completamente
 
+### 📚 Zero Deprecated Policy - Sistema de Eliminación de Código Legacy
+- **Status:** ✅ Complete | **Date:** 2025-10-08 | **Impact:** High
+- **Branch:** `DEV`
+- **Key commits:** `74d61bb`
+- **Quick diff:** `git show 74d61bb --stat`
+- **Benefits:**
+  - Sistema completo de Zero Deprecated Policy implementado
+  - Proceso estandarizado de eliminación en 4 pasos
+  - Arquitectura SRP (Single Responsibility Principle) aplicada a documentación
+  - Trigger automático para detectar código deprecated/legacy
+  - Registro arqueológico con comandos git de restauración
+  - 596 líneas de documentación nueva (+501 CLAUDE.md, +85 DELETIONS.md)
+  - Separación clara de responsabilidades (proceso vs registro histórico)
+- **Implementación:** ✅ Completada
+  - **Archivos creados (2):**
+    - `docs/deletions/CLAUDE.md` (501 líneas) - Proceso completo de eliminación
+    - `docs/deletions/DELETIONS.md` (85 líneas) - Template y registro histórico
+  - **Modificaciones CLAUDE.md (3 cambios):**
+    - Línea 37: Agregado índice `@docs/deletions/CLAUDE.md`
+    - Línea 76: Agregado principio #7 "Código Obsoleto"
+    - Línea 135: Agregado trigger automático para deprecated/legacy
+- **Arquitectura del sistema:**
+  - **CLAUDE.md** → Índice y referencia al proceso
+  - **docs/deletions/CLAUDE.md** → Proceso detallado (cómo hacer)
+  - **docs/deletions/DELETIONS.md** → Registro histórico (qué se hizo)
+  - **Trigger automático** → Detecta: "deprecated", "legacy", "eliminar", "obsoleto"
+- **Ejemplos históricos registrados:**
+  - `f78cd87` - Eliminación masiva 1,258 líneas legacy (4 fases)
+  - `2816761` - Deuda técnica modo Full (schema deprecated)
+  - `1c6e405` - Campo status ProjectEventType (arquitectura SSOT)
+- **Validación:** ✅ TypeScript: 0 errores | ✅ ESLint: 0 críticos | ✅ Build: exitoso
+- **Documentation:** [CLAUDE.md](../../docs/deletions/CLAUDE.md) - Proceso completo | [DELETIONS.md](../../docs/deletions/DELETIONS.md) - Registro histórico
+
 ## 🔮 Upcoming Implementations
 - [ ] **Data Table Migration Fase 2** - Migrar payments, aftersales, visits, clients, installments páginas (prioridad alta)
 - [ ] **Data Table Advanced Features** - Export CSV, bulk actions, column presets (prioridad media)
@@ -343,9 +376,9 @@
 
 ## 📊 Implementation Statistics
 
-**Total completadas:** 14 implementaciones major
-**Impacto alto:** 11/14 implementaciones
-**Beneficios cuantificados:** 30% reducción costos API, 67% menos duplicación docs, 70%+ test coverage, 4/4 formularios React Hook Form migrados, 4/4 formularios con país dinámico, 1,682+ líneas código duplicado eliminadas (682 PageTableLayout + 657+ table components + 239 calendar-event + 50 layout refactor inicial + 28 calendar-toolbar + 26 layout.tsx simplificación), arquitectura SSOT para eventos implementada  
+**Total completadas:** 15 implementaciones major
+**Impacto alto:** 12/15 implementaciones
+**Beneficios cuantificados:** 30% reducción costos API, 67% menos duplicación docs, 70%+ test coverage, 4/4 formularios React Hook Form migrados, 4/4 formularios con país dinámico, 1,682+ líneas código duplicado eliminadas (682 PageTableLayout + 657+ table components + 239 calendar-event + 50 layout refactor inicial + 28 calendar-toolbar + 26 layout.tsx simplificación), arquitectura SSOT para eventos implementada, +596 líneas documentación proceso eliminación código legacy  
 
 ## 🎯 Success Metrics
 
@@ -367,19 +400,22 @@
 - **Scalability:** Ready para datasets 10K+ registros sin cambios arquitecturales
 - **Event Architecture:** Single Source of Truth implementado, 0 duplicación status, computed properties pattern
 - **Data Synchronization:** Eliminada necesidad de sincronizar status entre ProjectType y ProjectEventType
+- **Documentation Process:** Zero Deprecated Policy implementado, proceso estandarizado en 4 pasos
+- **Code Cleanup Efficiency:** Sistema de triggers automáticos para detectar código obsoleto
+- **Technical Debt Management:** Registro arqueológico completo con 3 ejemplos históricos documentados
 
 
 ---
 
 **📊 Última actualización:** Octubre 2025
-**🌟 Branch actual:** `feature/eliminar-status-eventos`
+**🌟 Branch actual:** `DEV`
 **📋 Commits recientes:**
 ```
+74d61bb docs(deletions): Implementar sistema de eliminación de código legacy
 1c6e405 refactor(events): Eliminar campo status de ProjectEventType completamente
 8d3a1e9 refactor(events): Implementar compensaciones para eliminar status field
 7c8b5f4 refactor(events): Preparar código legacy para eliminar status field
 532c159 docs: Integrar metodología bash-first en workflow de desarrollo
-23456cf docs: Actualizar CLAUDE.md con metodología bash-first
 ```
 
 **📝 Para agregar nuevas implementaciones:** Seguir formato existente en este archivo

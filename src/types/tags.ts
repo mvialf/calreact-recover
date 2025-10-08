@@ -20,6 +20,7 @@ export interface Tag {
   id: string;
   name: string;
   color: TagColor;
+  abbreviation?: string; // Abreviatura de 2 letras (ej: "AL") - Opcional para backward compatibility con datos existentes
   createdAt?: Date;
 }
 
@@ -36,8 +37,8 @@ export interface TagSelectorProps {
   selectedTags: Tag[];
   availableTags: Tag[];
   onTagsChange: (tags: Tag[]) => void;
-  onCreateTag?: (name: string, color: TagColor) => void;
-  onEditTag?: (tagId: string, name: string, color: TagColor) => void;
+  onCreateTag?: (name: string, color: TagColor, abbreviation: string) => void;
+  onEditTag?: (tagId: string, name: string, color: TagColor, abbreviation: string) => void;
   onDeleteTag?: (tagId: string) => void;
   placeholder?: string;
   label?: string;

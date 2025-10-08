@@ -69,6 +69,7 @@ describe('uninstallTagService', () => {
     id: 'tag-123',
     name: 'Aluminio',
     color: mockTagColor,
+    abbreviation: 'AL',
     createdAt: new Date('2025-01-01'),
     updatedAt: new Date('2025-01-01')
   };
@@ -86,6 +87,7 @@ describe('uninstallTagService', () => {
             data: () => ({
               name: 'Aluminio',
               color: 'primary',
+              abbreviation: 'AL',
               createdAt: new Timestamp(1640995200, 0),
               updatedAt: new Timestamp(1640995200, 0)
             })

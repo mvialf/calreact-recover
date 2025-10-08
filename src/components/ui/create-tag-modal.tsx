@@ -20,7 +20,7 @@ import { TAG_COLOR_MAP, AVAILABLE_TAG_COLORS } from "@/types/tags";
 interface CreateTagModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreateTag: (name: string, color: TagColor) => Tag | void;
+  onCreateTag: (name: string, color: TagColor, abbreviation: string) => Tag | void;
   existingTags: Tag[];
 }
 
@@ -34,6 +34,7 @@ export const CreateTagModal: React.FC<CreateTagModalProps> = ({
   existingTags,
 }) => {
   const [tagName, setTagName] = React.useState("");
+  const [tagAbbreviation, setTagAbbreviation] = React.useState("");
   const [tagColor, setTagColor] = React.useState<TagColor>("primary");
   const [createAnother, setCreateAnother] = React.useState(false);
   const [isCreating, setIsCreating] = React.useState(false);
@@ -43,6 +44,7 @@ export const CreateTagModal: React.FC<CreateTagModalProps> = ({
   React.useEffect(() => {
     if (!isOpen) {
       setTagName("");
+      setTagAbbreviation("");
       setTagColor("primary");
       setCreateAnother(false);
       setError("");
@@ -80,17 +82,34 @@ export const CreateTagModal: React.FC<CreateTagModalProps> = ({
     }
   };
 
+  const handleAbbreviationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Limitar a 2 caracteres y convertir a uppercase automáticamente
+    const normalized = value.slice(0, 2).toUpperCase();
+    setTagAbbreviation(normalized);
+  };
+
   const handleCreate = async () => {
     const trimmedName = tagName.trim();
     if (!validateTagName(trimmedName)) return;
 
+    // Auto-generar abbreviation si está vacío (obligatorio ahora)
+    const finalAbbreviation = tagAbbreviation.trim() ||
+      trimmedName.substring(0, 2).toUpperCase();
+
+    if (!finalAbbreviation) {
+      setError("La abreviatura es requerida");
+      return;
+    }
+
     setIsCreating(true);
     try {
-      const result = await onCreateTag(trimmedName, tagColor);
-      
+      const result = await onCreateTag(trimmedName, tagColor, finalAbbreviation);
+
       if (createAnother) {
         // Limpiar para crear otra
         setTagName("");
+        setTagAbbreviation("");
         setError("");
         // Mantener el mismo color si el usuario lo prefiere
       } else {
@@ -111,11 +130,12 @@ export const CreateTagModal: React.FC<CreateTagModalProps> = ({
     }
   };
 
-  // Vista previa de la etiqueta
+  // Vista previa de la etiqueta con abbreviation
   const previewTag: Tag = {
     id: "preview",
     name: tagName.trim() || "Nueva etiqueta",
     color: tagColor,
+    abbreviation: tagAbbreviation.trim() || tagName.trim().substring(0, 2).toUpperCase() || "XX",
   };
 
   return (
@@ -134,7 +154,7 @@ export const CreateTagModal: React.FC<CreateTagModalProps> = ({
             <Label htmlFor="tag-name">Nombre</Label>
             <Input
               id="tag-name"
-              placeholder="Nombre de la etiqueta..."
+              placeholder="Ej: Aluminio, Madera..."
               value={tagName}
               onChange={handleNameChange}
               onKeyDown={handleKeyDown}
@@ -144,6 +164,25 @@ export const CreateTagModal: React.FC<CreateTagModalProps> = ({
             {error && (
               <p className="text-sm text-destructive">{error}</p>
             )}
+          </div>
+
+          {/* Campo de abreviatura */}
+          <div className="space-y-2">
+            <Label htmlFor="tag-abbreviation">
+              Abreviatura (2 letras)
+              <span className="text-xs text-muted-foreground ml-2">
+                Opcional - se genera automáticamente si se deja vacío
+              </span>
+            </Label>
+            <Input
+              id="tag-abbreviation"
+              placeholder="Ej: AL, MD..."
+              value={tagAbbreviation}
+              onChange={handleAbbreviationChange}
+              onKeyDown={handleKeyDown}
+              maxLength={2}
+              className="uppercase"
+            />
           </div>
 
           {/* Selector de color */}
@@ -193,7 +232,10 @@ export const CreateTagModal: React.FC<CreateTagModalProps> = ({
           <div className="space-y-2">
             <Label>Vista previa</Label>
             <div className="flex items-center justify-center p-4 border rounded-lg bg-muted/50">
-              <TagBadge tag={previewTag} className="text-sm" />
+              <div className="flex items-center gap-2">
+                <TagBadge tag={{ ...previewTag, abbreviation: undefined }} className="text-sm" />
+                <TagBadge tag={previewTag} className="text-sm" />
+              </div>
             </div>
           </div>
 

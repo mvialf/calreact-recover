@@ -35,7 +35,7 @@ export const TagBadge = React.forwardRef<HTMLDivElement, TagBadgeProps>(
         {...props}
       >
         <span className="truncate max-w-[120px]" title={tag.name}>
-          {tag.name}
+          {tag.abbreviation || tag.name}
         </span>
         
         {removable && onRemove && (
