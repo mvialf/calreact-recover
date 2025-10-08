@@ -152,9 +152,10 @@ export default function PaymentsPage() {
     onEdit: handleEditPayment,
     onDelete: handleDeletePaymentInitiate,
     onViewBatch: handleViewBatch,
+    onDeleteBatch: handleDeleteBatch,
     projectsMap,
     clientsMap,
-  }), [projectsMap, clientsMap]);
+  }), [projectsMap, clientsMap, handleEditPayment, handleDeletePaymentInitiate, handleViewBatch, handleDeleteBatch]);
 
   if (isError) {
     return (

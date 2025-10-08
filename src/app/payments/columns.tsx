@@ -81,6 +81,7 @@ interface PaymentsColumnsProps {
   onEdit: (payment: EnrichedPayment) => void
   onDelete: (payment: EnrichedPayment) => void
   onViewBatch?: (batchId: string) => void
+  onDeleteBatch?: (batchId: string) => void
   projectsMap: Record<string, ProjectType>
   clientsMap: Record<string, string>
 }
@@ -89,6 +90,7 @@ export const createPaymentsColumns = ({
   onEdit,
   onDelete,
   onViewBatch,
+  onDeleteBatch,
   projectsMap,
   clientsMap,
 }: PaymentsColumnsProps): ColumnDef<PaymentRow>[] => [
@@ -447,9 +449,39 @@ export const createPaymentsColumns = ({
     cell: ({ row }) => {
       const data = row.original
 
-      // Si es batch, no mostrar acciones (se manejan desde el modal)
+      // Si es batch, mostrar acciones de batch
       if (isBatchGroup(data)) {
-        return null
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Abrir menú</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Acciones del Batch</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {onViewBatch && (
+                <DropdownMenuItem
+                  onClick={() => onViewBatch(data.batchId)}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  Ver desglose
+                </DropdownMenuItem>
+              )}
+              {onDeleteBatch && (
+                <DropdownMenuItem
+                  onClick={() => onDeleteBatch(data.batchId)}
+                  className="text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Eliminar batch completo
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
       }
 
       // Payment individual
