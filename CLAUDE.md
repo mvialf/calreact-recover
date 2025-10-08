@@ -34,6 +34,7 @@ El equipo está constituido por solo nosotros dos (usuario y clade code, nadie m
 ### 🔧 Herramientas y Comandos
 @claude-docs/references/commands.md      # Comandos de desarrollo y scripts disponibles
 @claude-docs/IMPLEMENTATIONS.md          # Log de implementaciones completadas
+@docs/deletions/CLAUDE.md                # Proceso de eliminación de código deprecated/legacy
 
 
 
@@ -71,7 +72,8 @@ npm run dev:webpack # Puerto 3001 (Webpack) - Alternativo
 3. **Funciones máximo:** 40 líneas por función
 4. **Servicios Firebase:** Usar utilidades centralizadas de `firestore-helpers.ts`
 5. **Testing:** Crear tests durante implementación (Test-As-You-Go)
-6. **documentación** Utilizar servidor MCP Context7 para documentación actualizada
+6. **Documentación:** Utilizar servidor MCP Context7 para documentación actualizada
+7. **🗑️ Código Obsoleto:** NO deprecar. Eliminar inmediatamente según @docs/deletions/CLAUDE.md
 
 ## 🤖 Referencias Automáticas por Contexto
 
@@ -128,6 +130,13 @@ TRIGGER("firebase", "firestore") {
   1. Firebase.firestore_get_documents() // Validación directa
   2. mcp__filesystem__read_text_file('architecture.md') // Solo arquitectura
   3. Serena SOLO si se detecta breaking change
+}
+
+TRIGGER("deprecated", "legacy", "eliminar", "obsoleto") {
+  1. mcp__filesystem__read_text_file('docs/deletions/CLAUDE.md') // Cargar proceso
+  2. rg "${componentName}" src/ --type typescript // Verificar referencias
+  3. Seguir proceso de 4 pasos documentado
+  4. Registrar en docs/deletions/DELETIONS.md
 }
 ```
 
