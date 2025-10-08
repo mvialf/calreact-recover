@@ -19,6 +19,10 @@ export interface Payment {
   installments?: number; // For credit card payments
   isAdjustment: boolean; // Changed from optional to required as per schema
   notes?: string; // Optional field for notes
+
+  // 🆕 Campos para sistema de batch payments
+  batchId?: string;           // UUID para vincular pagos relacionados de cliente
+  clientId?: string;          // ID del cliente que realizó el pago
 }
 
 // Helper type for Firestore document structure
@@ -40,4 +44,45 @@ export interface PaymentImportData {
   installments?: number;
   isAdjustment: boolean;
   notes?: string;
+}
+
+// 🆕 Tipos para sistema de batch payments
+
+/**
+ * Información resumida de un batch de pagos
+ */
+export interface BatchPaymentSummary {
+  batchId: string;
+  clientId: string;
+  clientName: string;
+  totalAmount: number;
+  paymentCount: number;
+  date: Date;
+  paymentMethod: string;
+  payments: Payment[];
+}
+
+/**
+ * Parámetros para crear un batch de pagos desde cliente
+ */
+export interface CreateBatchPaymentParams {
+  clientId: string;
+  totalAmount: number;
+  paymentMethod: string;
+  date: Date;
+  notes?: string;
+  allocations: Array<{
+    projectId: string;
+    amount: number;
+  }>;
+}
+
+/**
+ * Resultado de eliminar un batch de pagos
+ */
+export interface DeleteBatchResult {
+  success: boolean;
+  deletedCount: number;
+  batchId: string;
+  error?: string;
 }

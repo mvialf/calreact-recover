@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 
 import { getClientById } from '@/services/clientService';
 import { getProjects, calculateProjectBalance } from '@/services/projectService';
-import { addPayment, getPaymentsForProject } from '@/services/paymentService';
+import { addPayment, getPaymentsForProject, createBatchPayment } from '@/services/paymentService';
 import { ProjectType } from '@/types/project';
 import { PaymentMethod, Payment } from '@/types/payment';
 import { getAllPayments } from '@/services/paymentService';
@@ -232,19 +232,18 @@ export default function NewClientPaymentPage() {
       const method = paymentMethod as PaymentMethod;
       const paymentDate_Date = new Date(paymentDate);
 
-      // Crear un registro de pago por cada proyecto con monto asignado
-      for (const allocation of currentAllocations) {
-        await addPayment({
-          projectId: allocation.projectId,
-          amount: allocation.amount,
-          date: paymentDate_Date,
-          paymentMethod: method,
-          paymentType: 'cliente',
-          notes: `Pago de cliente: ${client.name}`,
-          isAdjustment: false,
-          createdAt: new Date() // Añadir createdAt requerido por el tipo
-        });
-      }
+      // 🆕 Crear batch de pagos vinculados por batchId
+      await createBatchPayment({
+        clientId: clientId,
+        totalAmount: totalAmount,
+        paymentMethod: method,
+        date: paymentDate_Date,
+        notes: `Pago de cliente: ${client.name}`,
+        allocations: currentAllocations.map(alloc => ({
+          projectId: alloc.projectId,
+          amount: alloc.amount
+        }))
+      });
 
       toast.success("Éxito", {
         description: `Pago de ${formatCurrency(totalAmount)} registrado correctamente.`,
