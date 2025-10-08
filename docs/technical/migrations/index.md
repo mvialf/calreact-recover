@@ -1,18 +1,14 @@
 # 📊 Índice de Migraciones - CalReact
 
-**Última actualización:** 2025-10-06
+**Última actualización:** 2025-10-08
 **Total migraciones completadas:** 5
-**Migraciones activas:** 1
+**Migraciones activas:** 0
 
 ---
 
 ## 🔄 Migraciones Activas
 
-| Nombre | Status | Progreso | Prioridad | Archivo |
-|--------|--------|----------|-----------|---------|
-| Components Reorganization | 🔄 EN PROGRESO | 15% | Alta | [Ver detalles →](active/components-reorganization-PENDING.md) |
-
-**Próxima acción:** Asignar tiempo para Fase 1 (Projects Domain - 30 min)
+**Sin migraciones activas actualmente.** Todas las migraciones planificadas han sido completadas o descartadas.
 
 ---
 
@@ -124,7 +120,7 @@ ls docs/technical/migrations/archived/2025-10-*
 ### Archivos Activos
 - **Formato:** `[nombre-descriptivo]-PENDING.md`
 - **Ubicación:** `active/`
-- **Ejemplo:** `components-reorganization-PENDING.md`
+- **Ejemplo:** `data-table-phase2-PENDING.md`
 
 ### Archivos Completados
 - **Formato:** `YYYY-MM-[nombre-descriptivo]-COMPLETED.md`
