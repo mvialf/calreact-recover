@@ -17,7 +17,8 @@ import {
   Trash2,
   MoreHorizontal,
   CreditCard,
-  Banknote
+  Banknote,
+  Eye
 } from "lucide-react"
 
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header"
@@ -26,6 +27,7 @@ import { formatDateForTable } from '@/utils/date-helpers'
 import type { Payment } from '@/types/payment'
 import type { ProjectType } from '@/types/project'
 import type { Client } from '@/types/client'
+import type { BatchedPaymentGroup } from '@/hooks/usePaymentsData'
 
 // Tipos de pago con variantes de badge
 const getPaymentTypeBadgeVariant = (paymentType: string) => {
@@ -67,9 +69,18 @@ interface EnrichedPayment extends Payment {
   projectNumber?: string
 }
 
+// Union type para filas que pueden ser batch o individuales
+type PaymentRow = EnrichedPayment | BatchedPaymentGroup
+
+// Helper para detectar si una fila es un batch
+const isBatchGroup = (row: PaymentRow): row is BatchedPaymentGroup => {
+  return 'summary' in row
+}
+
 interface PaymentsColumnsProps {
   onEdit: (payment: EnrichedPayment) => void
   onDelete: (payment: EnrichedPayment) => void
+  onViewBatch?: (batchId: string) => void
   projectsMap: Record<string, ProjectType>
   clientsMap: Record<string, string>
 }
@@ -77,9 +88,10 @@ interface PaymentsColumnsProps {
 export const createPaymentsColumns = ({
   onEdit,
   onDelete,
+  onViewBatch,
   projectsMap,
   clientsMap,
-}: PaymentsColumnsProps): ColumnDef<EnrichedPayment>[] => [
+}: PaymentsColumnsProps): ColumnDef<PaymentRow>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -108,7 +120,32 @@ export const createPaymentsColumns = ({
       <DataTableColumnHeader column={column} title="Proyecto" />
     ),
     cell: ({ row }) => {
-      const payment = row.original
+      const data = row.original
+
+      // Si es un batch, mostrar "X proyectos"
+      if (isBatchGroup(data)) {
+        return (
+          <div className="flex items-center space-x-2">
+            <Badge variant="secondary">
+              {data.summary.projectCount} proyectos
+            </Badge>
+            {onViewBatch && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2"
+                onClick={() => onViewBatch(data.batchId)}
+              >
+                <Eye className="h-3 w-3 mr-1" />
+                Ver desglose
+              </Button>
+            )}
+          </div>
+        )
+      }
+
+      // Payment individual
+      const payment = data as EnrichedPayment
       const project = projectsMap[payment.projectId]
 
       if (!project) {
@@ -129,7 +166,23 @@ export const createPaymentsColumns = ({
       )
     },
     filterFn: (row, id, value) => {
-      const payment = row.original
+      const data = row.original
+
+      if (isBatchGroup(data)) {
+        // Buscar en todos los pagos del batch
+        return data.payments.some(payment => {
+          const project = projectsMap[payment.projectId]
+          if (!project) return false
+
+          const searchTerm = value.toLowerCase()
+          return (
+            project.projectNumber.toLowerCase().includes(searchTerm) ||
+            (project.glosa || '').toLowerCase().includes(searchTerm)
+          )
+        })
+      }
+
+      const payment = data as EnrichedPayment
       const project = projectsMap[payment.projectId]
       if (!project) return false
 
@@ -146,7 +199,19 @@ export const createPaymentsColumns = ({
       <DataTableColumnHeader column={column} title="Cliente" />
     ),
     cell: ({ row }) => {
-      const payment = row.original
+      const data = row.original
+
+      // Si es batch, usar summary
+      if (isBatchGroup(data)) {
+        return (
+          <div className="font-medium">
+            {data.summary.clientName}
+          </div>
+        )
+      }
+
+      // Payment individual
+      const payment = data as EnrichedPayment
       const project = projectsMap[payment.projectId]
 
       if (!project) {
@@ -161,7 +226,14 @@ export const createPaymentsColumns = ({
       )
     },
     filterFn: (row, id, value) => {
-      const payment = row.original
+      const data = row.original
+
+      if (isBatchGroup(data)) {
+        const searchTerm = value.toLowerCase()
+        return data.summary.clientName.toLowerCase().includes(searchTerm)
+      }
+
+      const payment = data as EnrichedPayment
       const project = projectsMap[payment.projectId]
       if (!project) return false
 
@@ -176,8 +248,23 @@ export const createPaymentsColumns = ({
       <DataTableColumnHeader column={column} title="Monto" />
     ),
     cell: ({ row }) => {
-      const amount = row.getValue("amount") as number
-      const isAdjustment = row.original.isAdjustment
+      const data = row.original
+
+      // Si es batch, mostrar total
+      if (isBatchGroup(data)) {
+        return (
+          <div className="flex items-center space-x-2">
+            <span className="font-bold">
+              {formatCurrency(data.summary.totalAmount)}
+            </span>
+          </div>
+        )
+      }
+
+      // Payment individual
+      const payment = data as EnrichedPayment
+      const amount = payment.amount
+      const isAdjustment = payment.isAdjustment
 
       return (
         <div className="flex items-center space-x-2">
@@ -214,8 +301,37 @@ export const createPaymentsColumns = ({
       <DataTableColumnHeader column={column} title="Método" />
     ),
     cell: ({ row }) => {
-      const method = row.getValue("paymentMethod") as string
-      const installments = row.original.installments
+      const data = row.original
+
+      // Si es batch, usar summary
+      if (isBatchGroup(data)) {
+        const method = data.summary.paymentMethod
+
+        if (!method) {
+          return <span className="text-muted-foreground">—</span>
+        }
+
+        const variant = getPaymentMethodBadgeVariant(method)
+
+        return (
+          <Badge variant={variant as any}>
+            <div className="flex items-center space-x-1">
+              {(method.toLowerCase().includes('tarjeta') || method.toLowerCase().includes('efectivo')) && (
+                <CreditCard className="h-3 w-3" />
+              )}
+              {method.toLowerCase() === 'transferencia' && (
+                <Banknote className="h-3 w-3" />
+              )}
+              <span>{method}</span>
+            </div>
+          </Badge>
+        )
+      }
+
+      // Payment individual
+      const payment = data as EnrichedPayment
+      const method = payment.paymentMethod
+      const installments = payment.installments
 
       if (!method) {
         return <span className="text-muted-foreground">—</span>
@@ -298,7 +414,15 @@ export const createPaymentsColumns = ({
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const payment = row.original
+      const data = row.original
+
+      // Si es batch, no mostrar acciones (se manejan desde el modal)
+      if (isBatchGroup(data)) {
+        return null
+      }
+
+      // Payment individual
+      const payment = data as EnrichedPayment
 
       return (
         <DropdownMenu>

@@ -12,6 +12,18 @@ export interface EnrichedPayment extends Payment {
   projectNumber?: string;
 }
 
+export interface BatchedPaymentGroup {
+  batchId: string;
+  payments: EnrichedPayment[];
+  summary: {
+    totalAmount: number;
+    clientName: string;
+    date: Date;
+    paymentMethod: string;
+    projectCount: number;
+  };
+}
+
 export const usePaymentsData = () => {
   const { data: payments = [], isLoading: isLoadingPayments, isError: isErrorPayments, error: errorPayments } = useQuery<Payment[], Error>({
     queryKey: ['payments'],
@@ -60,10 +72,58 @@ export const usePaymentsData = () => {
       };
     });
   }, [payments, projects, clients, isLoadingPayments, isLoadingProjects, isLoadingClients]);
-  
+
+  const groupedPayments = useMemo((): {
+    batches: BatchedPaymentGroup[];
+    individual: EnrichedPayment[];
+  } => {
+    const batchMap = new Map<string, EnrichedPayment[]>();
+    const individualPayments: EnrichedPayment[] = [];
+
+    enrichedPayments.forEach(payment => {
+      if (payment.batchId) {
+        if (!batchMap.has(payment.batchId)) {
+          batchMap.set(payment.batchId, []);
+        }
+        batchMap.get(payment.batchId)!.push(payment);
+      } else {
+        individualPayments.push(payment);
+      }
+    });
+
+    const batches: BatchedPaymentGroup[] = Array.from(batchMap.entries())
+      .map(([batchId, payments]) => ({
+        batchId,
+        payments,
+        summary: {
+          totalAmount: payments.reduce((sum, p) => sum + (p.amount || 0), 0),
+          clientName: payments[0].clientName || 'Desconocido',
+          date: payments[0].date,
+          paymentMethod: payments[0].paymentMethod || '',
+          projectCount: payments.length,
+        },
+      }))
+      // Filtrar batches de 1 solo pago → tratarlos como individuales
+      .filter(batch => {
+        if (batch.payments.length === 1) {
+          individualPayments.push(batch.payments[0]);
+          return false;
+        }
+        return true;
+      });
+
+    return { batches, individual: individualPayments };
+  }, [enrichedPayments]);
+
   const isLoading = isLoadingPayments || isLoadingProjects || isLoadingClients;
   const isError = isErrorPayments;
   const error = errorPayments;
 
-  return { payments: enrichedPayments, isLoading, isError, error };
+  return {
+    payments: enrichedPayments,
+    groupedPayments,
+    isLoading,
+    isError,
+    error
+  };
 };

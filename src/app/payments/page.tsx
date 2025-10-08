@@ -7,10 +7,12 @@ import { useQuery, useQueryClient as useQueryClientHook, useMutation } from '@ta
 import type { Payment } from '@/types/payment';
 import type { ProjectType } from '@/types/project';
 import type { Client } from '@/types/client';
-import { getAllPayments, deletePayment } from '@/services/paymentService';
+import { getAllPayments, deletePayment, deleteBatchPayment } from '@/services/paymentService';
 import { EditPaymentDialog } from '@/components/payments/edit-payment-dialog';
+import { BatchPaymentDialog } from '@/components/payments/BatchPaymentDialog';
 import { getProjects } from '@/services/projectService';
 import { getClients } from '@/services/clientService';
+import { usePaymentsData } from '@/hooks/usePaymentsData';
 
 // Componentes Layout y DataTable
 import { AppLayout } from '@/components/layout';
@@ -45,18 +47,17 @@ export default function PaymentsPage() {
   const [paymentToEdit, setPaymentToEdit] = useState<EnrichedPayment | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [expandedBatch, setExpandedBatch] = useState<string | null>(null);
 
-  const { data: payments = [], isLoading: isLoadingPayments, isError: isErrorPayments, error: errorPayments } = useQuery<Payment[], Error>({
-    queryKey: ['payments'],
-    queryFn: getAllPayments,
-  });
+  // Usar hook personalizado para pagos enriquecidos y agrupados
+  const { payments: enrichedPayments, groupedPayments, isLoading, isError, error } = usePaymentsData();
 
-  const { data: projects = [], isLoading: isLoadingProjects } = useQuery<ProjectType[], Error>({
+  const { data: projects = [] } = useQuery<ProjectType[], Error>({
     queryKey: ['projects'],
     queryFn: () => getProjects(),
   });
 
-  const { data: clients = [], isLoading: isLoadingClients } = useQuery<Client[], Error>({
+  const { data: clients = [] } = useQuery<Client[], Error>({
     queryKey: ['clients'],
     queryFn: getClients,
   });
@@ -76,12 +77,12 @@ export default function PaymentsPage() {
     }, {} as Record<string, string>);
   }, [clients]);
 
-  // Mutation primero
+  // Mutations
   const deletePaymentMutation = useMutation({
     mutationFn: deletePayment,
     onSuccess: (_, paymentId) => {
       queryClient.invalidateQueries({ queryKey: ['payments'] });
-      queryClient.invalidateQueries({ queryKey: ['projects'] }); // Invalidate projects due to balance change
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
       toast.success('Pago eliminado', { description: 'El pago ha sido eliminado.' });
       setPaymentToDelete(null);
       setIsDeleteDialogOpen(false);
@@ -90,6 +91,21 @@ export default function PaymentsPage() {
       toast.error('No se pudo eliminar el pago', { description: err.message });
       setPaymentToDelete(null);
       setIsDeleteDialogOpen(false);
+    }
+  });
+
+  const deleteBatchMutation = useMutation({
+    mutationFn: deleteBatchPayment,
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['payments'] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success('Batch eliminado', {
+        description: `Se eliminaron ${result.deletedCount} pagos del batch.`
+      });
+      setExpandedBatch(null);
+    },
+    onError: (err: Error) => {
+      toast.error('No se pudo eliminar el batch', { description: err.message });
     }
   });
 
@@ -110,31 +126,41 @@ export default function PaymentsPage() {
     }
   };
 
-  // Los pagos con tipo EnrichedPayment para compatibilidad
-  const enrichedPayments = useMemo((): EnrichedPayment[] => {
-    if (isLoadingPayments || !payments) {
-      return [];
-    }
-    // Ya no necesitamos enriquecer aquí - las columnas lo harán dinámicamente
-    return payments as EnrichedPayment[];
-  }, [payments, isLoadingPayments]);
+  const handleViewBatch = (batchId: string) => {
+    setExpandedBatch(batchId);
+  };
+
+  const handleDeleteBatch = (batchId: string) => {
+    deleteBatchMutation.mutate(batchId);
+  };
+
+  // Combinar batches + individuales para tabla
+  const tableData = useMemo(() => {
+    return [
+      ...groupedPayments.batches,
+      ...groupedPayments.individual,
+    ];
+  }, [groupedPayments]);
+
+  // Encontrar batch seleccionado
+  const selectedBatch = useMemo(() => {
+    return groupedPayments.batches.find(b => b.batchId === expandedBatch);
+  }, [expandedBatch, groupedPayments]);
 
   // Columnas para la DataTable
   const columns = React.useMemo(() => createPaymentsColumns({
     onEdit: handleEditPayment,
     onDelete: handleDeletePaymentInitiate,
+    onViewBatch: handleViewBatch,
     projectsMap,
     clientsMap,
   }), [projectsMap, clientsMap]);
 
-
-  const isLoading = isLoadingPayments || isLoadingProjects || isLoadingClients;
-
-  if (isErrorPayments) {
+  if (isError) {
     return (
       <div className="text-red-500 p-4">
         <h1 className="text-2xl font-bold mb-2">Error al cargar pagos</h1>
-        <p>{errorPayments?.message || "Ha ocurrido un error desconocido."}</p>
+        <p>{error?.message || "Ha ocurrido un error desconocido."}</p>
          <Button onClick={() => queryClient.refetchQueries({ queryKey: ['payments'] })} className="mt-4">
           Intentar de Nuevo
         </Button>
@@ -158,10 +184,10 @@ export default function PaymentsPage() {
         </Button>
       }
     >
-      {/* DataTable */}
+      {/* DataTable con datos agrupados */}
       <DataTable
           columns={columns}
-          data={enrichedPayments}
+          data={tableData}
           searchKey="projectId"
           searchPlaceholder="Buscar por proyecto, cliente, método..."
           filterableColumns={[
@@ -212,6 +238,14 @@ export default function PaymentsPage() {
           payment={paymentToEdit}
         />
       )}
+
+      {/* Diálogo de desglose de batch */}
+      <BatchPaymentDialog
+        open={!!expandedBatch}
+        onOpenChange={(open) => !open && setExpandedBatch(null)}
+        batch={selectedBatch || null}
+        onDeleteBatch={handleDeleteBatch}
+      />
     </AppLayout>
   );
 }
