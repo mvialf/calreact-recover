@@ -384,7 +384,16 @@ export const createPaymentsColumns = ({
       <DataTableColumnHeader column={column} title="Tipo" />
     ),
     cell: ({ row }) => {
-      const type = row.getValue("paymentType") as string
+      const data = row.original
+
+      // Si es batch, no tiene paymentType en summary
+      if (isBatchGroup(data)) {
+        return <span className="text-muted-foreground">—</span>
+      }
+
+      // Payment individual
+      const payment = data as EnrichedPayment
+      const type = payment.paymentType
 
       if (!type) {
         return <span className="text-muted-foreground">—</span>
@@ -408,7 +417,16 @@ export const createPaymentsColumns = ({
       <DataTableColumnHeader column={column} title="Notas" />
     ),
     cell: ({ row }) => {
-      const notes = row.getValue("notes") as string
+      const data = row.original
+
+      // Si es batch, no tiene notes en summary
+      if (isBatchGroup(data)) {
+        return <span className="text-muted-foreground">—</span>
+      }
+
+      // Payment individual
+      const payment = data as EnrichedPayment
+      const notes = payment.notes
 
       if (!notes) {
         return <span className="text-muted-foreground">—</span>
