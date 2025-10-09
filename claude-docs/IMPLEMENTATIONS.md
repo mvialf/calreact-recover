@@ -396,6 +396,28 @@
 - **Validación:** ✅ TypeScript: 0 errores | ✅ ESLint: 0 errores críticos | ✅ Imports: Sin cambios requeridos (12 archivos)
 - **Patrón establecido:** Consistente con constants/project.ts + types/project.ts del proyecto
 
+### 💳 Batch Payments UI - Renderizado Mejorado
+- **Status:** ✅ Complete | **Date:** 2025-10-09 | **Impact:** Medium
+- **Branch:** `feature/batch-payments-ui`
+- **Key commits:** `32a5e3f`
+- **Quick diff:** `git show 32a5e3f`
+- **Benefits:**
+  - Renderizado correcto de batches vs pagos individuales en tabla
+  - Type guard pattern aplicado (isBatchGroup) para type-safe column rendering
+  - UX consistente: distinción visual clara entre datos agregados y datos individuales
+  - Zero errores de acceso a propiedades undefined
+  - Código más mantenible y extensible
+- **Implementación:** ✅ Completada - 4 archivos modificados
+  - **Archivos modificados:**
+    - `src/app/payments/columns.tsx` - Refactorizar columnas paymentType y notes con lógica específica
+      - paymentType: Muestra "Batch" para grupos, método individual para pagos
+      - notes: Muestra "—" para batches (sin notes en summary), texto completo para pagos
+    - `src/app/payments/page.tsx` - Eliminar import innecesario BatchPaymentSummary
+    - `src/components/payments/BatchPaymentDialog.tsx` - Eliminar console.log de debug
+    - `src/hooks/usePaymentsData.ts` - Agregar JSDoc sobre estructura EnrichedData
+- **Patrón aplicado:** Type guard pattern para distinguir EnrichedPayment vs BatchPaymentGroup
+- **Validación:** ✅ TypeScript: 0 errores | ✅ ESLint: 0 errores | ✅ Build: exitoso
+
 ## 🔮 Upcoming Implementations
 - [ ] **Data Table Migration Fase 2** - Migrar payments, aftersales, visits, clients, installments páginas (prioridad alta)
 - [ ] **Data Table Advanced Features** - Export CSV, bulk actions, column presets (prioridad media)
