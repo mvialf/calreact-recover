@@ -16,10 +16,10 @@ import { toast } from 'sonner';
 
 import { getClientById } from '@/services/clientService';
 import { getProjects, calculateProjectBalance } from '@/services/projectService';
-import { addPayment, getPaymentsForProject, createBatchPayment } from '@/services/paymentService';
+import { addPayment, getPaymentsForProject, getAllPayments } from '@/services/paymentService';
+import { createBatchPayment } from '@/services/payment/batchPaymentService';
 import { ProjectType } from '@/types/project';
 import { PaymentMethod, Payment } from '@/types/payment';
-import { getAllPayments } from '@/services/paymentService';
 import { clientLogger } from '@/lib/logger';
 
 // Función para formatear montos a peso chileno

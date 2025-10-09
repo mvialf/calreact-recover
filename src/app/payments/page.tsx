@@ -7,7 +7,8 @@ import { useQuery, useQueryClient as useQueryClientHook, useMutation } from '@ta
 import type { Payment } from '@/types/payment';
 import type { ProjectType } from '@/types/project';
 import type { Client } from '@/types/client';
-import { getAllPayments, deletePayment, deleteBatchPayment } from '@/services/paymentService';
+import { getAllPayments, deletePayment } from '@/services/paymentService';
+import { deleteBatchPayment } from '@/services/payment/batchPaymentService';
 import { EditPaymentDialog } from '@/components/payments/edit-payment-dialog';
 import { BatchPaymentDialog } from '@/components/payments/BatchPaymentDialog';
 import { getProjects } from '@/services/projectService';

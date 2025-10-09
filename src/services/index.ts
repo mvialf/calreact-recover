@@ -11,6 +11,7 @@
 export * from './projectService';
 export * from './clientService';
 export * from './paymentService';
+export * from './payment/batchPaymentService';
 export * from './visitService';
 export * from './afterSalesService';
 
