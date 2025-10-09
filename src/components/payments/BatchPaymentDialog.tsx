@@ -9,8 +9,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Trash2 } from "lucide-react"
 import { formatCurrency } from "@/utils/format-utils"
 import { formatDateForTable } from "@/utils/date-helpers"
 import type { BatchedPaymentGroup } from "@/hooks/usePaymentsData"
@@ -19,14 +17,12 @@ interface BatchPaymentDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   batch: BatchedPaymentGroup | null
-  onDeleteBatch?: (batchId: string) => void
 }
 
 export const BatchPaymentDialog = ({
   open,
   onOpenChange,
   batch,
-  onDeleteBatch,
 }: BatchPaymentDialogProps) => {
   if (!batch) return null
 
@@ -92,24 +88,10 @@ export const BatchPaymentDialog = ({
           </div>
         </div>
 
-        <DialogFooter className="flex-col sm:flex-row gap-2">
-          {onDeleteBatch && (
-            <Button
-              variant="destructive"
-              onClick={() => {
-                onDeleteBatch(batch.batchId)
-                onOpenChange(false)
-              }}
-              className="w-full sm:w-auto"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Eliminar batch completo
-            </Button>
-          )}
+        <DialogFooter>
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="w-full sm:w-auto"
           >
             Cerrar
           </Button>

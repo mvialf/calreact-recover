@@ -246,7 +246,6 @@ export default function PaymentsPage() {
         open={!!expandedBatch}
         onOpenChange={(open) => !open && setExpandedBatch(null)}
         batch={selectedBatch || null}
-        onDeleteBatch={handleDeleteBatch}
       />
     </AppLayout>
   );

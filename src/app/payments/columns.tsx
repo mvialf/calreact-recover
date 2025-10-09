@@ -22,6 +22,7 @@ import {
 } from "lucide-react"
 
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header"
+import { ProjectSummary } from "@/components/summary/project-summary"
 import { formatCurrency } from '@/utils/format-utils'
 import { formatDateForTable } from '@/utils/date-helpers'
 import type { Payment } from '@/types/payment'
@@ -119,34 +120,26 @@ export const createPaymentsColumns = ({
   {
     accessorKey: "projectId",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Proyecto" />
+      <DataTableColumnHeader column={column} title="Proyecto / Cliente" />
     ),
     cell: ({ row }) => {
       const data = row.original
 
-      // Si es un batch, mostrar "X proyectos"
+      // Si es batch, mostrar badge + nombre de cliente
       if (isBatchGroup(data)) {
         return (
-          <div className="flex items-center space-x-2">
+          <div className="space-y-1">
+            <div className="text-sm">
+              {data.summary.clientName}
+            </div>
             <Badge variant="secondary">
               {data.summary.projectCount} proyectos
             </Badge>
-            {onViewBatch && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 px-2"
-                onClick={() => onViewBatch(data.batchId)}
-              >
-                <Eye className="h-3 w-3 mr-1" />
-                Ver desglose
-              </Button>
-            )}
           </div>
         )
       }
 
-      // Payment individual
+      // Payment individual - usar ProjectSummary
       const payment = data as EnrichedPayment
       const project = projectsMap[payment.projectId]
 
@@ -154,29 +147,39 @@ export const createPaymentsColumns = ({
         return <span className="text-muted-foreground">Proyecto no encontrado</span>
       }
 
+      const clientName = clientsMap[project.clientId]
+
       return (
-        <div className="space-y-1">
-          <div className="font-medium">
-            {project.projectNumber}
-          </div>
-          {project.glosa && (
-            <div className="text-sm text-muted-foreground">
-              {project.glosa}
-            </div>
-          )}
-        </div>
+        <ProjectSummary
+          project={{
+            projectNumber: project.projectNumber,
+            clientName: clientName,
+            glosa: project.glosa
+          }}
+          showProjectNumber={true}
+          showClientInfo={true}
+          layout="stacked"
+          size="sm"
+        />
       )
     },
-    filterFn: (row, id, value) => {
+    filterFn: (row, _id, value) => {
       const data = row.original
 
       if (isBatchGroup(data)) {
-        // Buscar en todos los pagos del batch
+        // Buscar en todos los pagos del batch (proyecto + cliente)
+        const searchTerm = value.toLowerCase()
+
+        // Buscar en nombre de cliente del summary
+        if (data.summary.clientName.toLowerCase().includes(searchTerm)) {
+          return true
+        }
+
+        // Buscar en proyectos del batch
         return data.payments.some(payment => {
           const project = projectsMap[payment.projectId]
           if (!project) return false
 
-          const searchTerm = value.toLowerCase()
           return (
             project.projectNumber.toLowerCase().includes(searchTerm) ||
             (project.glosa || '').toLowerCase().includes(searchTerm)
@@ -188,60 +191,46 @@ export const createPaymentsColumns = ({
       const project = projectsMap[payment.projectId]
       if (!project) return false
 
-      const searchTerm = value.toLowerCase()
-      return (
-        project.projectNumber.toLowerCase().includes(searchTerm) ||
-        (project.glosa || '').toLowerCase().includes(searchTerm)
-      )
-    },
-  },
-  {
-    accessorKey: "clientName",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Cliente" />
-    ),
-    cell: ({ row }) => {
-      const data = row.original
-
-      // Si es batch, usar summary
-      if (isBatchGroup(data)) {
-        return (
-          <div className="font-medium">
-            {data.summary.clientName}
-          </div>
-        )
-      }
-
-      // Payment individual
-      const payment = data as EnrichedPayment
-      const project = projectsMap[payment.projectId]
-
-      if (!project) {
-        return <span className="text-muted-foreground">—</span>
-      }
-
-      const clientName = clientsMap[project.clientId]
-      return (
-        <div className="font-medium">
-          {clientName || 'Cliente no encontrado'}
-        </div>
-      )
-    },
-    filterFn: (row, id, value) => {
-      const data = row.original
-
-      if (isBatchGroup(data)) {
-        const searchTerm = value.toLowerCase()
-        return data.summary.clientName.toLowerCase().includes(searchTerm)
-      }
-
-      const payment = data as EnrichedPayment
-      const project = projectsMap[payment.projectId]
-      if (!project) return false
-
       const clientName = clientsMap[project.clientId] || ''
       const searchTerm = value.toLowerCase()
-      return clientName.toLowerCase().includes(searchTerm)
+
+      // Buscar en proyecto Y cliente
+      return (
+        project.projectNumber.toLowerCase().includes(searchTerm) ||
+        (project.glosa || '').toLowerCase().includes(searchTerm) ||
+        clientName.toLowerCase().includes(searchTerm)
+      )
+    },
+    sortingFn: (rowA, rowB, _columnId) => {
+      const dataA = rowA.original
+      const dataB = rowB.original
+
+      // Si alguno es batch, ordenar batches al final
+      if (isBatchGroup(dataA) && !isBatchGroup(dataB)) return 1
+      if (!isBatchGroup(dataA) && isBatchGroup(dataB)) return -1
+
+      // Si ambos son batches, ordenar por cliente
+      if (isBatchGroup(dataA) && isBatchGroup(dataB)) {
+        return dataA.summary.clientName.localeCompare(dataB.summary.clientName)
+      }
+
+      // Ambos son pagos individuales
+      const paymentA = dataA as EnrichedPayment
+      const paymentB = dataB as EnrichedPayment
+
+      const projectA = projectsMap[paymentA.projectId]
+      const projectB = projectsMap[paymentB.projectId]
+
+      if (!projectA || !projectB) return 0
+
+      // Ordenar primero por projectNumber
+      const projectCompare = projectA.projectNumber.localeCompare(projectB.projectNumber)
+      if (projectCompare !== 0) return projectCompare
+
+      // Si proyectos son iguales, ordenar por cliente
+      const clientA = clientsMap[projectA.clientId] || ''
+      const clientB = clientsMap[projectB.clientId] || ''
+      return clientA.localeCompare(clientB)
     },
   },
   {
@@ -388,9 +377,21 @@ export const createPaymentsColumns = ({
     cell: ({ row }) => {
       const data = row.original
 
-      // Si es batch, no tiene paymentType en summary
+      // Si es batch, usar paymentType del summary
       if (isBatchGroup(data)) {
-        return <span className="text-muted-foreground">—</span>
+        const type = data.summary.paymentType
+
+        if (!type) {
+          return <span className="text-muted-foreground">—</span>
+        }
+
+        const variant = getPaymentTypeBadgeVariant(type)
+
+        return (
+          <Badge variant={variant as any}>
+            {type}
+          </Badge>
+        )
       }
 
       // Payment individual
@@ -410,6 +411,14 @@ export const createPaymentsColumns = ({
       )
     },
     filterFn: (row, id, value) => {
+      const data = row.original
+
+      // Si es batch, filtrar por paymentType del summary
+      if (isBatchGroup(data)) {
+        return value.includes(data.summary.paymentType)
+      }
+
+      // Payment individual
       return value.includes(row.getValue(id))
     },
   },
@@ -461,13 +470,12 @@ export const createPaymentsColumns = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Acciones del Batch</DropdownMenuLabel>
-              <DropdownMenuSeparator />
               {onViewBatch && (
                 <DropdownMenuItem
                   onClick={() => onViewBatch(data.batchId)}
                 >
                   <Eye className="mr-2 h-4 w-4" />
-                  Ver desglose
+                  Ver Pago
                 </DropdownMenuItem>
               )}
               {onDeleteBatch && (
@@ -476,7 +484,7 @@ export const createPaymentsColumns = ({
                   className="text-destructive"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
-                  Eliminar batch completo
+                  Eliminar pago
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -496,7 +504,7 @@ export const createPaymentsColumns = ({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+            
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => onEdit(payment)}

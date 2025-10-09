@@ -20,6 +20,7 @@ export interface BatchedPaymentGroup {
     clientName: string;
     date: Date;
     paymentMethod: string;
+    paymentType: string; // Tipo de pago del batch (ej: 'cliente')
     projectCount: number;
   };
 }
@@ -100,6 +101,7 @@ export const usePaymentsData = () => {
           clientName: payments[0].clientName || 'Desconocido',
           date: payments[0].date,
           paymentMethod: payments[0].paymentMethod || '',
+          paymentType: payments[0].paymentType || '', // Usar tipo del primer pago
           projectCount: payments.length,
         },
       }))
