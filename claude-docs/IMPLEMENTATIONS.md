@@ -4,6 +4,41 @@
 
 ## 📋 Quick Reference Index
 
+### 🎨 MoneyInput + DateInput Migration - 100% Consistencia Arquitectural
+- **Status:** ✅ Complete | **Date:** 2025-10-09 | **Impact:** Medium-High
+- **Branch:** `DEV`
+- **Key commits:** Current session
+- **Quick diff:** Ver cambios en edit-payment-dialog.tsx y payment-dialog.tsx
+- **Benefits:**
+  - **100% consistencia arquitectural** lograda (85.7% → 100% en DateInput coverage)
+  - 40 líneas de código eliminadas en edit-payment-dialog.tsx (-11%)
+  - 6 imports pesados eliminados (Calendar, Popover, CalendarIcon, es locale, cn)
+  - UX mejorada: Formato monetario visual ($ 1.500.000) + input nativo de fecha
+  - Patrón establecido definitivo para componentes especializados
+  - Mejor experiencia móvil (DateInput nativo HTML5)
+  - Mantenibilidad: Fuente única de verdad para campos monetarios y fechas
+- **Implementación:** ✅ Completada en 2 archivos
+  - **edit-payment-dialog.tsx (2 campos migrados):**
+    - Campo `amount`: Input type="number" → MoneyInput (-32% líneas)
+    - Campo `date`: Calendar+Popover → DateInput (-65% líneas)
+    - Imports actualizados: +2 agregados (MoneyInput, DateInput), -6 eliminados
+  - **payment-dialog.tsx (1 campo migrado):**
+    - Campo `date`: Input type="date" → DateInput (drop-in replacement)
+    - Import agregado: DateInput
+- **Archivos modificados (2 total):**
+  - `src/components/payments/edit-payment-dialog.tsx` (367→327 líneas, -11%)
+  - `src/components/payment-dialog.tsx` (123→123 líneas, mejora cualitativa)
+- **Validación:** ✅ TypeScript: 0 errores | ✅ ESLint: 0 errores críticos | ✅ Funcionalidad: Idéntica
+- **Cobertura final:**
+  - DateInput: 7/7 archivos (100%) 🎉
+  - MoneyInput: 4/4 archivos (100%)
+  - Campos numéricos no monetarios: 4 campos correctamente sin MoneyInput
+- **Patrón establecido:**
+  - 💰 Campos monetarios → MoneyInput (formato $ 1.500.000, validación automática)
+  - 📅 Selectores de fecha → DateInput (input nativo HTML5, mejor móvil)
+  - 🔢 Contadores simples → Input type="number" (cuotas, ventanas, m²)
+  - 📊 Porcentajes → PercentageInput (19.0%)
+
 ### 🔄 Event Status Field Elimination
 - **Status:** ✅ Complete | **Date:** 2025-10-07 | **Impact:** High
 - **Branch:** `feature/eliminar-status-eventos`
@@ -418,6 +453,50 @@
 - **Patrón aplicado:** Type guard pattern para distinguir EnrichedPayment vs BatchPaymentGroup
 - **Validación:** ✅ TypeScript: 0 errores | ✅ ESLint: 0 errores | ✅ Build: exitoso
 
+### ✅ CheckList Component - Self-Contained Architecture & UX Improvements
+- **Status:** ✅ Complete | **Date:** 2025-10-09 | **Impact:** Medium-High
+- **Branch:** `DEV`
+- **Key commits:** Current session
+- **Quick diff:** Ver cambios en check-list.tsx y AfterSaleForm.tsx
+- **Benefits:**
+  - **90% reducción de código en formularios** (30 líneas → 3 líneas por formulario)
+  - Single callback pattern: `onItemsChange` reemplaza 3 callbacks separados
+  - Lógica internalizada: timestamps (createdAt, completedAt) automáticos
+  - Componente auto-suficiente: generación de IDs, validación, manejo de estado interno
+  - UX mejorada: Badge con progreso (3/10), Input Shadcn consistente, hints de teclado visibles
+  - Reutilización sin duplicación: drop-in en cualquier formulario
+  - Testabilidad: lógica centralizada en un solo componente
+- **Implementación:** ✅ Completada en 3 fases incrementales
+  - **Fase 1: Eliminar duplicación de título (24% reducción)**
+    - Removido FormLabel externo en AfterSaleForm.tsx
+    - Título simplificado: "Lista de tareas de postventa" → "Tareas"
+    - Imports limpiados: -5 imports sin usar (Input, Calendar, Plus, Trash2, ListTodo)
+  - **Fase 2: Fix empty task pre-created**
+    - defaultValues: `tasks: [{ description: "", ... }]` → `tasks: []`
+    - Eliminado checkbox invisible con label vacío
+  - **Fase 3: Full refactor + UX improvements (Choice: Option 1)**
+    - **CheckList changes:**
+      - API: 3 callbacks → 1 single `onItemsChange(items[])`
+      - Helpers: `generateItemId()`, `createNewItem()`, `updateItemCompletion()`
+      - Progress: Badge con contador "X/Y" usando useMemo
+      - Input: HTML input → Shadcn Input component
+      - Hints: Kbd elements para Enter/Esc shortcuts
+    - **AfterSaleForm changes:**
+      - Eliminados: `handleAddTask`, `handleToggleTask`, `handleDeleteTask` (30 líneas)
+      - Agregado: `handleTasksChange` (3 líneas, -90%)
+- **Archivos modificados:**
+  - `src/components/ui/check-list.tsx` (228 líneas) - Componente self-contained completo
+  - `src/components/forms/AfterSaleForm.tsx` (444 líneas) - Simplificado consumer
+  - `claude-docs/references/patterns.md` (+122 líneas) - Patrón documentado con ejemplos
+- **Patrón establecido:** CheckList Self-Contained Component Pattern
+  - Single Responsibility: CheckList maneja TODO su lógica interna
+  - Single Callback: Solo `onItemsChange` necesario
+  - Timestamp Management: Automático (createdAt, completedAt)
+  - ID Generation: Interno con `Date.now().toString()`
+  - Form Integration: Formulario solo maneja estado, no lógica
+- **Validación:** ✅ TypeScript: 0 errores | ✅ ESLint: 0 errores críticos (solo warnings pre-existentes) | ✅ Funcionalidad: Idéntica con UX mejorada
+- **Documentation:** [patterns.md](../references/patterns.md#checklist---componente-self-contained-para-listas-de-tareas) - Patrón completo con before/after comparison
+
 ## 🔮 Upcoming Implementations
 - [ ] **Data Table Migration Fase 2** - Migrar payments, aftersales, visits, clients, installments páginas (prioridad alta)
 - [ ] **Data Table Advanced Features** - Export CSV, bulk actions, column presets (prioridad media)
@@ -427,9 +506,9 @@
 
 ## 📊 Implementation Statistics
 
-**Total completadas:** 16 implementaciones major
-**Impacto alto:** 13/16 implementaciones
-**Beneficios cuantificados:** 30% reducción costos API, 67% menos duplicación docs, 70%+ test coverage, 4/4 formularios React Hook Form migrados, 4/4 formularios con país dinámico, 1,714+ líneas código duplicado eliminadas (682 PageTableLayout + 657+ table components + 239 calendar-event + 50 layout refactor inicial + 28 calendar-toolbar + 26 layout.tsx simplificación + 32 payment types consolidation), arquitectura SSOT para eventos implementada, +596 líneas documentación proceso eliminación código legacy  
+**Total completadas:** 17 implementaciones major
+**Impacto alto:** 14/17 implementaciones
+**Beneficios cuantificados:** 30% reducción costos API, 67% menos duplicación docs, 70%+ test coverage, 4/4 formularios React Hook Form migrados, 4/4 formularios con país dinámico, 1,714+ líneas código duplicado eliminadas (682 PageTableLayout + 657+ table components + 239 calendar-event + 50 layout refactor inicial + 28 calendar-toolbar + 26 layout.tsx simplificación + 32 payment types consolidation), 90% reducción código formularios con CheckList, arquitectura SSOT para eventos implementada, +596 líneas documentación proceso eliminación código legacy  
 
 ## 🎯 Success Metrics
 
@@ -456,6 +535,8 @@
 - **Technical Debt Management:** Registro arqueológico completo con 3 ejemplos históricos documentados
 - **Type System Quality:** SSOT establecido entre constants/ y types/, 100% duplicación eliminada (5 elementos)
 - **Architecture Consistency:** Patrón constants vs types aplicado consistentemente (payments alineado con projects)
+- **Component Reusability:** CheckList self-contained pattern establecido, 90% menos código en forms
+- **UX Enhancement:** Progress badges, keyboard hints, consistent Shadcn styling en CheckList
 
 
 ---
