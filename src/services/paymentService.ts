@@ -169,9 +169,10 @@ const preparePaymentData = (paymentData: PaymentImportData | Omit<Payment, 'id' 
   if (paymentData.paymentMethod) {
     dataToSave.paymentMethod = paymentData.paymentMethod;
   }
-  if (paymentData.paymentType) {
-    dataToSave.paymentType = paymentData.paymentType;
-  }
+  // ✅ FASE 1: Asignar paymentType con default 'proyecto'
+  // Contexto: PaymentDialog se usa desde página de proyectos
+  dataToSave.paymentType = paymentData.paymentType || 'proyecto';
+
   if (paymentData.notes) {
     dataToSave.notes = paymentData.notes;
   }

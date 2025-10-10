@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { MoneyInput } from '@/components/ui/money-input';
 import { DateInput } from '@/components/ui/date-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { EnrichedProject } from '@/types/project';
 import { PaymentMethod } from '@/types/payment';
 import { PAYMENT_METHODS } from '@/constants/payment';
@@ -88,6 +89,13 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({ isOpen, onClose, p
               placeholder="Ingrese el monto"
               className="col-span-3"
             />
+          </div>
+          {/* ✅ FASE 2: Campo paymentType readonly para comunicar el tipo */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label className="text-right text-muted-foreground">Tipo</Label>
+            <div className="col-span-3">
+              <Badge variant="secondary">Proyecto</Badge>
+            </div>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="date" className="text-right">Fecha</Label>
