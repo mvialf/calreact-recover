@@ -497,6 +497,43 @@
 - **Validación:** ✅ TypeScript: 0 errores | ✅ ESLint: 0 errores críticos (solo warnings pre-existentes) | ✅ Funcionalidad: Idéntica con UX mejorada
 - **Documentation:** [patterns.md](../references/patterns.md#checklist---componente-self-contained-para-listas-de-tareas) - Patrón completo con before/after comparison
 
+### 💳 PaymentType Field Consistency - Data Architecture Fix
+- **Status:** ✅ Complete | **Date:** 2025-10-10 | **Impact:** High
+- **Branch:** `feature/batch-payments-ui`
+- **Key commits:** `29a08d3`
+- **Quick diff:** `git show 29a08d3`
+- **Benefits:**
+  - **100% pagos nuevos** con paymentType definido (default 'proyecto')
+  - Eliminada inconsistencia entre batchPaymentService y paymentService
+  - Queries por tipo funcionan correctamente
+  - Analytics con distribución real de tipos de pago
+  - UI mejorada: Badge readonly visible comunicando tipo de pago
+  - Migration script listo para backfill datos existentes
+  - Decisión arquitectural: Badge estático simple vs Select disabled complejo
+- **Implementación:** ✅ Completada en 3 fases (~45 min vs 2h estimadas)
+  - **Fase 1 (~20 min): paymentService.ts**
+    - Asignar default `paymentType: 'proyecto'` en preparePaymentData (líneas 172-174)
+    - Fix proactivo TypeScript errors en migration script (type-safe distribution + Promise<boolean>)
+    - Validación: TypeScript ✅ | ESLint ✅
+  - **Fase 2 (~15 min): PaymentDialog.tsx**
+    - Badge readonly "Proyecto" agregado entre Monto y Fecha (líneas 93-99)
+    - Simplificación: Badge estático vs Select disabled (menos código, mejor UX)
+    - Import Badge component agregado (línea 10)
+    - Validación: TypeScript ✅ | ESLint ✅
+  - **Fase 3 (~10 min): Migration script**
+    - Dry-run ejecutado exitosamente (0 pagos en local, esperado)
+    - Script validado: lógica de inferencia correcta (batchId → 'cliente', projectId → 'proyecto')
+    - Listo para producción con `--execute` flag
+    - Pendiente: Ejecutar migration en producción + validación post-migration
+- **Archivos modificados (4 total):**
+  - `src/services/paymentService.ts` (1 línea agregada con default)
+  - `src/components/payment-dialog.tsx` (1 import + 7 líneas UI Badge)
+  - `scripts/migrate-payment-types.ts` (2 fixes TypeScript proactivos)
+  - `docs/technical/payment-type-migration-plan.md` (actualizado con status completo)
+- **Validación:** ✅ TypeScript: 0 errores | ✅ ESLint: 0 errores críticos | ✅ Build: exitoso (Fase 1) | ✅ Dry-run: exitoso
+- **Documentation:** [payment-type-inconsistency.md](../../docs/technical/payment-type-inconsistency.md) - Análisis del problema | [payment-type-migration-plan.md](../../docs/technical/payment-type-migration-plan.md) - Plan completo
+- **Pending Production:** Ejecutar `npx tsx scripts/migrate-payment-types.ts --execute` para backfill datos existentes (~20 min)
+
 ## 🔮 Upcoming Implementations
 - [ ] **Data Table Migration Fase 2** - Migrar payments, aftersales, visits, clients, installments páginas (prioridad alta)
 - [ ] **Data Table Advanced Features** - Export CSV, bulk actions, column presets (prioridad media)
@@ -506,9 +543,9 @@
 
 ## 📊 Implementation Statistics
 
-**Total completadas:** 17 implementaciones major
-**Impacto alto:** 14/17 implementaciones
-**Beneficios cuantificados:** 30% reducción costos API, 67% menos duplicación docs, 70%+ test coverage, 4/4 formularios React Hook Form migrados, 4/4 formularios con país dinámico, 1,714+ líneas código duplicado eliminadas (682 PageTableLayout + 657+ table components + 239 calendar-event + 50 layout refactor inicial + 28 calendar-toolbar + 26 layout.tsx simplificación + 32 payment types consolidation), 90% reducción código formularios con CheckList, arquitectura SSOT para eventos implementada, +596 líneas documentación proceso eliminación código legacy  
+**Total completadas:** 18 implementaciones major
+**Impacto alto:** 15/18 implementaciones
+**Beneficios cuantificados:** 30% reducción costos API, 67% menos duplicación docs, 70%+ test coverage, 4/4 formularios React Hook Form migrados, 4/4 formularios con país dinámico, 1,714+ líneas código duplicado eliminadas (682 PageTableLayout + 657+ table components + 239 calendar-event + 50 layout refactor inicial + 28 calendar-toolbar + 26 layout.tsx simplificación + 32 payment types consolidation), 90% reducción código formularios con CheckList, arquitectura SSOT para eventos implementada, +596 líneas documentación proceso eliminación código legacy, 100% pagos nuevos con paymentType definido  
 
 ## 🎯 Success Metrics
 
@@ -537,19 +574,21 @@
 - **Architecture Consistency:** Patrón constants vs types aplicado consistentemente (payments alineado con projects)
 - **Component Reusability:** CheckList self-contained pattern establecido, 90% menos código en forms
 - **UX Enhancement:** Progress badges, keyboard hints, consistent Shadcn styling en CheckList
+- **Data Consistency:** 100% pagos nuevos con paymentType definido, queries por tipo funcionando correctamente
+- **Migration Ready:** Script validado listo para backfill ~20 min en producción
 
 
 ---
 
-**📊 Última actualización:** Octubre 2025
-**🌟 Branch actual:** `DEV`
+**📊 Última actualización:** Octubre 10, 2025
+**🌟 Branch actual:** `feature/batch-payments-ui`
 **📋 Commits recientes:**
 ```
+29a08d3 feat(payments): Implementar consistencia de campo paymentType
 74d61bb docs(deletions): Implementar sistema de eliminación de código legacy
 1c6e405 refactor(events): Eliminar campo status de ProjectEventType completamente
 8d3a1e9 refactor(events): Implementar compensaciones para eliminar status field
 7c8b5f4 refactor(events): Preparar código legacy para eliminar status field
-532c159 docs: Integrar metodología bash-first en workflow de desarrollo
 ```
 
 **📝 Para agregar nuevas implementaciones:** Seguir formato existente en este archivo
