@@ -19,7 +19,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { AddressInput } from "@/components/ui/addressInput";
@@ -33,7 +32,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ProjectSummary } from "@/components/summary";
 
 // Icons
-import { Loader2, Calendar, Plus, Trash2, ListTodo, X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 
 // Services
 import { getProjects } from "@/services/projectService";
@@ -98,7 +97,7 @@ export function AfterSaleForm({
       date: new Date(),
       phone: "",
       address: null,
-      tasks: [{ id: Date.now().toString(), description: "", completed: false }],
+      tasks: [],
     },
   });
 
@@ -209,40 +208,10 @@ export function AfterSaleForm({
     }
   };
 
-  // Manejar agregar tarea
-  const handleAddTask = (description: string) => {
-    const tasks = form.getValues("tasks");
-    const newTask = { 
-      id: Date.now().toString(), 
-      description, 
-      isCompleted: false,
-      createdAt: new Date()
-    };
-    form.setValue("tasks", [...tasks, newTask], { shouldValidate: true });
-  };
-
-  // Manejar cambiar estado de tarea
-  const handleToggleTask = (id: string, completed: boolean) => {
-    const tasks = form.getValues("tasks").map(task => 
-      task.id === id 
-        ? { 
-            ...task, 
-            completed,
-            completedAt: completed ? new Date() : undefined
-          } 
-        : task
-    );
+  // Handler único para actualizar tareas
+  const handleTasksChange = (tasks: CheckListItem[]) => {
     form.setValue("tasks", tasks, { shouldValidate: true });
   };
-
-  // Manejar eliminar tarea
-  const handleDeleteTask = (id: string) => {
-    const tasks = form.getValues("tasks").filter(task => task.id !== id);
-    form.setValue("tasks", tasks, { shouldValidate: true });
-  };
-
-  // Las tareas ya están en el formato correcto para CheckList
-  const checklistItems = form.watch("tasks");
 
   if (isLoadingProjects) {
     return <FormSkeleton />;
@@ -392,40 +361,24 @@ export function AfterSaleForm({
           />
 
           {/* Tareas */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <FormLabel className="flex items-center gap-2">
-                <ListTodo className="h-4 w-4" />
-                Tareas
-              </FormLabel>
-            </div>
-            
-            <FormField
-              control={form.control}
-              name="tasks"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <CheckList
-                      items={checklistItems}
-                      onItemToggle={handleToggleTask}
-                      onItemDelete={handleDeleteTask}
-                      onAddItem={handleAddTask}
-                      title="Lista de tareas de postventa"
-                      className="border rounded-md p-4"
-                      itemClassName="hover:bg-muted/50 rounded-md p-2 transition-colors"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          {form.formState.errors.tasks && (
-              <p className="text-sm font-medium text-destructive">
-                {form.formState.errors.tasks.message}
-              </p>
+          <FormField
+            control={form.control}
+            name="tasks"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <CheckList
+                    items={field.value}
+                    onItemsChange={handleTasksChange}
+                    title="Tareas"
+                    className="border rounded-md p-4"
+                    itemClassName="hover:bg-muted/50 rounded-md p-2 transition-colors"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
+          />
         </div>
 
         {showDefaultButtons && (

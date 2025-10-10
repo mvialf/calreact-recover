@@ -427,6 +427,130 @@ try {
 }
 ```
 
+### CheckList - Componente Self-Contained para Listas de Tareas
+
+**Patrón establecido:** CheckList maneja toda la lógica de items internamente (creación, actualización, eliminación, timestamps).
+
+#### API Simplificada (Single Callback)
+```typescript
+// ✅ PATRÓN RECOMENDADO - CheckList autónomo
+import { CheckList, type CheckListItem } from "@/components/ui/check-list";
+
+<FormField
+  control={form.control}
+  name="tasks"
+  render={({ field }) => (
+    <FormItem>
+      <FormControl>
+        <CheckList
+          items={field.value}
+          onItemsChange={(tasks) => form.setValue("tasks", tasks)}
+          title="Tareas"
+          className="border rounded-md p-4"
+          itemClassName="hover:bg-muted/50 rounded-md p-2 transition-colors"
+        />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+```
+
+#### Beneficios del Patrón Self-Contained
+- **Single Callback:** Solo `onItemsChange(items[])` en lugar de 3 callbacks separados
+- **Lógica interna:** CheckList maneja timestamps (createdAt, completedAt) automáticamente
+- **Generación de IDs:** Sistema interno de IDs únicos con `Date.now().toString()`
+- **Reutilizable:** Drop-in en cualquier formulario sin duplicar lógica
+- **Encapsulación:** Formulario solo maneja estado, no lógica de tareas
+- **Testeable:** Lógica de tareas centralizada en un solo componente
+
+#### Funcionalidades Internas de CheckList
+```typescript
+// Funciones helper internas (no expuestas al formulario):
+generateItemId()                        // Genera ID único para nuevos items
+createNewItem(description)              // Crea CheckListItem completo con timestamps
+updateItemCompletion(item, completed)   // Actualiza estado + completedAt automático
+```
+
+#### Ejemplo de Uso Completo
+```typescript
+// Formulario simplificado (solo 3 líneas para integrar CheckList)
+const handleTasksChange = (tasks: CheckListItem[]) => {
+  form.setValue("tasks", tasks, { shouldValidate: true });
+};
+
+// En el JSX
+<CheckList
+  items={field.value}
+  onItemsChange={handleTasksChange}
+  title="Tareas"
+/>
+```
+
+#### Comparación: Antes vs Después
+
+**❌ Antes (Lógica en Formulario):**
+```typescript
+// 30 líneas de lógica duplicada en cada formulario
+const handleAddTask = (description: string) => {
+  const tasks = form.getValues("tasks");
+  const newTask = {
+    id: Date.now().toString(),
+    description,
+    isCompleted: false,
+    createdAt: new Date()
+  };
+  form.setValue("tasks", [...tasks, newTask]);
+};
+
+const handleToggleTask = (id: string, completed: boolean) => {
+  const tasks = form.getValues("tasks").map(task =>
+    task.id === id
+      ? {
+          ...task,
+          isCompleted: completed,
+          completedAt: completed ? new Date() : undefined
+        }
+      : task
+  );
+  form.setValue("tasks", tasks);
+};
+
+const handleDeleteTask = (id: string) => {
+  const tasks = form.getValues("tasks").filter(task => task.id !== id);
+  form.setValue("tasks", tasks);
+};
+
+// 3 callbacks + lógica de timestamps distribuida
+<CheckList
+  items={checklistItems}
+  onItemToggle={handleToggleTask}
+  onItemDelete={handleDeleteTask}
+  onAddItem={handleAddTask}
+/>
+```
+
+**✅ Después (Lógica en CheckList):**
+```typescript
+// 3 líneas de integración simple
+const handleTasksChange = (tasks: CheckListItem[]) => {
+  form.setValue("tasks", tasks, { shouldValidate: true });
+};
+
+// Single callback + lógica centralizada en CheckList
+<CheckList
+  items={field.value}
+  onItemsChange={handleTasksChange}
+  title="Tareas"
+/>
+```
+
+**Reducción:** 30 líneas → 3 líneas (90% menos código en formularios)
+
+#### Implementación Real
+- **CheckList:** [src/components/ui/check-list.tsx](src/components/ui/check-list.tsx) - Componente self-contained
+- **Uso en formularios:** [src/components/forms/AfterSaleForm.tsx:212-214](src/components/forms/AfterSaleForm.tsx#L212-L214)
+
 ## 🎨 Centralización de Estilos (OBLIGATORIO)
 
 ### Fuente Única de Verdad
