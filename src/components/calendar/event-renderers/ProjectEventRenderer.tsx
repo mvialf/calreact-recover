@@ -1,6 +1,6 @@
 // src/components/calendar/event-renderers/ProjectEventRenderer.tsx
 import type { EventType } from '@/types/event';
-import { ProjectSummary } from '@/components/summary';
+import { ProjectCalendarEventCardSummary } from '@/components/summary';
 import { EventActionsDropdown } from '../EventActionsDropdown';
 
 /**
@@ -17,13 +17,13 @@ export interface EventRendererProps {
 /**
  * Renderer específico para eventos de tipo 'Proyecto'
  *
- * Extrae la lógica de renderizado específica de proyectos que antes
- * estaba hardcodeada en calendar-event.tsx (líneas 201-222).
+ * Maneja la lógica de interacción para eventos de proyecto en el calendario:
+ * - Botón de acciones (dropdown) con ver/editar/eliminar
+ * - Delega la presentación de datos a ProjectCalendarEventCardSummary
  *
- * Renderiza:
- * - ProjectSummary con número, cliente y glosa
- * - Comuna del proyecto (fullAddress.comune o componentes.comuna como fallback)
- * - Botón de acciones (dropdown) en esquina superior derecha
+ * Separación de responsabilidades:
+ * - Este renderer: Lógica de INTERACCIÓN (dropdown, eventos)
+ * - ProjectCalendarEventCardSummary: Lógica de PRESENTACIÓN (datos visuales)
  *
  * @param event - Evento de calendario con campos específicos de proyecto
  * @param view - Vista actual del calendario (month/week/day)
@@ -55,31 +55,12 @@ export const ProjectEventRenderer: React.FC<EventRendererProps> = ({
         </div>
       )}
 
-      {/* Contenido del evento */}
-      <div className="space-y-1 pr-6">
-        {/* Componente reutilizable de ProjectSummary */}
-        <ProjectSummary
-          project={{
-            projectNumber: event.projectNumber,
-            clientName: event.clientName,
-            glosa: event.glosa
-          }}
-          className="text-foreground text-xs"
+      {/* Contenido del evento - Delegar presentación a componente dedicado */}
+      <div className="pr-6">
+        <ProjectCalendarEventCardSummary
+          event={event}
+          view={view}
         />
-
-        {/* Mostrar comuna si está disponible */}
-        {event.fullAddress?.comune && (
-          <p className="text-xs text-muted-foreground truncate">
-            {event.fullAddress.comune}
-          </p>
-        )}
-
-        {/* Fallback: mostrar desde componentes si existe */}
-        {!event.fullAddress?.comune && event.fullAddress?.componentes?.comuna && (
-          <p className="text-xs text-muted-foreground truncate">
-            {event.fullAddress.componentes.comuna}
-          </p>
-        )}
       </div>
     </div>
   );

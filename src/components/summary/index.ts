@@ -9,6 +9,7 @@ export { ProjectSummary } from './project-summary';
 export { ProjectStatusDropdown } from './project-status-dropdown';
 export { ProjectEventDetails } from './project-event-details';
 export { AddressSummary } from './address-summary';
+export { ProjectCalendarEventCardSummary } from './project-calendar-event-card-summary';
 
 // Preparado para futuros summary components:
 // export { ClientSummary } from './client-summary';
