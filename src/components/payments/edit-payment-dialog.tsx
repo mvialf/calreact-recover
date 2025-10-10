@@ -5,8 +5,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { CalendarIcon } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { paymentLogger } from '@/lib/logger';
 
@@ -28,6 +26,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
+import { DateInput } from '@/components/ui/date-input';
 import {
   Select,
   SelectContent,
@@ -35,32 +35,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
 import { updatePayment } from '@/services/paymentService';
 import type { Payment } from '@/types/payment';
-
-const paymentMethods = [
-  { value: 'transferencia', label: 'Transferencia' },
-  { value: 'tarjeta de crédito', label: 'Tarjeta de Crédito' },
-  { value: 'tarjeta de débito', label: 'Tarjeta de Débito' },
-  { value: 'efectivo', label: 'Efectivo' },
-  { value: 'cheque', label: 'Cheque' },
-  { value: 'otro', label: 'Otro' },
-];
-
-const paymentTypes = [
-  { value: 'proyecto', label: 'Proyecto' },
-  { value: 'cliente', label: 'Cliente' },
-  { value: 'otro', label: 'Otro' },
-];
+import { PAYMENT_METHODS, PAYMENT_TYPES } from '@/constants/payment';
 
 const formSchema = z.object({
   amount: z.number().min(1, 'El monto debe ser mayor a 0'),
@@ -188,12 +167,11 @@ export function EditPaymentDialog({ open, onOpenChange, payment }: EditPaymentDi
                   <FormItem>
                     <FormLabel>Monto</FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                      <MoneyInput
+                        value={field.value}
+                        onValueChange={(value) => field.onChange(value || 0)}
+                        placeholder="Ingrese el monto"
+                        disabled={updatePaymentMutation.isPending}
                       />
                     </FormControl>
                     <FormMessage />
@@ -205,38 +183,18 @@ export function EditPaymentDialog({ open, onOpenChange, payment }: EditPaymentDi
                 control={form.control}
                 name="date"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
+                  <FormItem>
                     <FormLabel>Fecha de Pago</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              'pl-3 text-left font-normal',
-                              !field.value && 'text-muted-foreground'
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, 'PPP', { locale: es })
-                            ) : (
-                              <span>Selecciona una fecha</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
-                          initialFocus
-                          locale={es}
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <FormControl>
+                      <DateInput
+                        value={field.value ? format(field.value, 'yyyy-MM-dd') : ''}
+                        onChange={(e) => {
+                          const date = e.target.value ? new Date(e.target.value) : undefined;
+                          field.onChange(date);
+                        }}
+                        disabled={updatePaymentMutation.isPending}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -257,9 +215,9 @@ export function EditPaymentDialog({ open, onOpenChange, payment }: EditPaymentDi
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {paymentMethods.map((method) => (
-                          <SelectItem key={method.value} value={method.value}>
-                            {method.label}
+                        {PAYMENT_METHODS.map((method) => (
+                          <SelectItem key={method} value={method}>
+                            {method.charAt(0).toUpperCase() + method.slice(1)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -282,9 +240,9 @@ export function EditPaymentDialog({ open, onOpenChange, payment }: EditPaymentDi
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {paymentTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
+                        {PAYMENT_TYPES.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type.charAt(0).toUpperCase() + type.slice(1)}
                           </SelectItem>
                         ))}
                       </SelectContent>

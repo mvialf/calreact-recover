@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MoneyInput } from '@/components/ui/money-input';
+import { DateInput } from '@/components/ui/date-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { EnrichedProject } from '@/types/project';
 import { PaymentMethod } from '@/types/payment';
@@ -90,7 +91,7 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({ isOpen, onClose, p
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="date" className="text-right">Fecha</Label>
-            <Input id="date" type="date" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)} className="col-span-3" />
+            <DateInput id="date" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)} className="col-span-3" />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="paymentMethod" className="text-right">Forma de Pago</Label>
