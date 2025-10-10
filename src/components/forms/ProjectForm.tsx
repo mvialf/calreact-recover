@@ -8,7 +8,7 @@ import { phoneSchema } from '@/utils/validation-schemas';
 import { normalizeCountryCode } from '@/utils/country-utils';
 import { useQuery } from '@tanstack/react-query';
 import { formatCurrency } from '@/utils/format-helpers';
-import { TagSelector, type Tag } from '@/components/ui/tags';
+import { TagSelector, type Tag } from '@/components/ui/custom/tags';
 import { useUninstallTags } from '@/hooks/useUninstallTags';
 import { cn } from '@/lib/utils';
 

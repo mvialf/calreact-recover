@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TagSelector, TagBadge, type Tag, type TagColor } from "@/components/ui/tags";
+import { TagSelector, TagBadge, type Tag, type TagColor } from "@/components/ui/custom/tags";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useTags } from "@/hooks/useTags";
