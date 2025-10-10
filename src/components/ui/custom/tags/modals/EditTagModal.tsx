@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TagBadge } from "@/components/ui/tag-badge";
+import { TagBadge } from "../core/TagBadge";
 import { cn } from "@/lib/utils";
 import type { Tag, TagColor } from "@/types/tags";
 import { TAG_COLOR_MAP, AVAILABLE_TAG_COLORS } from "@/types/tags";

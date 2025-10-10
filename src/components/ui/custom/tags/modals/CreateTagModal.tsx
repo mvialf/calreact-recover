@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { TagBadge } from "@/components/ui/tag-badge";
+import { TagBadge } from "../core/TagBadge";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Tag, TagColor } from "@/types/tags";
 import { TAG_COLOR_MAP, AVAILABLE_TAG_COLORS } from "@/types/tags";

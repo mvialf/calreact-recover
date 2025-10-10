@@ -1,10 +1,10 @@
 /**
- * Sistema de Etiquetas CalReact - Exportaciones principales
- * Componentes de etiquetas estilo Trello con colores personalizados
+ * Sistema de Etiquetas CalReact - Re-export desde /custom/tags/
+ * @deprecated Importar desde @/components/ui/custom/tags directamente
+ * Este archivo mantiene compatibilidad temporal pero se recomienda migrar
  */
 
-export { TagBadge } from "./tag-badge";
-export { TagSelector } from "./tag-selector";
+export { TagBadge, TagSelector } from './custom/tags';
 
 // Re-exportar tipos para conveniencia
 export type {
@@ -13,9 +13,9 @@ export type {
   TagBadgeProps,
   TagSelectorProps,
   CreateTagData
-} from "@/types/tags";
+} from '@/types/tags';
 
 export {
   TAG_COLOR_MAP,
   AVAILABLE_TAG_COLORS
-} from "@/types/tags";
+} from '@/types/tags';

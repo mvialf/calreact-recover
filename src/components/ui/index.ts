@@ -159,9 +159,8 @@ export { Autocomplete } from './autocomplete';
 export { CheckList } from './check-list';
 
 // ===== COMPONENTES PERSONALIZADOS =====
-export { TagBadge } from './tag-badge';
-export { TagSelector } from './tag-selector';
-export type { Tag } from './tags';
+export { TagBadge, TagSelector } from './custom/tags';
+export type { Tag } from './custom/tags';
 export { useSafeDialog } from './safe-dialog';
 export { CopyableCodeBlock } from './copyable-code-block';
 export { FileDndInput } from './file-dnd-input';

@@ -12,9 +12,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TagBadge } from "@/components/ui/tag-badge";
-import { CreateTagModal } from "@/components/ui/create-tag-modal";
-import { EditTagModal } from "@/components/ui/edit-tag-modal";
+import { TagBadge } from "./TagBadge";
+import { CreateTagModal } from "../modals/CreateTagModal";
+import { EditTagModal } from "../modals/EditTagModal";
 import type { TagSelectorProps, Tag, TagColor, CreateTagData } from "@/types/tags";
 
 /**
