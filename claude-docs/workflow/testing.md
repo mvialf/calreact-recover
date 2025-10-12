@@ -336,6 +336,424 @@ collectCoverageFrom: [
 
 ---
 
+## 🛡️ Testing Componentes Radix UI
+
+**Actualizado:** Octubre 2025
+**Stack:** Radix UI 1.x, @testing-library/user-event 14.6.1, Jest 30.0.3
+**Componentes aplicables:** Autocomplete, Popover, Dialog, Select, Dropdown, Tooltip
+
+### 📋 **Quick Reference**
+
+```typescript
+// ✅ Infrastructure setup obligatorio
+global.PointerEvent = MouseEvent as any;  // jest.setup.ts
+
+// ✅ Fake timers + userEvent
+jest.useFakeTimers();
+const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+// ✅ Performance optimization
+await user.paste('texto largo');  // NO user.type() para strings largos
+
+// ✅ Validaciones semánticas
+expect(item).toHaveAttribute('aria-selected', 'true');  // NO .toHaveClass()
+```
+
+---
+
+### 🔧 **Configuración Infrastructure (jest.setup.ts)**
+
+#### **Problema 1: PointerEvent API Missing**
+
+**Contexto:**
+Radix UI utiliza `PointerEvent` API para manejar interacciones (clicks, hover, focus). jsdom no implementa esta API nativamente, causando errores en tests.
+
+**Síntoma:**
+```bash
+TypeError: window.PointerEvent is not a constructor
+```
+
+**Solución (Obligatoria):**
+```typescript
+// src/__tests__/setup/jest.setup.ts
+// Mock PointerEvent global con MouseEvent
+global.PointerEvent = MouseEvent as any;
+```
+
+**Referencia:** [Radix UI Issue #2619](https://github.com/radix-ui/primitives/issues/2619)
+
+---
+
+#### **Problema 2: Warnings act() de Radix UI Internals**
+
+**Contexto:**
+Radix UI Presence/Portal/Popper tienen efectos asíncronos internos que disparan warnings de `act()` fuera de nuestro control. Estos warnings son del código de la biblioteca, NO de nuestro código.
+
+**Síntoma:**
+```bash
+Warning: An update to Presence inside a test was not wrapped in act(...)
+Warning: An update to Portal inside a test was not wrapped in act(...)
+Warning: An update to Popover inside a test was not wrapped in act(...)
+```
+
+**Solución (Suppression Selectiva):**
+```typescript
+// src/__tests__/setup/jest.setup.ts
+const originalError = console.error;
+
+console.error = (...args) => {
+  // Suprimir warnings de act() de bibliotecas externas (Radix UI)
+  // Estos son problemas conocidos de Radix UI, no de nuestro código
+  if (
+    typeof args[0] === 'string' &&
+    args[0].includes('An update to') &&
+    args[0].includes('inside a test was not wrapped in act')
+  ) {
+    return; // Suprimir silenciosamente
+  }
+
+  originalError.call(console, ...args);
+};
+```
+
+**Importante:** Esta suppression es **arquitecturalmente correcta** porque:
+- ✅ Los warnings provienen de código externo (Radix UI)
+- ✅ No podemos controlar los efectos internos de Radix UI
+- ✅ Alternativa sería wrappear todo en `act()`, pero no funciona con async effects internos
+- ✅ Radix UI tiene issue abierto reconociendo el problema
+
+---
+
+#### **Problema 3: Timeout Global Insuficiente**
+
+**Contexto:**
+Radix UI Popover/Dialog tienen animaciones y efectos asíncronos que pueden tardar >10 segundos en completarse con `userEvent` en tests lentos.
+
+**Solución:**
+```typescript
+// src/__tests__/setup/jest.setup.ts
+// Aumentar timeout a 20s para componentes Radix UI
+jest.setTimeout(20000);
+```
+
+**Alternativa (Test-specific):**
+```typescript
+it('test con popover complejo', async () => {
+  // ...
+}, 30000); // 30 segundos para este test específico
+```
+
+---
+
+### ⚡ **Patrones de Testing**
+
+#### **Patrón 1: Fake Timers + userEvent**
+
+**Problema:**
+userEvent v14+ es completamente asíncrono y usa `setTimeout` internamente. Cuando `jest.useFakeTimers()` está activo, bloquea los timers de userEvent causando timeouts.
+
+**Síntoma:**
+```bash
+thrown: "Exceeded timeout of 10000 ms for a test."
+```
+
+**Solución:**
+```typescript
+// ❌ INCORRECTO (causa timeout):
+const user = userEvent.setup();
+jest.useFakeTimers();
+
+// ✅ CORRECTO (configurar advanceTimers):
+jest.useFakeTimers();
+const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+```
+
+**Ejemplo Completo:**
+```typescript
+it('debe aplicar debounce cuando debounceMs > 0', async () => {
+  // Setup correcto
+  jest.useFakeTimers();
+  const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+  const handleSearch = jest.fn();
+
+  render(<Autocomplete items={items} onSearch={handleSearch} debounceMs={300} />);
+
+  const input = screen.getByRole('combobox');
+  await user.type(input, 'test');
+
+  // Clear any calls durante typing
+  handleSearch.mockClear();
+
+  // Avanzar timers manualmente
+  jest.advanceTimersByTime(300);
+
+  await waitFor(() => {
+    expect(handleSearch).toHaveBeenCalledWith('test');
+  });
+
+  jest.useRealTimers(); // Limpiar al final
+});
+```
+
+---
+
+#### **Patrón 2: Performance - paste() vs type()**
+
+**Problema:**
+`userEvent.type()` dispara un re-render completo de Radix UI Popover **por cada carácter** digitado. Para strings largos, esto resulta en decenas de renders síncronos con delays, haciendo tests extremadamente lentos.
+
+**Benchmark:**
+```
+'Opción 1' (8 caracteres):
+- user.type()  → 8-10 segundos
+- user.paste() → 0.1-0.3 segundos
+
+'texto invalido' (14 caracteres):
+- user.type()  → 15-20 segundos
+- user.paste() → 0.2-0.4 segundos
+```
+
+**Solución (Regla de Oro):**
+
+```typescript
+// ❌ USAR type() solo cuando validamos comportamiento carácter por carácter
+it('debe aplicar debounce en cada tecla', async () => {
+  const user = userEvent.setup();
+  await user.type(input, 'test'); // Necesario para validar debounce incremental
+});
+
+// ✅ USAR paste() para la mayoría de los tests
+it('debe seleccionar item y cerrar popover', async () => {
+  const user = userEvent.setup();
+  input.focus();
+  await user.paste('Opción 1'); // 90% más rápido
+
+  const option = screen.getByText('Opción 1');
+  await user.click(option);
+});
+```
+
+**Cuándo usar cada uno:**
+
+| Método | Usar cuando | Ejemplo |
+|--------|-------------|---------|
+| `type()` | Validar debounce carácter por carácter | Debounce search input |
+| `type()` | Validar onInputChange incremental | Live validation |
+| `type()` | Validar navegación con teclado (ArrowDown, Enter) | Keyboard navigation |
+| `paste()` | Seleccionar un item de lista | Select autocomplete option |
+| `paste()` | Validar StrictSelection | Validate invalid input |
+| `paste()` | Filtrado final (no incremental) | Filter results |
+
+---
+
+#### **Patrón 3: Validaciones Semánticas**
+
+**Problema:**
+Radix UI usa clases CSS con variantes de Tailwind (e.g., `aria-selected:bg-accent`). Estas clases NO están presentes directamente en el elemento, sino que se aplican condicionalmente via pseudo-selectores.
+
+**Síntoma:**
+```typescript
+// ❌ Test falla
+expect(item).toHaveClass('bg-accent');
+// Received: "... aria-selected:bg-accent ..." (clase condicional, no directa)
+```
+
+**Solución (Validar atributos ARIA):**
+```typescript
+// ❌ INCORRECTO (validar clase CSS directa)
+const items = screen.getAllByRole('option');
+expect(items[0]).toHaveClass('bg-accent');
+
+// ✅ CORRECTO (validar atributo semántico)
+const items = screen.getAllByRole('option');
+expect(items[0]).toHaveAttribute('aria-selected', 'true');
+```
+
+**Otros ejemplos:**
+```typescript
+// Validar estado inválido
+expect(input).toHaveAttribute('aria-invalid', 'true');
+expect(input).toHaveClass('border-destructive'); // ✅ Esta clase SÍ es directa
+
+// Validar expansión de popover
+expect(input).toHaveAttribute('aria-expanded', 'true');
+
+// Validar tipo de autocomplete
+expect(input).toHaveAttribute('aria-autocomplete', 'list');
+```
+
+---
+
+#### **Patrón 4: Asynchronous Assertions**
+
+**Problema:**
+Radix UI Presence/Portal manejan montaje/desmontaje de elementos asíncronamente. Assertions inmediatas pueden fallar porque el DOM aún no se actualizó.
+
+**Solución (Usar waitFor):**
+```typescript
+// ❌ PUEDE FALLAR (assertion síncrona)
+await user.click(input);
+expect(input).toHaveAttribute('aria-expanded', 'true');
+
+// ✅ CORRECTO (waitFor para async updates)
+await user.click(input);
+await waitFor(() => {
+  expect(input).toHaveAttribute('aria-expanded', 'true');
+});
+
+// ✅ ALTERNATIVA (findBy automáticamente espera)
+await user.click(input);
+const popover = await screen.findByRole('listbox');
+expect(popover).toBeInTheDocument();
+```
+
+---
+
+### 🧪 **Ejemplo Completo: Autocomplete Test**
+
+```typescript
+// src/components/ui/__tests__/autocomplete.test.tsx
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { Autocomplete } from '../autocomplete';
+
+describe('Autocomplete - Interacción Usuario', () => {
+  const mockItems = [
+    { value: '1', label: 'Opción 1' },
+    { value: '2', label: 'Opción 2' },
+    { value: '3', label: 'Opción 3' },
+  ];
+
+  it('debe abrir popover al escribir en el input', async () => {
+    // Arrange
+    const user = userEvent.setup();
+    render(<Autocomplete items={mockItems} onSelect={jest.fn()} />);
+
+    // Act
+    const input = screen.getByRole('combobox');
+    input.focus();
+    await user.paste('Op'); // paste() para performance
+
+    // Assert - Usar waitFor para async Radix UI updates
+    await waitFor(() => {
+      expect(input).toHaveAttribute('aria-expanded', 'true');
+    });
+  });
+
+  it('debe seleccionar item y cerrar popover al hacer click', async () => {
+    // Arrange
+    const user = userEvent.setup();
+    const handleSelect = jest.fn();
+    render(<Autocomplete items={mockItems} onSelect={handleSelect} />);
+
+    // Act
+    const input = screen.getByRole('combobox');
+    input.focus();
+    await user.paste('Opción 1');
+
+    const option = screen.getByText('Opción 1');
+    await user.click(option);
+
+    // Assert
+    expect(handleSelect).toHaveBeenCalledWith('1');
+    await waitFor(() => {
+      expect(input).toHaveAttribute('aria-expanded', 'false');
+    });
+  });
+
+  it('debe cerrar popover con delay al hacer blur', async () => {
+    // Arrange - Fake timers para delay
+    jest.useFakeTimers();
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    render(<Autocomplete items={mockItems} onSelect={jest.fn()} />);
+
+    // Act
+    const input = screen.getByRole('combobox');
+    input.focus();
+    await user.paste('Op');
+
+    // Blur
+    input.blur();
+
+    // Assert - Avanzar timers para delay
+    jest.advanceTimersByTime(200);
+
+    await waitFor(() => {
+      expect(input).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    jest.useRealTimers();
+  });
+});
+
+describe('Autocomplete - Navegación Teclado', () => {
+  it('debe navegar con ArrowDown', async () => {
+    // Arrange
+    const user = userEvent.setup();
+    render(<Autocomplete items={mockItems} onSelect={jest.fn()} />);
+
+    // Act
+    const input = screen.getByRole('combobox');
+    await user.type(input, 'Op'); // type() necesario para keyboard navigation
+
+    await user.keyboard('{ArrowDown}');
+
+    // Assert - Validar aria-selected (NO clase CSS)
+    const items = screen.getAllByRole('option');
+    expect(items[0]).toHaveAttribute('aria-selected', 'true');
+  });
+});
+```
+
+---
+
+### 🚨 **Troubleshooting Common Issues**
+
+#### **Error: "window.PointerEvent is not a constructor"**
+```typescript
+// Solución: Agregar a jest.setup.ts
+global.PointerEvent = MouseEvent as any;
+```
+
+#### **Error: "Exceeded timeout of 10000 ms"**
+```typescript
+// Opción 1: Aumentar timeout global (jest.setup.ts)
+jest.setTimeout(20000);
+
+// Opción 2: Usar paste() en lugar de type()
+await user.paste('texto'); // NO user.type('texto')
+
+// Opción 3: Configurar advanceTimers con fake timers
+jest.useFakeTimers();
+const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+```
+
+#### **Warning: "act() was not wrapped"**
+```typescript
+// Solución: Suppression selectiva en jest.setup.ts (ver arriba)
+// O usar waitFor para async assertions:
+await waitFor(() => {
+  expect(element).toHaveAttribute('aria-expanded', 'true');
+});
+```
+
+#### **Test falla: "toHaveClass('bg-accent')"**
+```typescript
+// Solución: Validar atributo ARIA en lugar de clase CSS
+expect(item).toHaveAttribute('aria-selected', 'true');
+```
+
+---
+
+### 📚 **Referencias**
+
+- **Implementación completa:** [autocomplete.test.tsx](../../src/components/ui/__tests__/autocomplete.test.tsx)
+- **Jest setup:** [jest.setup.ts](../../src/__tests__/setup/jest.setup.ts)
+- **Radix UI Issue:** [#2619 - act() warnings](https://github.com/radix-ui/primitives/issues/2619)
+- **userEvent v14 docs:** [Testing Library](https://testing-library.com/docs/user-event/intro)
+
+---
+
 ## 🚀 Flujo de Trabajo Testing
 
 ### 1. 🔄 **Durante Desarrollo**

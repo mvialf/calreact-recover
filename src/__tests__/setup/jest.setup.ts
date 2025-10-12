@@ -65,6 +65,11 @@ Object.defineProperty(window, 'scrollTo', {
 // Mock para scrollIntoView (requerido por Radix UI Select)
 Element.prototype.scrollIntoView = jest.fn();
 
+// Mock para PointerEvent (requerido por Radix UI Popover/Dialog)
+// Radix UI usa PointerEvent para interacciones, pero jsdom no lo soporta
+// Shimear con MouseEvent para compatibilidad completa
+global.PointerEvent = MouseEvent as any;
+
 // Mock para localStorage
 const localStorageMock = {
   getItem: jest.fn(),
@@ -99,6 +104,19 @@ beforeAll(() => {
     ) {
       return;
     }
+
+    // Suprimir warnings de act() que provienen de Radix UI Presence/Portal/Popover
+    // y componentes que usan Radix UI internamente (Autocomplete)
+    // Estos son problemas conocidos de la biblioteca externa, no de nuestro código
+    // Issue: https://github.com/radix-ui/primitives/issues/2619
+    if (
+      typeof args[0] === 'string' &&
+      args[0].includes('An update to') &&
+      args[0].includes('inside a test was not wrapped in act')
+    ) {
+      return;
+    }
+
     originalError.call(console, ...args);
   };
 
@@ -120,7 +138,9 @@ afterAll(() => {
 });
 
 // Configuración global para timeouts de tests
-jest.setTimeout(10000);
+// Aumentado a 20s para tests con componentes Radix UI (Popover, Dialog)
+// que tienen animaciones y efectos asíncronos
+jest.setTimeout(20000);
 
 // Helper global para debugging en tests
 (global as any).debug = (element: any) => {

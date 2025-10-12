@@ -293,38 +293,21 @@ export function Autocomplete({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
 
+    // ✅ MEJORA: Siempre permitir escribir, validar solo visualmente
+    setInputValue(newValue)
+    if (onInputChange) onInputChange(newValue)
+
     if (strictSelection) {
-      // Modo estricto: validar contra items disponibles
+      // Validar contra items disponibles pero NO bloquear escritura
       const hasMatchingItem = items.some(item =>
         item.label.toLowerCase().includes(newValue.toLowerCase())
       )
 
-      // Solo permitir si hay coincidencia o está vacío
-      if (hasMatchingItem || newValue === '') {
-        setInputValue(newValue)
-        setIsValidInput(true)
-        if (onInputChange) onInputChange(newValue)
-
-        // Abrir popover si hay texto
-        if (newValue.length > 0 && !open) {
-          setOpen(true)
-        }
-
-        // Limpiamos la selección si el input está vacío
-        if (newValue.length === 0) {
-          onSelect("")
-        }
-      } else {
-        // Input inválido - marcar como tal pero no actualizar
-        setIsValidInput(false)
-      }
-      return
+      // Solo marcar validez visual, no bloquear input
+      setIsValidInput(hasMatchingItem || newValue === '')
+    } else {
+      setIsValidInput(true)
     }
-
-    // Comportamiento normal (texto libre)
-    setInputValue(newValue)
-    setIsValidInput(true)
-    if (onInputChange) onInputChange(newValue)
 
     // Abrir popover si hay texto
     if (newValue.length > 0 && !open) {
@@ -378,6 +361,15 @@ export function Autocomplete({
 
   // Placeholder efectivo (usar searchPlaceholder si está disponible, heredado de Combobox)
   const effectivePlaceholder = searchPlaceholder || placeholder
+
+  // ✅ MEJORA: Mensaje dinámico cuando no hay resultados
+  const emptyMessage = React.useMemo(() => {
+    const searchValue = debounceMs > 0 ? debouncedInputValue : inputValue
+
+    if (!searchValue) return emptyText
+
+    return `No se encontraron resultados para "${searchValue}". Intenta con menos caracteres.`
+  }, [inputValue, debouncedInputValue, emptyText, debounceMs])
 
   return (
     <div className={cn("relative w-full", className)}>
@@ -440,7 +432,7 @@ export function Autocomplete({
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
               ) : filteredItems.length === 0 ? (
-                <CommandEmpty>{emptyText}</CommandEmpty>
+                <CommandEmpty>{emptyMessage}</CommandEmpty>
               ) : (
                 <CommandGroup className="w-full overflow-y-auto">
                   {filteredItems.map((item, index) => (
