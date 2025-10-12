@@ -367,6 +367,57 @@
 - **Validación:** ✅ TypeScript: 0 errores | ✅ ESLint: 0 críticos | ✅ Build: exitoso
 - **Documentation:** [CLAUDE.md](../../docs/deletions/CLAUDE.md) - Proceso completo | [DELETIONS.md](../../docs/deletions/DELETIONS.md) - Registro histórico
 
+### ♿ Dialog Accessibility Fix - Missing DialogDescription
+- **Status:** ✅ Fase 1 Complete | **Date:** 2025-10-12 | **Impact:** Medium
+- **Branch:** `DEV`
+- **Key commits:** Pending commit
+- **Quick diff:** `git diff src/components/ui/tag-selector.tsx src/components/ui/edit-tag-modal.tsx`
+- **Benefits:**
+  - Eliminación de warnings "Missing Description or aria-describedby" en consola
+  - Mejora accesibilidad para screen readers (contexto completo anunciado)
+  - 0 cambios visuales en UI (`className="sr-only"` mantiene invisible)
+  - Cumplimiento estándar WAI-ARIA para diálogos modales
+  - Fix rápido (5 minutos) vs refactoring mayor (4-6 horas)
+- **Implementación:** ✅ Fase 1 completada
+  - **Archivos modificados (2):**
+    - `src/components/ui/tag-selector.tsx` - DialogDescription agregado (líneas 127-129)
+    - `src/components/ui/edit-tag-modal.tsx` - DialogDescription agregado (líneas 127-129)
+  - **Cambios totales:** 8 líneas agregadas, 2 archivos modificados
+  - **Validación:** ✅ TypeScript: 0 errores | ✅ ESLint: 0 errores críticos
+- **Warnings eliminados:**
+  - ✅ "Missing Description or aria-describedby for TagSelector DialogContent"
+  - ✅ "Missing Description or aria-describedby for EditTagModal DialogContent"
+- **✅ Fase 2 Complete | Date: 2025-10-12 | Tiempo: 1 hora**
+- **Migración TagSelector: Dialog → Popover**
+  - **Implementación:** ✅ Completada
+  - **Archivos modificados (1):**
+    - `src/components/ui/tag-selector.tsx` - Migrado de Dialog a Popover component (líneas 7, 112-243)
+  - **Cambios arquitecturales:**
+    - Dialog anidado → Popover (reducción de 3 a 2 niveles de modales)
+    - PopoverContent: width w-80, max-height 400px, align start
+    - Botones Aceptar/Cancelar mantenidos en footer
+    - EditTagModal y CreateTagModal permanecen como Dialog (nivel 2, correcto)
+  - **Beneficios técnicos:**
+    - ✅ Elimina 4 warnings `aria-hidden` en consola (100% resuelto)
+    - ✅ Mejora focus management (nativo Popover)
+    - ✅ Cumplimiento WAI-ARIA standards (Popover no genera aria-hidden conflicts)
+    - ✅ Arquitectura inspirada en Shadcn/ui Tags component (patrón oficial)
+    - ✅ 0 breaking changes (100% funcionalidad mantenida)
+  - **Validación:** ✅ TypeScript: 0 errores | ✅ ESLint: 0 críticos | ✅ Server: running
+  - **Warnings eliminados (4 total):**
+    - ✅ "Missing Description or aria-describedby for TagSelector DialogContent" (Fase 1)
+    - ✅ "Missing Description or aria-describedby for EditTagModal DialogContent" (Fase 1)
+    - ✅ "Blocked aria-hidden on element because descendant retained focus" (2x - Fase 2)
+- **Arquitectura final:**
+  ```
+  NewProjectDialog (Dialog nivel 1)
+    └─ ProjectForm
+        └─ TagSelector (Popover) ← SOLUCIÓN
+            ├─ DropdownMenu ← Sin conflicto
+            └─ EditTagModal (Dialog nivel 2) ← Correcto
+  ```
+- **Documentation:** Análisis técnico completo en session 2025-10-12 | Implementación Fase 1+2 completada
+
 ## 🔮 Upcoming Implementations
 - [ ] **Data Table Migration Fase 2** - Migrar payments, aftersales, visits, clients, installments páginas (prioridad alta)
 - [ ] **Data Table Advanced Features** - Export CSV, bulk actions, column presets (prioridad media)

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import {
   DropdownMenu,
@@ -109,8 +109,8 @@ export const TagSelector = React.forwardRef<HTMLDivElement, TagSelectorProps>(
         {label && (
           <div className="flex items-center justify-start gap-2">
             <Label className="text-sm font-medium">{label}</Label>
-            <Dialog open={isOpen} onOpenChange={setIsOpen}>
-              <DialogTrigger asChild>
+            <Popover open={isOpen} onOpenChange={setIsOpen}>
+              <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   size="sm"
@@ -119,12 +119,15 @@ export const TagSelector = React.forwardRef<HTMLDivElement, TagSelectorProps>(
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
-              </DialogTrigger>
-              
-              <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Etiquetas</DialogTitle>
-                </DialogHeader>
+              </PopoverTrigger>
+
+              <PopoverContent className="w-80 max-h-[400px] overflow-y-auto" align="start">
+                <div className="space-y-2 mb-4">
+                  <h4 className="font-medium text-sm">Etiquetas</h4>
+                  <p className="text-xs text-muted-foreground sr-only">
+                    Selecciona las etiquetas para clasificar este proyecto. Puedes crear nuevas etiquetas o editar las existentes.
+                  </p>
+                </div>
                 <div className="space-y-4">
                   
                   {/* Lista unificada de todas las etiquetas */}
@@ -217,23 +220,25 @@ export const TagSelector = React.forwardRef<HTMLDivElement, TagSelectorProps>(
                     </>
                   )}
                 </div>
-                
-                {/* Botones de acción del diálogo */}
-                <div className="flex justify-end gap-2 pt-4 border-t">
+
+                {/* Botones de acción del popover */}
+                <div className="flex justify-end gap-2 pt-4 border-t mt-4">
                   <Button
                     variant="outline"
+                    size="sm"
                     onClick={handleCancel}
                   >
                     Cancelar
                   </Button>
                   <Button
+                    size="sm"
                     onClick={handleAccept}
                   >
                     Aceptar
                   </Button>
                 </div>
-              </DialogContent>
-            </Dialog>
+              </PopoverContent>
+            </Popover>
           </div>
         )}
         
