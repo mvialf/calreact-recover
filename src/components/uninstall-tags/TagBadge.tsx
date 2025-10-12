@@ -3,15 +3,18 @@ import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { TagBadgeProps } from "@/types/tags";
-import { TAG_COLOR_MAP } from "@/types/tags";
+import { DEFAULT_TAG_COLORS } from "@/types/tags";
 
 /**
  * Componente TagBadge - Muestra una etiqueta individual estilo Trello
- * Utiliza los colores personalizados definidos en globals.css
+ *
+ * Utiliza colores Tailwind estándar por defecto (portables).
+ * Soporta override de colores para personalización específica.
  */
 export const TagBadge = React.forwardRef<HTMLDivElement, TagBadgeProps>(
-  ({ tag, removable = false, onRemove, className, ...props }, ref) => {
-    const colorClasses = TAG_COLOR_MAP[tag.color];
+  ({ tag, removable = false, onRemove, className, colorOverride, ...props }, ref) => {
+    // Prioridad: colorOverride → DEFAULT_TAG_COLORS (portable)
+    const colorClasses = colorOverride || DEFAULT_TAG_COLORS[tag.color];
 
     const handleRemove = (e: React.MouseEvent) => {
       e.stopPropagation();

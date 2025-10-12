@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { TagBadge } from "./TagBadge";
 import { cn } from "@/lib/utils";
 import type { Tag, TagColor } from "@/types/tags";
-import { TAG_COLOR_MAP, AVAILABLE_TAG_COLORS } from "@/types/tags";
+import { DEFAULT_TAG_COLORS, AVAILABLE_TAG_COLORS } from "@/types/tags";
 
 interface EditTagModalProps {
   isOpen: boolean;
@@ -174,7 +174,7 @@ export const EditTagModal: React.FC<EditTagModalProps> = ({
             <div className="grid grid-cols-3 gap-2">
               {AVAILABLE_TAG_COLORS.map(({ color, label }) => {
                 const isSelected = color === tagColor;
-                const colorClasses = TAG_COLOR_MAP[color];
+                const colorClasses = DEFAULT_TAG_COLORS[color];
                 return (
                   <Button
                     key={color}

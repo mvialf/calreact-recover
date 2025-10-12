@@ -15,7 +15,7 @@ import {
 import { TagBadge } from "./TagBadge";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Tag, TagColor } from "@/types/tags";
-import { TAG_COLOR_MAP, AVAILABLE_TAG_COLORS } from "@/types/tags";
+import { DEFAULT_TAG_COLORS, AVAILABLE_TAG_COLORS } from "@/types/tags";
 
 interface CreateTagModalProps {
   isOpen: boolean;
@@ -190,7 +190,7 @@ export const CreateTagModal: React.FC<CreateTagModalProps> = ({
             <Label>Color</Label>
             <div className="grid grid-cols-6 gap-2">
               {AVAILABLE_TAG_COLORS.map(({ color, label }) => {
-                const colorClasses = TAG_COLOR_MAP[color];
+                const colorClasses = DEFAULT_TAG_COLORS[color];
                 const isSelected = tagColor === color;
                 
                 return (

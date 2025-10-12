@@ -160,44 +160,100 @@ type TagColor =
 
 ## 🎨 Sistema de Colores
 
-El sistema usa **9 colores predefinidos** basados en variables CSS del design system:
+### Colores Portables (DEFAULT) ✅
 
-| Color | Label (ES) | Uso Sugerido | Clase Tailwind |
-|-------|------------|--------------|----------------|
-| `yellow` | Amarillo | Advertencia, En proceso | `bg-[hsl(var(--yellow))]` |
-| `sky` | Azul Cielo | Información, Agua | `bg-[hsl(var(--Sky))]` |
-| `orange` | Naranja | Urgente, Eléctrico | `bg-[hsl(var(--orange))]` |
-| `brown` | Marrón | Madera, Materiales | `bg-[hsl(var(--brown))]` |
-| `complete` | Verde | Completado, Exitoso | `bg-[hsl(var(--complete))]` |
-| `purple` | Morado | Especial, Premium | `bg-[hsl(var(--purple))]` |
-| `primary` | Primario | Default del tema | `bg-primary` |
-| `secondary` | Secundario | Neutro, Secundario | `bg-secondary` |
-| `destructive` | Rojo | Error, Eliminar | `bg-destructive` |
+El sistema usa **colores Tailwind estándar por defecto** para máxima portabilidad:
 
-### Agregar Nuevos Colores
+| Color | Label (ES) | Uso Sugerido | Clases Tailwind |
+|-------|------------|--------------|-----------------|
+| `yellow` | Amarillo | Advertencia, En proceso | `bg-yellow-100 text-yellow-900` |
+| `sky` | Azul Cielo | Información, Agua | `bg-sky-200 text-sky-950` |
+| `orange` | Naranja | Urgente, Eléctrico | `bg-orange-500 text-white` |
+| `brown` | Marrón | Madera, Materiales | `bg-orange-950 text-white` |
+| `complete` | Verde | Completado, Exitoso | `bg-green-400 text-white` |
+| `purple` | Morado | Especial, Premium | `bg-purple-600 text-white` |
+| `primary` | Primario | Default del tema | `bg-primary text-primary-foreground` |
+| `secondary` | Secundario | Neutro, Secundario | `bg-secondary text-secondary-foreground` |
+| `destructive` | Rojo | Error, Eliminar | `bg-destructive text-destructive-foreground` |
 
-1. **Definir variable CSS** en `src/app/globals.css`:
+**✅ Ventajas:**
+- **Portabilidad 10/10:** Funciona out-of-the-box en cualquier proyecto con Tailwind
+- **Cero configuración:** No requiere definir variables CSS
+- **Mantenimiento:** Actualizaciones de Tailwind se aplican automáticamente
+
+### Personalización de Colores
+
+#### Opción 1: Override Inline (Portable)
+
+```tsx
+import { TagBadge, DEFAULT_TAG_COLORS } from '@/components/uninstall-tags';
+
+// Usar colores por defecto (portable)
+<TagBadge tag={tag} />
+
+// Override con colores personalizados
+<TagBadge
+  tag={tag}
+  colorOverride={{
+    bg: 'bg-pink-400',
+    text: 'text-white',
+    border: 'border-pink-600'
+  }}
+/>
+```
+
+#### Opción 2: Variables CSS (Backward Compatibility)
+
+Para integrar con design system existente usando `globals.css`:
+
+```tsx
+import { TagBadge, CSS_VAR_TAG_COLORS } from '@/components/uninstall-tags';
+
+// Usar variables CSS del proyecto
+<TagBadge
+  tag={tag}
+  colorOverride={CSS_VAR_TAG_COLORS[tag.color]}
+/>
+```
+
+**Requiere definir en `globals.css`:**
 ```css
 :root {
-  --custom-color: 200 100% 50%;
-  --custom-color-foreground: 0 0% 100%;
+  --yellow: 48 96% 53%;
+  --yellow-foreground: 26 83% 14%;
+  --Sky: 199 89% 48%;
+  --Sky-foreground: 210 40% 98%;
+  /* ... otros colores */
 }
 ```
 
-2. **Extender tipo** en `src/types/tags.ts`:
+#### Opción 3: Agregar Nuevos Colores (Extensibilidad)
+
+1. **Extender tipo** en `src/types/tags.ts`:
 ```typescript
 export type TagColor =
   | 'yellow' | 'sky' | /* ... otros */
   | 'custom-color'; // ← Nuevo color
 ```
 
-3. **Agregar mapeo** en `TAG_COLOR_MAP`:
+2. **Agregar a DEFAULT_TAG_COLORS:**
 ```typescript
-'custom-color': {
-  bg: 'bg-[hsl(var(--custom-color))]',
-  text: 'text-[hsl(var(--custom-color-foreground))]',
-  border: 'border-[hsl(var(--custom-color))]'
-}
+export const DEFAULT_TAG_COLORS: Record<TagColor, ColorClasses> = {
+  // ... colores existentes
+  'custom-color': {
+    bg: 'bg-pink-400',
+    text: 'text-white',
+    border: 'border-pink-600'
+  }
+};
+```
+
+3. **Agregar label en español:**
+```typescript
+export const AVAILABLE_TAG_COLORS = [
+  // ... colores existentes
+  { color: 'custom-color', label: 'Rosa Personalizado' }
+];
 ```
 
 ---
