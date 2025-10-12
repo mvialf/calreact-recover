@@ -51,6 +51,68 @@ export default function MyPage() {
 }
 ```
 
+
+---
+
+### autocomplete/
+Sistema de autocompletado avanzado basado en **Radix UI** con funcionalidades completas.
+
+**Características:**
+- Búsqueda con debounce configurable
+- Navegación por teclado (ArrowUp/Down, Home/End, Enter, Esc)
+- Strict selection mode (validación de input)
+- Loading states integrados
+- Render customizable
+- ARIA completo (W3C standards)
+- 24 test cases (>85% coverage)
+
+**Dependencias externas:**
+```json
+{
+  "@radix-ui/react-command": "^1.x",
+  "@radix-ui/react-popover": "^1.x",
+  "@radix-ui/react-label": "^2.x",
+  "clsx": "^2.x",
+  "tailwind-merge": "^2.x",
+  "lucide-react": "^0.x"
+}
+```
+
+**Componentes Shadcn/ui incluidos:**
+- `input.tsx` (22 líneas) - Ya incluido en carpeta
+- `command.tsx` (159 líneas) - Ya incluido en carpeta
+- `popover.tsx` (34 líneas) - Ya incluido en carpeta
+
+**Para copiar a otro proyecto:**
+1. Copiar carpeta `autocomplete/` completa
+2. Asegurar que el proyecto tenga Tailwind CSS configurado
+3. Instalar dependencias listadas arriba: `npm install @radix-ui/react-command @radix-ui/react-popover @radix-ui/react-label clsx tailwind-merge lucide-react`
+4. Importar y usar
+
+**Uso básico:**
+```typescript
+import { Autocomplete } from '@/components/custom/autocomplete';
+
+const items = [
+  { value: '1', label: 'Opción 1' },
+  { value: '2', label: 'Opción 2' }
+];
+
+<Autocomplete
+  items={items}
+  onSelect={(value) => console.log(value)}
+  placeholder="Buscar..."
+/>
+```
+
+**Features avanzados:**
+- Debounce: `debounceMs={300}`
+- Validación: `strictSelection={true}`
+- Loading: `isLoading={loading}`
+- Custom render: `renderItem={(item) => ...}`
+
+**Documentación completa:** Ver `autocomplete/README.md` y `autocomplete/QUICK-START.md`
+
 ---
 
 ### uninstall-tags/

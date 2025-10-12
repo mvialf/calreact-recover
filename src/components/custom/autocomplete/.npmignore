@@ -1,0 +1,10 @@
+# Archivos de ejemplo y documentación (opcional en producción)
+EXAMPLE-USAGE.tsx
+QUICK-START.md
+
+# Tests (opcional si quieres incluirlos)
+__tests__/
+
+# Git
+.git
+.gitignore
