@@ -2,6 +2,7 @@ import * as React from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -9,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TagBadge } from "@/components/ui/tag-badge";
+import { TagBadge } from "./TagBadge";
 import { cn } from "@/lib/utils";
 import type { Tag, TagColor } from "@/types/tags";
 import { TAG_COLOR_MAP, AVAILABLE_TAG_COLORS } from "@/types/tags";
@@ -123,6 +124,9 @@ export const EditTagModal: React.FC<EditTagModalProps> = ({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Editar Etiqueta</DialogTitle>
+          <DialogDescription className="sr-only">
+            Modifica el nombre, abreviatura o color de la etiqueta seleccionada
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">

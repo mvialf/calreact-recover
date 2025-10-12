@@ -3,7 +3,7 @@
 
 import { convertUninstallTagToTag } from '@/__tests__/helpers/uninstall-tags-helpers';
 import type { UninstallTag } from '@/types/uninstall-tags';
-import type { Tag } from '@/components/ui/tags';
+import type { Tag } from '@/components/uninstall-tags';
 
 describe('Uninstall System Migration Validation', () => {
   describe('Validación de tipos y conversión', () => {

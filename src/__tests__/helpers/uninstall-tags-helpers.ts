@@ -2,7 +2,7 @@
 // Helper centralizado para mocks de uninstall tags
 
 import type { UninstallTag } from '@/types/uninstall-tags';
-import type { Tag } from '@/components/ui/tags';
+import type { Tag } from '@/components/uninstall-tags';
 
 // Mock data para uninstall tags
 export const mockUninstallTags: UninstallTag[] = [
