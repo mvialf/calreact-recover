@@ -183,10 +183,12 @@ El sistema usa **colores Tailwind estándar por defecto** para máxima portabili
 
 ### Personalización de Colores
 
-#### Opción 1: Override Inline (Portable)
+#### Opción 1: Override Inline (Recomendado)
+
+Para casos específicos donde necesitas colores diferentes:
 
 ```tsx
-import { TagBadge, DEFAULT_TAG_COLORS } from '@/components/uninstall-tags';
+import { TagBadge } from '@/components/uninstall-tags';
 
 // Usar colores por defecto (portable)
 <TagBadge tag={tag} />
@@ -202,32 +204,7 @@ import { TagBadge, DEFAULT_TAG_COLORS } from '@/components/uninstall-tags';
 />
 ```
 
-#### Opción 2: Variables CSS (Backward Compatibility)
-
-Para integrar con design system existente usando `globals.css`:
-
-```tsx
-import { TagBadge, CSS_VAR_TAG_COLORS } from '@/components/uninstall-tags';
-
-// Usar variables CSS del proyecto
-<TagBadge
-  tag={tag}
-  colorOverride={CSS_VAR_TAG_COLORS[tag.color]}
-/>
-```
-
-**Requiere definir en `globals.css`:**
-```css
-:root {
-  --yellow: 48 96% 53%;
-  --yellow-foreground: 26 83% 14%;
-  --Sky: 199 89% 48%;
-  --Sky-foreground: 210 40% 98%;
-  /* ... otros colores */
-}
-```
-
-#### Opción 3: Agregar Nuevos Colores (Extensibilidad)
+#### Opción 2: Agregar Nuevos Colores Globales (Extensibilidad)
 
 1. **Extender tipo** en `src/types/tags.ts`:
 ```typescript
@@ -497,55 +474,9 @@ uninstall-tags-package/
 └── README.md                ← Este archivo
 ```
 
-### Configuración de CSS Variables
-
-**Tailwind config personalizado:**
-```js
-// tailwind.config.js
-module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        'tag-yellow': 'hsl(var(--yellow))',
-        'tag-sky': 'hsl(var(--Sky))',
-        // ... otros colores
-      }
-    }
-  }
-}
-```
-
-**Incluir en CSS global:**
-```css
-/* styles/globals.css */
-@layer base {
-  :root {
-    --yellow: 48 96% 53%;
-    --yellow-foreground: 26 83% 14%;
-    --Sky: 199 89% 48%;
-    --Sky-foreground: 210 40% 98%;
-    /* ... otros colores del sistema */
-  }
-}
-```
-
 ---
 
 ## 🐛 Common Issues & Troubleshooting
-
-### Issue: Tags no se muestran con colores correctos
-
-**Causa:** Variables CSS no definidas en `globals.css`
-
-**Solución:**
-```css
-/* Verificar que existan en globals.css */
-:root {
-  --yellow: 48 96% 53%;
-  --Sky: 199 89% 48%;
-  /* ... etc */
-}
-```
 
 ### Issue: Abreviaturas duplicadas
 

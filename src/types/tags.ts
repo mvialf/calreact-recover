@@ -40,7 +40,14 @@ export interface TagBadgeProps {
   /**
    * Override de colores para este badge específico.
    * Si no se proporciona, usa DEFAULT_TAG_COLORS (Tailwind estándar portable).
-   * Para usar variables CSS de globals.css, pasar CSS_VAR_TAG_COLORS[tag.color]
+   *
+   * @example
+   * // Override con colores personalizados
+   * <TagBadge tag={tag} colorOverride={{
+   *   bg: 'bg-pink-400',
+   *   text: 'text-white',
+   *   border: 'border-pink-600'
+   * }} />
    */
   colorOverride?: ColorClasses;
 }
@@ -119,71 +126,6 @@ export const DEFAULT_TAG_COLORS: Record<TagColor, ColorClasses> = {
     border: 'border-destructive'
   }
 };
-
-// ============================================================================
-// COLORES CON VARIABLES CSS (BACKWARD COMPATIBILITY)
-// ============================================================================
-/**
- * Colores usando variables CSS de globals.css (comportamiento legacy).
- * Útil para mantener consistencia con design system existente del proyecto.
- * REQUIERE que globals.css tenga definidas las variables CSS correspondientes.
- *
- * @deprecated Usar DEFAULT_TAG_COLORS para portabilidad.
- * Solo usar este mapeo si necesitas integración específica con globals.css.
- */
-export const CSS_VAR_TAG_COLORS: Record<TagColor, ColorClasses> = {
-  yellow: {
-    bg: 'bg-[hsl(var(--yellow))]',
-    text: 'text-[hsl(var(--yellow-foreground))]',
-    border: 'border-[hsl(var(--yellow))]'
-  },
-  sky: {
-    bg: 'bg-[hsl(var(--Sky))]',
-    text: 'text-[hsl(var(--Sky-foreground))]',
-    border: 'border-[hsl(var(--Sky))]'
-  },
-  orange: {
-    bg: 'bg-[hsl(var(--orange))]',
-    text: 'text-[hsl(var(--orange-foreground))]',
-    border: 'border-[hsl(var(--orange))]'
-  },
-  brown: {
-    bg: 'bg-[hsl(var(--brown))]',
-    text: 'text-[hsl(var(--brown-foreground))]',
-    border: 'border-[hsl(var(--brown))]'
-  },
-  complete: {
-    bg: 'bg-[hsl(var(--complete))]',
-    text: 'text-[hsl(var(--complete-foreground))]',
-    border: 'border-[hsl(var(--complete))]'
-  },
-  purple: {
-    bg: 'bg-[hsl(var(--purple))]',
-    text: 'text-[hsl(var(--purple-foreground))]',
-    border: 'border-[hsl(var(--purple))]'
-  },
-  primary: {
-    bg: 'bg-primary',
-    text: 'text-primary-foreground',
-    border: 'border-primary'
-  },
-  secondary: {
-    bg: 'bg-secondary',
-    text: 'text-secondary-foreground',
-    border: 'border-secondary'
-  },
-  destructive: {
-    bg: 'bg-destructive',
-    text: 'text-destructive-foreground',
-    border: 'border-destructive'
-  }
-};
-
-/**
- * @deprecated Usar DEFAULT_TAG_COLORS en su lugar para portabilidad.
- * TAG_COLOR_MAP se mantiene por compatibilidad pero apunta a CSS_VAR_TAG_COLORS.
- */
-export const TAG_COLOR_MAP = CSS_VAR_TAG_COLORS;
 
 // Colores disponibles para selección con etiquetas en español
 export const AVAILABLE_TAG_COLORS: { color: TagColor; label: string }[] = [
