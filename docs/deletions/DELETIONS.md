@@ -58,17 +58,41 @@
 
 ---
 
+### Plan Migración Tags Completo (2025-10-12)
+- **Commits:** `71b8d81..fab1b52` (40 commits) | **Impact:** High
+- **Qué:** Sistema completo colección separada tags + caching + batch queries + analytics (~1,100 líneas)
+- **Por qué:** Análisis técnico reveló 70% sobreingeniería para escala actual (30 proyectos, <10 tags típicos)
+- **Componentes eliminados:**
+  - tagService.ts (418 líneas) - Batch queries automático innecesario
+  - useTagsCache.ts (198 líneas) - Firebase SDK ya cachea localmente
+  - useTagAutocomplete.ts (206 líneas) - Fuzzy search innecesario para <50 tags
+  - TagColorPicker.tsx (200 líneas) - Sistema híbrido colores custom
+  - 4 scripts migración/seeding (migrate, verify, seed)
+  - Modificaciones extensas a useUninstallTags.ts
+- **Razones específicas:**
+  - Caching localStorage: Redundante (Firebase SDK ya cachea)
+  - Batch queries: Proyectos tienen <10 tags, nunca alcanza límite Firestore
+  - Analytics usageCount: Feature no solicitada, sin dashboard planeado
+  - Fuzzy matching: Simple `.filter()` instantáneo para <50 tags
+  - Soft deletes: Sin requisito auditoría/legal
+- **Reemplazo:** Tags embebidos en proyectos (arquitectura simple suficiente para escala actual)
+- **Lección arquitectural:** YAGNI - implementar cuando surja necesidad real con datos, no preventivamente
+- **Restaurar completo:** `git checkout fab1b52 -- .` O ver commits en branch `backup-tags-experiment`
+
+---
+
 ## 📈 Estadísticas Acumuladas
 
 ### Totales
-- **Líneas eliminadas:** 1,258+ líneas de código legacy
-- **Componentes completos:** 3 (FullFields, FormModal, useModalManager)
+- **Líneas eliminadas:** 2,358+ líneas de código legacy/sobreingeniería
+- **Componentes completos:** 6 (FullFields, FormModal, useModalManager, tagService, useTagsCache, useTagAutocomplete)
 - **Schemas deprecated:** 1 (projectEventFullSchema)
 - **Campos arquitecturales:** 1 (ProjectEventType.status)
-- **Archivos completos eliminados:** 6+
+- **Archivos completos eliminados:** 14+
+- **Commits revertidos:** 40 (plan migración tags)
 
 ### Impacto por Tipo
-- **High Impact:** 2 eliminaciones (legacy completo, campo status)
+- **High Impact:** 3 eliminaciones (legacy completo, campo status, plan tags)
 - **Medium Impact:** 1 eliminación (deuda técnica Full mode)
 - **Low Impact:** 0 eliminaciones
 
@@ -80,6 +104,6 @@
 
 ---
 
-**📊 Última actualización:** Octubre 2025
-**📝 Total de entradas:** 3 eliminaciones registradas
+**📊 Última actualización:** Octubre 12, 2025
+**📝 Total de entradas:** 4 eliminaciones registradas
 **🔧 Mantenimiento:** Actualizar cada eliminación significativa (>100 líneas)
