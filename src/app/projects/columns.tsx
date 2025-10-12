@@ -22,7 +22,7 @@ import {
 import { format as formatDate } from 'date-fns'
 import { es } from 'date-fns/locale'
 
-import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header"
+import { DataTableColumnHeader } from "@/components/custom/data-table/data-table-column-header"
 import { ProjectSummary, ProjectStatusDropdown } from '@/components/summary'
 import { formatCurrency } from '@/utils/format-helpers'
 import { getPaymentPercentageBadgeVariant } from '@/lib/constants'

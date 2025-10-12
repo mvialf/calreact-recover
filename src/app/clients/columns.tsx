@@ -19,7 +19,7 @@ import {
   Loader2
 } from "lucide-react"
 
-import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header"
+import { DataTableColumnHeader } from "@/components/custom/data-table/data-table-column-header"
 import type { Client } from '@/types/client'
 
 interface ClientsColumnsProps {

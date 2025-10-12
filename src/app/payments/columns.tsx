@@ -20,7 +20,7 @@ import {
   Banknote
 } from "lucide-react"
 
-import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header"
+import { DataTableColumnHeader } from "@/components/custom/data-table/data-table-column-header"
 import { formatCurrency } from '@/utils/format-utils'
 import { formatDateForTable } from '@/utils/date-helpers'
 import type { Payment } from '@/types/payment'

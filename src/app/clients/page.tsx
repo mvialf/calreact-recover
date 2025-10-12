@@ -24,7 +24,7 @@ import { toast } from 'sonner';
 
 // Componentes Layout y DataTable
 import { AppLayout } from '@/components/layout';
-import { DataTable } from '@/components/data-table/data-table';
+import { DataTable } from '@/components/custom/data-table/data-table';
 import { createClientsColumns } from './columns';
 
 export default function ClientsPage() {

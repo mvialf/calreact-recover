@@ -20,7 +20,7 @@ import { visitLogger } from '@/lib/logger';
 
 // Componentes Layout y DataTable
 import { AppLayout } from '@/components/layout';
-import { DataTable } from '@/components/data-table/data-table';
+import { DataTable } from '@/components/custom/data-table/data-table';
 import { createVisitsColumns, VISIT_STATUS_OPTIONS } from './columns';
 
 export default function VisitsPage() {

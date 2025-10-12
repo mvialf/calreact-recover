@@ -14,7 +14,7 @@ import { getClients } from '@/services/clientService';
 
 // Componentes Layout y DataTable
 import { AppLayout } from '@/components/layout';
-import { DataTable } from '@/components/data-table/data-table';
+import { DataTable } from '@/components/custom/data-table/data-table';
 import { createPaymentsColumns, PAYMENT_METHOD_OPTIONS, PAYMENT_TYPE_OPTIONS } from './columns';
 
 import { Button } from '@/components/ui/button';

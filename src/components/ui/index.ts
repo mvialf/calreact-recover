@@ -159,7 +159,7 @@ export { Autocomplete } from './autocomplete';
 export { CheckList } from './check-list';
 
 // ===== COMPONENTES PERSONALIZADOS =====
-// Tag components moved to: @/components/uninstall-tags
+// Tag components moved to: @/components/custom/uninstall-tags
 export { useSafeDialog } from './safe-dialog';
 export { CopyableCodeBlock } from './copyable-code-block';
 export { FileDndInput } from './file-dnd-input';

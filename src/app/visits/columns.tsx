@@ -23,7 +23,7 @@ import {
 import { format as formatDate } from 'date-fns'
 import { es } from 'date-fns/locale'
 
-import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header"
+import { DataTableColumnHeader } from "@/components/custom/data-table/data-table-column-header"
 import type { Visit, VisitStatus } from '@/services/visitService'
 
 // Función de estilos de estado - manteniendo la implementación exacta

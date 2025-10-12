@@ -25,7 +25,7 @@ jest.mock('@/components/ui/addressInput', () => ({
 // DateInput ya no necesita mock - es un input nativo estándar
 
 // Mock simplificado de TagSelector
-jest.mock('@/components/uninstall-tags', () => ({
+jest.mock('@/components/custom/uninstall-tags', () => ({
   TagSelector: ({ placeholder, label }: any) => (
     <div data-testid="tag-selector">
       <div data-testid="tag-label">{label}</div>

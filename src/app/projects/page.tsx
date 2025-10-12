@@ -17,7 +17,7 @@ import { addPayment } from '@/services/paymentService';
 
 // Componentes
 import { AppLayout } from '@/components/layout';
-import { DataTable } from '@/components/data-table';
+import { DataTable } from '@/components/custom/data-table';
 import { createProjectsColumns } from './columns';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';

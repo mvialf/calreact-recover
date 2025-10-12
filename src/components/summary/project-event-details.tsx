@@ -1,5 +1,5 @@
 import { FileText, Phone, Grid2x2 } from 'lucide-react';
-import { TagBadge } from '@/components/uninstall-tags';
+import { TagBadge } from '@/components/custom/uninstall-tags';
 import { Badge } from '@/components/ui/badge';
 import { getStatusBadgeVariant } from '@/utils/badge-helpers';
 import { PROJECT_STATUS_OPTIONS } from '@/constants/project';
