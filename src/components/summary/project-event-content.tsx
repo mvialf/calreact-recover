@@ -102,7 +102,7 @@ export function ProjectEventContent({
         size={size}
         className="text-foreground"
       />
-      <div className= "gap-4">
+      <div className= "flex flex-row gap-4">
         {status && (
             <div className="flex items-center gap-2">
               <Badge variant={getStatusBadgeVariant(status)}>

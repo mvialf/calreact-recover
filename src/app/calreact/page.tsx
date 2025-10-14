@@ -77,7 +77,7 @@ export default function CalReactAppPage() {
     () => events?.map(event => ({
       ...event,
       status: event.type === 'Proyecto'
-        ? projectsMap.get((event as any).projectId)?.status
+        ? projectsMap.get(event.referenceId)?.status
         : undefined
     })),
     [events, projectsMap]
