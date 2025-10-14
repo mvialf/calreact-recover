@@ -1,6 +1,6 @@
 // src/components/calendar/event-renderers/ProjectEventRenderer.tsx
 import type { EventType } from '@/types/event';
-import { ProjectSummary } from '@/components/summary';
+import { ProjectEventContent } from '@/components/summary/project-event-content';
 import { EventActionsDropdown } from '../EventActionsDropdown';
 
 /**
@@ -17,13 +17,9 @@ export interface EventRendererProps {
 /**
  * Renderer específico para eventos de tipo 'Proyecto'
  *
- * Extrae la lógica de renderizado específica de proyectos que antes
- * estaba hardcodeada en calendar-event.tsx (líneas 201-222).
- *
  * Renderiza:
- * - ProjectSummary con número, cliente y glosa
- * - Comuna del proyecto (fullAddress.comune o componentes.comuna como fallback)
- * - Botón de acciones (dropdown) en esquina superior derecha
+ * - ProjectEventContent (contenido visual reutilizable)
+ * - EventActionsDropdown (acciones en hover)
  *
  * @param event - Evento de calendario con campos específicos de proyecto
  * @param view - Vista actual del calendario (month/week/day)
@@ -55,32 +51,8 @@ export const ProjectEventRenderer: React.FC<EventRendererProps> = ({
         </div>
       )}
 
-      {/* Contenido del evento */}
-      <div className="space-y-1 pr-6">
-        {/* Componente reutilizable de ProjectSummary */}
-        <ProjectSummary
-          project={{
-            projectNumber: event.projectNumber,
-            clientName: event.clientName,
-            glosa: event.glosa
-          }}
-          className="text-foreground text-xs"
-        />
-
-        {/* Mostrar comuna si está disponible */}
-        {event.fullAddress?.comune && (
-          <p className="text-xs text-muted-foreground truncate">
-            {event.fullAddress.comune}
-          </p>
-        )}
-
-        {/* Fallback: mostrar desde componentes si existe */}
-        {!event.fullAddress?.comune && event.fullAddress?.componentes?.comuna && (
-          <p className="text-xs text-muted-foreground truncate">
-            {event.fullAddress.componentes.comuna}
-          </p>
-        )}
-      </div>
+      {/* Contenido reutilizable extraído */}
+      <ProjectEventContent event={event} size="sm" className="pr-6" />
     </div>
   );
 };
