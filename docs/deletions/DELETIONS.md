@@ -59,7 +59,7 @@
 ---
 
 ### Autocomplete Duplicado en ui/ (2025-10-14)
-- **Commit:** `[pending]` | **Impact:** Medium
+- **Commit:** `8f72036` | **Impact:** Medium
 - **Qué:** Componente Autocomplete duplicado en `ui/` (483 líneas) sin fix crítico de race condition
 - **Por qué:** Duplicación violaba SSOT, versión `custom/` es portable y actualizada con fix de race condition
 - **Problema resuelto:**
@@ -69,7 +69,7 @@
   - 4 archivos productivos migrados a `custom/autocomplete`
   - AfterSaleForm.tsx, NewProjectEventForm.tsx, ProjectForm.tsx, test-autocomplete/page.tsx
 - **Reemplazo:** `@/components/custom/autocomplete` (versión portable con fix aplicado)
-- **Restaurar:** `git checkout [commit] -- src/components/ui/autocomplete.tsx`
+- **Restaurar:** `git checkout 8f72036 -- src/components/ui/autocomplete.tsx`
 
 ---
 
