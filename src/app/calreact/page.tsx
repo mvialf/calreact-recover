@@ -145,11 +145,23 @@ export default function CalReactAppPage() {
   const deleteEventMutation = useMutation({
     mutationFn: (eventId: string) => deleteProjectEvent(eventId, db),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['calendar-events', userId] });
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      toast.success('Evento eliminado');
+      // IMPORTANTE: Cerrar dialog ANTES de invalidar queries para evitar race condition
+      // que deja pointer-events: none en el body (bug conocido de Radix UI AlertDialog)
       setIsDeleteDialogOpen(false);
       setSelectedEvent(null);
+
+      // Workaround: Limpiar manualmente el pointer-events del body
+      // Radix UI AlertDialog no limpia correctamente el style inline cuando se desmonta
+      // durante un re-render causado por invalidación de queries
+      setTimeout(() => {
+        // Remover el style inline del body
+        document.body.style.removeProperty('pointer-events');
+
+        // Invalidar queries y mostrar toast
+        queryClient.invalidateQueries({ queryKey: ['calendar-events', userId] });
+        queryClient.invalidateQueries({ queryKey: ['projects'] });
+        toast.success('Evento eliminado');
+      }, 100);
     },
     onError: (error: Error) => {
       eventLogger.error('Error al eliminar evento', error);
