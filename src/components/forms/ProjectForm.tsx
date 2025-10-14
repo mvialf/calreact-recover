@@ -30,7 +30,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Autocomplete, type AutocompleteItem } from '@/components/ui/autocomplete';
+import { Autocomplete, type AutocompleteItem } from '@/components/custom/autocomplete';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { PercentageInput } from '@/components/ui/percentage-input';
 import { MoneyInput } from '@/components/ui/money-input';

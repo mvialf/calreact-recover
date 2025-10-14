@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react';
-import { Autocomplete, AutocompleteItem } from '@/components/ui/autocomplete';
+import { Autocomplete, AutocompleteItem } from '@/components/custom/autocomplete';
 
 // ============================================================================
 // Mock Data

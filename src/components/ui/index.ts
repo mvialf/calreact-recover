@@ -155,7 +155,7 @@ export { PhoneInput } from './phone-input';
 export { AddressInput } from './addressInput';
 export { MoneyInput } from './money-input';
 export { DateInput } from './date-input';
-export { Autocomplete } from './autocomplete';
+// Autocomplete moved to: @/components/custom/autocomplete
 export { CheckList } from './check-list';
 
 // ===== COMPONENTES PERSONALIZADOS =====

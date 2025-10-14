@@ -58,6 +58,21 @@
 
 ---
 
+### Autocomplete Duplicado en ui/ (2025-10-14)
+- **Commit:** `[pending]` | **Impact:** Medium
+- **Qué:** Componente Autocomplete duplicado en `ui/` (483 líneas) sin fix crítico de race condition
+- **Por qué:** Duplicación violaba SSOT, versión `custom/` es portable y actualizada con fix de race condition
+- **Problema resuelto:**
+  - Race condition: `handleBlur` con `setTimeout(150ms)` causaba fallo de clicks
+  - Nested Dialog issue: Faltaba `modal={true}` en Popover
+- **Migración completa:**
+  - 4 archivos productivos migrados a `custom/autocomplete`
+  - AfterSaleForm.tsx, NewProjectEventForm.tsx, ProjectForm.tsx, test-autocomplete/page.tsx
+- **Reemplazo:** `@/components/custom/autocomplete` (versión portable con fix aplicado)
+- **Restaurar:** `git checkout [commit] -- src/components/ui/autocomplete.tsx`
+
+---
+
 ### Plan Migración Tags Completo (2025-10-12)
 - **Commits:** `71b8d81..fab1b52` (40 commits) | **Impact:** High
 - **Qué:** Sistema completo colección separada tags + caching + batch queries + analytics (~1,100 líneas)
@@ -84,16 +99,16 @@
 ## 📈 Estadísticas Acumuladas
 
 ### Totales
-- **Líneas eliminadas:** 2,358+ líneas de código legacy/sobreingeniería
-- **Componentes completos:** 6 (FullFields, FormModal, useModalManager, tagService, useTagsCache, useTagAutocomplete)
+- **Líneas eliminadas:** 2,841+ líneas de código legacy/sobreingeniería
+- **Componentes completos:** 7 (FullFields, FormModal, useModalManager, tagService, useTagsCache, useTagAutocomplete, ui/autocomplete)
 - **Schemas deprecated:** 1 (projectEventFullSchema)
 - **Campos arquitecturales:** 1 (ProjectEventType.status)
-- **Archivos completos eliminados:** 14+
+- **Archivos completos eliminados:** 15+
 - **Commits revertidos:** 40 (plan migración tags)
 
 ### Impacto por Tipo
 - **High Impact:** 3 eliminaciones (legacy completo, campo status, plan tags)
-- **Medium Impact:** 1 eliminación (deuda técnica Full mode)
+- **Medium Impact:** 2 eliminaciones (deuda técnica Full mode, autocomplete duplicado)
 - **Low Impact:** 0 eliminaciones
 
 ### Validación Continua
@@ -104,6 +119,6 @@
 
 ---
 
-**📊 Última actualización:** Octubre 12, 2025
-**📝 Total de entradas:** 4 eliminaciones registradas
+**📊 Última actualización:** Octubre 14, 2025
+**📝 Total de entradas:** 5 eliminaciones registradas
 **🔧 Mantenimiento:** Actualizar cada eliminación significativa (>100 líneas)

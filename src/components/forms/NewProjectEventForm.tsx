@@ -17,7 +17,7 @@ import { DateInput } from '@/components/ui/date-input';
 import { format } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
 import { ProjectStatusDropdown } from '@/components/summary/project-status-dropdown';
-import { Autocomplete, type AutocompleteItem } from '@/components/ui/autocomplete';
+import { Autocomplete, type AutocompleteItem } from '@/components/custom/autocomplete';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProjectSummary } from '@/components/summary';

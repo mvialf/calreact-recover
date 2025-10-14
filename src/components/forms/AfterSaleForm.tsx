@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { AddressInput } from "@/components/ui/addressInput";
-import { Autocomplete, type AutocompleteItem } from "@/components/ui/autocomplete";
+import { Autocomplete, type AutocompleteItem } from "@/components/custom/autocomplete";
 import { CheckList, type CheckListItem } from "@/components/ui/check-list";
 import { DateInput } from "@/components/ui/date-input";
 import { format } from "date-fns";

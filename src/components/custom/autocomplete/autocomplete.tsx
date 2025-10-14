@@ -3,21 +3,21 @@
 import * as React from "react"
 import { Check, ChevronsUpDown, Loader2, Search } from "lucide-react"
 
-import { cn } from "./utils/cn"
-import { Input } from "./ui/input"
+import { cn } from "@/lib/utils"
+import { Input } from "@/components/ui/input"
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandItem,
   CommandList,
-} from "./ui/command"
+} from "@/components/ui/command"
 import {
   Popover,
   PopoverContent,
   PopoverAnchor,
-} from "./ui/popover"
-import { useDebounce } from "./hooks/useDebounce"
+} from "@/components/ui/popover"
+import { useDebounce } from "@/hooks/usePerformanceOptimizations"
 
 // ============================================================================
 // Types (heredados y extendidos desde Combobox)
@@ -338,26 +338,38 @@ export function Autocomplete({
     inputRef.current?.focus()
   }
 
-  const handleBlur = () => {
-    if (strictSelection && inputValue) {
-      // Verificar si el valor actual corresponde a un item válido
-      const exactMatch = items.find(item =>
-        item.label.toLowerCase() === inputValue.toLowerCase()
-      )
+  // ============================================================================
+  // Manejo de apertura/cierre del popover
+  // ============================================================================
 
-      if (!exactMatch) {
-        // Revertir al último valor válido o vacío
-        const currentSelection = items.find(item => item.value === value)
-        setInputValue(currentSelection ? currentSelection.label : '')
-        setIsValidInput(true)
+  /**
+   * Manejar cambios en el estado del popover
+   * Implementa click-outside detection sin race conditions
+   */
+  const handleOpenChange = React.useCallback(
+    (nextOpen: boolean) => {
+      // Si se intenta cerrar el popover
+      if (!nextOpen) {
+        // Validar strictSelection antes de cerrar
+        if (strictSelection && inputValue) {
+          const exactMatch = items.find(item =>
+            item.label.toLowerCase() === inputValue.toLowerCase()
+          )
+
+          if (!exactMatch) {
+            // Revertir al último valor válido o vacío
+            const currentSelection = items.find(item => item.value === value)
+            setInputValue(currentSelection ? currentSelection.label : '')
+            setIsValidInput(true)
+          }
+        }
       }
-    }
 
-    // Pequeño delay para permitir clicks en los items
-    setTimeout(() => {
-      setOpen(false)
-    }, 150)
-  }
+      // Actualizar estado del popover sin race conditions
+      setOpen(nextOpen)
+    },
+    [strictSelection, inputValue, items, value, setInputValue, setIsValidInput, setOpen]
+  )
 
   // Placeholder efectivo (usar searchPlaceholder si está disponible, heredado de Combobox)
   const effectivePlaceholder = searchPlaceholder || placeholder
@@ -373,7 +385,7 @@ export function Autocomplete({
 
   return (
     <div className={cn("relative w-full", className)}>
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={handleOpenChange} modal={true}>
         <PopoverAnchor asChild>
           <div className="relative">
             <Input
@@ -384,18 +396,11 @@ export function Autocomplete({
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               onFocus={() => {
+                // Abrir popover si hay texto al hacer focus
                 if (inputValue.length > 0) {
                   setOpen(true)
                 }
               }}
-              onClick={(e) => {
-                // Evitar que el clic en el input cierre el popover
-                e.stopPropagation()
-                if (inputValue.length > 0) {
-                  setOpen(true)
-                }
-              }}
-              onBlur={handleBlur}
               disabled={disabled || isLoading}
               className={cn(
                 "w-full pr-10",
