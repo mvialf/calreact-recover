@@ -103,14 +103,7 @@ export function ProjectEventContent({
         className="text-foreground"
       />
       <div className= "flex flex-row gap-4">
-        {status && (
-            <div className="flex items-center gap-2">
-              <Badge variant={getStatusBadgeVariant(status)}>
-                {PROJECT_STATUS_OPTIONS.find(opt => opt.value === status)?.label || status}
-              </Badge>
-            </div>
-          )}
-
+        
       {/* Comuna con lógica de fallback centralizada */}
       {showComuna && comuna && (
         <p
@@ -119,6 +112,14 @@ export function ProjectEventContent({
           {comuna}
         </p>
       )}
+      {status && (
+            <div className="flex items-center gap-2">
+              <Badge variant={getStatusBadgeVariant(status)}>
+                {PROJECT_STATUS_OPTIONS.find(opt => opt.value === status)?.label || status}
+              </Badge>
+            </div>
+          )}
+
       </div>
     </div>
   );
