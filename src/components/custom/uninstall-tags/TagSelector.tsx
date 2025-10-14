@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Plus, EllipsisVertical, Edit, Trash2 } from "lucide-react";
+import { Plus, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -155,10 +155,10 @@ export const TagSelector = React.forwardRef<HTMLDivElement, TagSelectorProps>(
                                 onCheckedChange={() => handleTagToggle(tag)}
                                 className="shrink-0"
                               />
-                              {/* Mostrar badges: nombre completo + abbreviation */}
+                              {/* Mostrar badge con abbreviation + nombre completo */}
                               <div className="flex-1 flex items-center gap-2 py-2">
-                                <TagBadge tag={{ ...tag, abbreviation: undefined }} className="text-sm" />
                                 <TagBadge tag={tag} className="text-sm" />
+                                <span className="text-sm font-medium">{tag.name}</span>
                               </div>
 
                               <DropdownMenu>
@@ -169,7 +169,7 @@ export const TagSelector = React.forwardRef<HTMLDivElement, TagSelectorProps>(
                                     className="h-6  p-0 shrink-0"
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    <EllipsisVertical className="h-3 w-3" />
+                                    <MoreVertical className="h-3 w-3" />
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
@@ -248,7 +248,7 @@ export const TagSelector = React.forwardRef<HTMLDivElement, TagSelectorProps>(
             {selectedTags.map((tag) => (
               <TagBadge
                 key={tag.id}
-                tag={{ ...tag, abbreviation: undefined }}
+                tag={tag}
                 removable
                 onRemove={handleRemoveTag}
               />
