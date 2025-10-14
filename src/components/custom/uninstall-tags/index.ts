@@ -9,10 +9,8 @@ export type {
   Tag,
   TagColor,
   CreateTagData,
-  TagSelectorProps,
-  ColorClasses,
-  TagBadgeProps
+  TagSelectorProps
 } from '@/types/tags';
 
-// Re-export constantes de colores para personalización avanzada
-export { DEFAULT_TAG_COLORS, AVAILABLE_TAG_COLORS } from '@/types/tags';
+// Re-export colores para uso externo (valores hex directos)
+export { TAG_COLORS, AVAILABLE_TAG_COLORS } from './colors';

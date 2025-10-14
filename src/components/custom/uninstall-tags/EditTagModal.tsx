@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { TagBadge } from "./TagBadge";
 import { cn } from "@/lib/utils";
 import type { Tag, TagColor } from "@/types/tags";
-import { DEFAULT_TAG_COLORS, AVAILABLE_TAG_COLORS } from "@/types/tags";
+import { TAG_COLORS, AVAILABLE_TAG_COLORS } from "./colors";
 
 interface EditTagModalProps {
   isOpen: boolean;
@@ -174,7 +174,7 @@ export const EditTagModal: React.FC<EditTagModalProps> = ({
             <div className="grid grid-cols-3 gap-2">
               {AVAILABLE_TAG_COLORS.map(({ color, label }) => {
                 const isSelected = color === tagColor;
-                const colorClasses = DEFAULT_TAG_COLORS[color];
+                const colors = TAG_COLORS[color];
                 return (
                   <Button
                     key={color}
@@ -190,20 +190,17 @@ export const EditTagModal: React.FC<EditTagModalProps> = ({
                     title={label}
                   >
                     <div
-                      className={cn(
-                        "w-full h-full rounded-sm",
-                        colorClasses.bg,
-                        "group-hover:opacity-90"
-                      )}
+                      className="w-full h-full rounded-sm group-hover:opacity-90"
+                      style={{ backgroundColor: colors.bg }}
                     />
                     {isSelected && (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <div
-                          className={cn(
-                            "w-2 h-2 rounded-full",
-                            colorClasses.text.replace("text-", "bg-")
-                          )}
-                        />
+                        <span
+                          className="text-sm font-semibold italic"
+                          style={{ color: colors.text }}
+                        >
+                          Aa
+                        </span>
                       </div>
                     )}
                   </Button>

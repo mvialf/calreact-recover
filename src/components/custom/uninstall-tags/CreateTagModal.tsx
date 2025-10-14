@@ -15,7 +15,7 @@ import {
 import { TagBadge } from "./TagBadge";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Tag, TagColor } from "@/types/tags";
-import { DEFAULT_TAG_COLORS, AVAILABLE_TAG_COLORS } from "@/types/tags";
+import { TAG_COLORS, AVAILABLE_TAG_COLORS } from "./colors";
 
 interface CreateTagModalProps {
   isOpen: boolean;
@@ -190,9 +190,9 @@ export const CreateTagModal: React.FC<CreateTagModalProps> = ({
             <Label>Color</Label>
             <div className="grid grid-cols-6 gap-2">
               {AVAILABLE_TAG_COLORS.map(({ color, label }) => {
-                const colorClasses = DEFAULT_TAG_COLORS[color];
+                const colors = TAG_COLORS[color];
                 const isSelected = tagColor === color;
-                
+
                 return (
                   <Button
                     key={color}
@@ -200,26 +200,25 @@ export const CreateTagModal: React.FC<CreateTagModalProps> = ({
                     variant="outline"
                     className={cn(
                       "h-9 w-full p-0 border-2 relative group",
-                      isSelected 
-                        ? "border-primary ring-2 ring-offset-2 ring-primary" 
+                      isSelected
+                        ? "border-primary ring-2 ring-offset-2 ring-primary"
                         : "border-muted hover:border-muted-foreground/50"
                     )}
                     onClick={() => setTagColor(color)}
                     title={label}
                   >
-                    <div 
-                      className={cn(
-                        "w-full h-full rounded-sm",
-                        colorClasses.bg,
-                        "group-hover:opacity-90"
-                      )} 
+                    <div
+                      className="w-full h-full rounded-sm group-hover:opacity-90"
+                      style={{ backgroundColor: colors.bg }}
                     />
                     {isSelected && (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <div className={cn(
-                          "w-2 h-2 rounded-full",
-                          colorClasses.text.replace("text-", "bg-")
-                        )} />
+                        <span
+                          className="text-sm font-semibold italic"
+                          style={{ color: colors.text }}
+                        >
+                          Aa
+                        </span>
                       </div>
                     )}
                   </Button>

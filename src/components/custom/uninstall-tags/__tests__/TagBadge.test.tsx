@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TagBadge } from '../TagBadge';
 import type { Tag, TagColor } from '@/types/tags';
-import { DEFAULT_TAG_COLORS } from '@/types/tags';
+import { TAG_COLORS } from '../colors';
 
 // ============================================================================
 // Mock Data
@@ -164,41 +164,39 @@ describe('TagBadge - Props Removable', () => {
 });
 
 // ============================================================================
-// Tests: Color Override
+// Tests: Colores Hex Directos
 // ============================================================================
 
-describe('TagBadge - Color Override', () => {
-  it('debe usar DEFAULT_TAG_COLORS cuando no hay override', () => {
+describe('TagBadge - Colores Hex', () => {
+  it('debe aplicar colores hex usando style attribute', () => {
     // Arrange
     const tag = createMockTag({ color: 'sky' });
 
     // Act
     const { container } = render(<TagBadge tag={tag} />);
 
-    // Assert - Verificar que se aplicaron las clases de DEFAULT_TAG_COLORS
-    const badge = container.querySelector('.inline-flex');
-    expect(badge).toHaveClass(DEFAULT_TAG_COLORS.sky.bg);
-    expect(badge).toHaveClass(DEFAULT_TAG_COLORS.sky.text);
+    // Assert - Verificar que se aplicaron los estilos inline con valores hex (sin borde)
+    const badge = container.querySelector('.inline-flex') as HTMLElement;
+    expect(badge.style.backgroundColor).toBe(TAG_COLORS.sky.bg);
+    expect(badge.style.color).toBe(TAG_COLORS.sky.text);
   });
 
-  it('debe aplicar colorOverride cuando se proporciona', () => {
+  it('debe aplicar colores para todos los TagColor disponibles', () => {
     // Arrange
-    const tag = createMockTag({ color: 'primary' });
-    const customColors = {
-      bg: 'bg-pink-400',
-      text: 'text-white',
-      border: 'border-pink-600',
-    };
+    const colors: TagColor[] = ['yellow', 'sky', 'orange', 'complete', 'purple', 'primary', 'secondary', 'destructive'];
 
-    // Act
-    const { container } = render(
-      <TagBadge tag={tag} colorOverride={customColors} />
-    );
+    colors.forEach((color) => {
+      const tag = createMockTag({ color, abbreviation: 'XX' });
+      const { container, unmount } = render(<TagBadge tag={tag} />);
 
-    // Assert - Verificar que se aplicaron las clases custom
-    const badge = container.querySelector('.inline-flex');
-    expect(badge).toHaveClass('bg-pink-400');
-    expect(badge).toHaveClass('text-white');
+      // Assert - Verificar estilos inline para cada color (sin borde)
+      const badge = container.querySelector('.inline-flex') as HTMLElement;
+      expect(badge.style.backgroundColor).toBe(TAG_COLORS[color].bg);
+      expect(badge.style.color).toBe(TAG_COLORS[color].text);
+
+      // Cleanup
+      unmount();
+    });
   });
 });
 

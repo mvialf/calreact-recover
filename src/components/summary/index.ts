@@ -8,6 +8,7 @@
 export { ProjectSummary } from './project-summary';
 export { ProjectStatusDropdown } from './project-status-dropdown';
 export { ProjectEventDetails } from './project-event-details';
+export { ProjectEventContent } from './project-event-content';
 export { AddressSummary } from './address-summary';
 
 // Preparado para futuros summary components:
