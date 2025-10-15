@@ -576,88 +576,132 @@ const useFirebaseOperation = () => {
 };
 ```
 
-## 🏗️ Modal-Form Integration Pattern
+## 🎭 Modal Pattern: Direct Dialog Usage (ACTUALIZADO 2025-10)
 
-### Problema de Duplicación Resuelto
+### ✅ Patrón Estándar para Modales (Dialog Directo)
+
+**Arquitectura actual:** Todos los modales usan Dialog directamente (sin ModalLayout)
+
+**Template completo:** [modal-direct-dialog-pattern.md](../../docs/technical/modal-direct-dialog-pattern.md)
+
 ```typescript
-// ❌ EVITAR - Duplicación de botones (PROBLEMA IDENTIFICADO)
-<ModalLayout showDefaultButtons={true}>
-  <ProjectForm showDefaultButtons={true} /> {/* DUPLICACIÓN */}
-</ModalLayout>
+// ✅ PATRÓN OBLIGATORIO - Dialog directo con vh90
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Loader2 } from 'lucide-react';
 
-// ✅ USAR - Modal-Controlled Pattern (SOLUCIÓN IMPLEMENTADA)
-<ModalLayout formId="project-form" submitButtonText="Crear Proyecto">
-  <ProjectForm formId="project-form" showDefaultButtons={false} />
-</ModalLayout>
-```
-
-### Patrón Estándar para Modales
-```typescript
-// ✅ PATRÓN OBLIGATORIO para nuevos modales
 export function NewEntityDialog() {
-  return (
-    <ModalLayout
-      formId="new-entity-form"           // ← ID único
-      title="Nueva Entidad"
-      submitButtonText="Crear Entidad"
-    >
-      <EntityForm
-        formId="new-entity-form"          // ← Mismo ID
-        showDefaultButtons={false}       // ← Sin duplicación
-        onSubmit={handleCreate}
-      />
-    </ModalLayout>
-  );
-}
-```
+  const [isOpen, setIsOpen] = React.useState(false);
+  const queryClient = useQueryClient();
 
-### Formularios Optimizados para Modales
-```typescript
-// ✅ PATRÓN para formularios reutilizables
-export function EntityForm({
-  formId = 'entity-form',
-  showDefaultButtons = false,        // ← Default false para modales
-  // ... otras props
-}: EntityFormProps) {
-  return (
-    <Form {...form}>
-      <form id={formId} onSubmit={form.handleSubmit(onSubmit)}>
-        {/* Campos del formulario */}
+  const createMutation = useMutation({
+    mutationFn: (data: EntityData) => createEntity(data),
+    onSuccess: () => {
+      // IMPORTANTE: Cerrar dialog ANTES de invalidar queries
+      // Workaround para Radix UI Dialog bug #1241
+      setIsOpen(false);
 
-        {/* Botones solo cuando se requieren */}
-        {showDefaultButtons && (
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button type="submit" disabled={isSubmitting}>
-              {submitButtonText}
-            </Button>
+      setTimeout(() => {
+        document.body.style.removeProperty('pointer-events');
+        queryClient.invalidateQueries({ queryKey: ['entities'] });
+        toast.success('Entidad creada exitosamente');
+      }, 100);
+    },
+  });
+
+  return (
+    <>
+      <Button onClick={() => setIsOpen(true)}>Nueva Entidad</Button>
+
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Nueva Entidad</DialogTitle>
+            <DialogDescription className="sr-only">
+              Formulario para crear nueva entidad
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="px-6 py-4">
+            <EntityForm
+              formId="new-entity-form"
+              onSubmit={handleSubmit}
+              showDefaultButtons={false}
+            />
           </div>
-        )}
-      </form>
-    </Form>
+
+          <DialogFooter className="px-6 py-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setIsOpen(false)}
+              disabled={createMutation.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form="new-entity-form"
+              disabled={createMutation.isPending}
+            >
+              {createMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Procesando
+                </>
+              ) : (
+                'Crear Entidad'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 ```
 
-### Casos de Uso Específicos
+### Elementos Clave del Patrón
+
+1. **DialogContent con scroll nativo**: `max-h-[90vh] overflow-y-auto`
+2. **DialogDescription para accesibilidad**: `className="sr-only"`
+3. **Form con formId único**: Conecta con button via `form="form-id"`
+4. **Submit button con HTML nativo**: `type="submit" form="form-id"`
+5. **Race condition fix obligatorio**: setTimeout(100) + pointer-events cleanup
+
+### Modales Migrados (7/7 Completados)
+
+- ✅ NewProjectDialog
+- ✅ EditProjectDialog (controlled/uncontrolled)
+- ✅ NewVisitDialog
+- ✅ EditVisitDialog (trigger-based)
+- ✅ NewAfterSaleDialog
+- ✅ EditAfterSaleDialog (trigger-based)
+- ✅ NewProjectEventModal
+
+### ❌ Anti-Pattern: ModalLayout y FormModal Deprecated
+
 ```typescript
-// ✅ Modal simple (caso más común)
-<ModalLayout formId="simple-form">
-  <SimpleForm formId="simple-form" showDefaultButtons={false} />
-</ModalLayout>
+// ❌ NO USAR - Sistemas eliminados (2025-10)
+import { ModalLayout } from '@/components/modals/modalLayout'; // NO EXISTE
+import { Modal, ModalRoot } from '@/components/ui/modal'; // NO EXISTE (compound pattern deprecated)
 
-// ✅ Formulario standalone (en páginas)
-<SimpleForm showDefaultButtons={true} />
-
-// ✅ Modal complejo (casos especiales)
-<ModalLayout buttonStrategy="none">
-  <CustomContent />
-  <CustomButtons />
-</ModalLayout>
+// ✅ USAR - Dialog directo (ver template completo arriba)
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+} from '@/components/ui/dialog';
 ```
 
 ### Documentación Técnica Completa
-- **Arquitectura detallada:** [modal-architecture.md](../../docs/technical/modal-architecture.md)
-- **Plan de implementación:** [modal-refactoring-plan.md](../../docs/technical/modal-refactoring-plan.md)
+- **Template Dialog directo:** [modal-direct-dialog-pattern.md](../../docs/technical/modal-direct-dialog-pattern.md)
 
 ## 🧪 Testing Patterns
 

@@ -72,23 +72,6 @@ export {
   DialogTrigger,
 } from './dialog';
 
-// ===== SISTEMA DE MODALES AVANZADO =====
-export {
-  Modal,
-  ModalProvider,
-  ModalRoot,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalActions,
-  ModalAction,
-  useModal,
-  useModalState,
-  type ModalSize,
-  type BaseModalProps
-} from './modal';
-
 export {
   AlertDialog,
   AlertDialogAction,

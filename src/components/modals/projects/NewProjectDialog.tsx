@@ -3,14 +3,21 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { ProjectForm, ProjectFormData as ProjectFormValues } from '@/components/forms/ProjectForm';
 import { createProject } from '@/services/projectService';
 import { addClient } from '@/services/clientService';
 import { toast } from 'sonner';
-import { ModalLayout } from '@/components/modals/modalLayout';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import type { ProjectType, ProjectStatus } from '@/types/project';
 import { projectLogger } from '@/lib/logger';
 
@@ -18,7 +25,6 @@ export function NewProjectDialog() {
   const [isOpen, setIsOpen] = React.useState(false);
   const router = useRouter();
   const queryClient = useQueryClient();
-  const formRef = React.useRef<HTMLFormElement>(null);
 
   // Mutación para crear un nuevo cliente
   const addClientMutation = useMutation({
@@ -59,12 +65,23 @@ export function NewProjectDialog() {
       projectData: Omit<ProjectType, 'id' | 'createdAt' | 'updatedAt' | 'total' | 'balance'>
     ) => createProject(projectData),
     onSuccess: (newProject) => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      toast.success('Proyecto creado', {
-        description: `El proyecto "${newProject.projectNumber}" ha sido creado exitosamente.`,
-      });
-      setIsOpen(false); // Cerrar el diálogo después de crear el proyecto
-      router.refresh(); // Refrescar la página para mostrar el nuevo proyecto
+      // IMPORTANTE: Cerrar dialog ANTES de invalidar queries para evitar race condition
+      // que deja pointer-events: none en el body (bug conocido de Radix UI Dialog)
+      // Referencias: https://github.com/radix-ui/primitives/issues/1241
+      setIsOpen(false);
+
+      // Workaround: Esperar a que Radix UI complete el cleanup del dialog
+      setTimeout(() => {
+        document.body.style.removeProperty('pointer-events');
+
+        queryClient.invalidateQueries({ queryKey: ['projects'] });
+
+        toast.success('Proyecto creado', {
+          description: `El proyecto "${newProject.projectNumber}" ha sido creado exitosamente.`,
+        });
+
+        router.refresh(); // Refrescar la página para mostrar el nuevo proyecto
+      }, 100);
     },
     onError: (error: Error) => {
       toast.error('Error al crear proyecto', {
@@ -121,9 +138,9 @@ export function NewProjectDialog() {
 
   return (
     <>
-      <Button 
-        variant="default" 
-        size="sm" 
+      <Button
+        variant="default"
+        size="sm"
         className="h-8 gap-1"
         onClick={() => setIsOpen(true)}
       >
@@ -133,25 +150,49 @@ export function NewProjectDialog() {
         </span>
       </Button>
 
-      <ModalLayout
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        title="Nuevo Proyecto"
-        className="w-full max-w-xl"
-        showDefaultButtons={true}
-        formRef={formRef}
-        isSubmitting={createProjectMutation.isPending}
-        submitButtonText="Crear Proyecto"
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Nuevo Proyecto</DialogTitle>
+            <DialogDescription className="sr-only">
+              Formulario para crear un nuevo proyecto
+            </DialogDescription>
+          </DialogHeader>
 
-      >
-        <div className="space-y-4 py-2">
-          <ProjectForm
-            onSubmit={handleFormSubmit}
-            submitButtonText="Crear Proyecto"
-            showDefaultButtons={false}
-          />
-        </div>
-      </ModalLayout>
+          <div className="px-6 py-4">
+            <ProjectForm
+              formId="new-project-form"
+              onSubmit={handleFormSubmit}
+              submitButtonText="Crear Proyecto"
+              showDefaultButtons={false}
+            />
+          </div>
+
+          <DialogFooter className="px-6 py-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setIsOpen(false)}
+              disabled={createProjectMutation.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form="new-project-form"
+              disabled={createProjectMutation.isPending}
+            >
+              {createProjectMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Procesando
+                </>
+              ) : (
+                'Crear Proyecto'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

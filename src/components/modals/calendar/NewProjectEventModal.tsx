@@ -1,13 +1,22 @@
 "use client";
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 
-import { ModalLayout } from '../modalLayout';
 import { createProjectEvent } from '@/services/projectEventService';
 import { updateProject } from '@/services/projectService';
 import type { ProjectEventType } from '@/types/project';
 import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 // Importar el formulario completo y autónomo
 import { NewProjectEventForm, type NewProjectEventFormValues } from '@/components/forms/NewProjectEventForm';
@@ -30,19 +39,32 @@ export function NewProjectEventModal({
   autoSave = true,
 }: NewProjectEventModalProps) {
   const queryClient = useQueryClient();
-  const formRef = useRef<HTMLFormElement>(null);
 
   // Mutación para crear evento de proyecto
   const createEventMutation = useMutation({
     mutationFn: (eventData: Omit<ProjectEventType, 'id' | 'createdAt' | 'updatedAt'>) =>
       createProjectEvent(eventData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['calendar-events'] });
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      toast.success('Evento creado exitosamente', {
-        description: 'El evento ha sido guardado correctamente.',
-      });
+      // IMPORTANTE: Cerrar dialog ANTES de invalidar queries para evitar race condition
+      // que deja pointer-events: none en el body (bug conocido de Radix UI Dialog)
+      // Referencias: https://github.com/radix-ui/primitives/issues/1241
       onClose();
+
+      // Workaround: Esperar a que Radix UI complete el cleanup del dialog
+      // Luego limpiar manualmente pointer-events y ejecutar invalidaciones
+      setTimeout(() => {
+        // Limpiar style inline que Radix UI no limpia correctamente durante race condition
+        document.body.style.removeProperty('pointer-events');
+
+        // Invalidar queries para refrescar datos
+        queryClient.invalidateQueries({ queryKey: ['calendar-events'] });
+        queryClient.invalidateQueries({ queryKey: ['projects'] });
+
+        // Notificar al usuario
+        toast.success('Evento creado exitosamente', {
+          description: 'El evento ha sido guardado correctamente.',
+        });
+      }, 100);
     },
     onError: (error: Error) => {
       toast.error('Error al crear evento', {
@@ -56,11 +78,19 @@ export function NewProjectEventModal({
     mutationFn: ({ projectId, status }: { projectId: string; status: string }) =>
       updateProject(projectId, { status: status as any }),
     onSuccess: () => {
-      toast.success('Status actualizado', {
-        description: 'El estado del proyecto se actualizó correctamente.',
-      });
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      queryClient.invalidateQueries({ queryKey: ['calendar-events'] });
+      // IMPORTANTE: Workaround para race condition con Radix UI Dialog
+      // No cerramos el modal aquí porque la actualización de status es una acción secundaria
+      // que ocurre mientras el modal está abierto (dropdown dentro del formulario)
+      setTimeout(() => {
+        document.body.style.removeProperty('pointer-events');
+
+        queryClient.invalidateQueries({ queryKey: ['projects'] });
+        queryClient.invalidateQueries({ queryKey: ['calendar-events'] });
+
+        toast.success('Status actualizado', {
+          description: 'El estado del proyecto se actualizó correctamente.',
+        });
+      }, 100);
     },
     onError: (err: Error) => {
       toast.error('Error al actualizar', {
@@ -126,26 +156,51 @@ export function NewProjectEventModal({
   };
 
   return (
-    <ModalLayout
-      isOpen={isOpen}
-      title="Crear Evento de Proyecto"
-      onClose={onClose}
-      onSubmit={() => {
-        formRef.current?.requestSubmit();
-      }}
-      submitButtonText={(isSubmitting || createEventMutation.isPending) ? 'Guardando...' : 'Crear Evento'}
-      isSubmitting={isSubmitting || createEventMutation.isPending}
-      className="w-full max-w-xl"
-    >
-      {/* Formulario completamente autónomo con búsqueda de proyecto integrada */}
-      <NewProjectEventForm
-        formRef={formRef}
-        onSubmit={handleFormSubmit}
-        initialData={initialData}
-        isSubmitting={isSubmitting || createEventMutation.isPending}
-        onStatusChange={handleStatusChange}
-        isUpdatingStatus={updateStatusMutation.isPending}
-      />
-    </ModalLayout>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto max-w-xl">
+        <DialogHeader>
+          <DialogTitle>Crear Evento de Proyecto</DialogTitle>
+          <DialogDescription className="sr-only">
+            Formulario para crear un nuevo evento de proyecto
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="px-6 py-4">
+          {/* Formulario completamente autónomo con búsqueda de proyecto integrada */}
+          <NewProjectEventForm
+            formId="new-project-event-form"
+            onSubmit={handleFormSubmit}
+            initialData={initialData}
+            isSubmitting={isSubmitting || createEventMutation.isPending}
+            onStatusChange={handleStatusChange}
+            isUpdatingStatus={updateStatusMutation.isPending}
+          />
+        </div>
+
+        <DialogFooter className="px-6 py-4 border-t">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting || createEventMutation.isPending}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            form="new-project-event-form"
+            disabled={isSubmitting || createEventMutation.isPending}
+          >
+            {(isSubmitting || createEventMutation.isPending) ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Guardando
+              </>
+            ) : (
+              'Crear Evento'
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

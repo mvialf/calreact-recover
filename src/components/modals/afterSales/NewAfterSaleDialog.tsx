@@ -3,20 +3,26 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { AfterSaleForm, type AfterSaleFormValues } from '@/components/forms/AfterSaleForm';
 import { addAfterSales } from '@/services/afterSalesService';
 import { toast } from 'sonner';
-import { ModalLayout } from '@/components/modals/modalLayout';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { afterSalesLogger } from '@/lib/logger';
 
 export function NewAfterSaleDialog() {
   const [isOpen, setIsOpen] = React.useState(false);
   const router = useRouter();
   const queryClient = useQueryClient();
-  const formRef = React.useRef<HTMLFormElement>(null);
 
   // Mutación para crear una nueva postventa
   const createAfterSaleMutation = useMutation({
@@ -39,16 +45,25 @@ export function NewAfterSaleDialog() {
       return await addAfterSales(afterSalesData);
     },
     onSuccess: (newAfterSale) => {
-      // Invalidar las queries relacionadas
-      queryClient.invalidateQueries({ queryKey: ['after-sales'] });
-      queryClient.invalidateQueries({ queryKey: ['aftersales'] });
-      
-      toast.success('Postventa creada', {
-        description: 'La postventa ha sido creada exitosamente.',
-      });
-      
-      setIsOpen(false); // Cerrar el diálogo después de crear la postventa
-      router.refresh(); // Refrescar la página para mostrar la nueva postventa
+      // IMPORTANTE: Cerrar dialog ANTES de invalidar queries para evitar race condition
+      // que deja pointer-events: none en el body (bug conocido de Radix UI Dialog)
+      // Referencias: https://github.com/radix-ui/primitives/issues/1241
+      setIsOpen(false);
+
+      // Workaround: Esperar a que Radix UI complete el cleanup del dialog
+      setTimeout(() => {
+        document.body.style.removeProperty('pointer-events');
+
+        // Invalidar las queries relacionadas
+        queryClient.invalidateQueries({ queryKey: ['after-sales'] });
+        queryClient.invalidateQueries({ queryKey: ['aftersales'] });
+
+        toast.success('Postventa creada', {
+          description: 'La postventa ha sido creada exitosamente.',
+        });
+
+        router.refresh(); // Refrescar la página para mostrar la nueva postventa
+      }, 100);
     },
     onError: (error: Error) => {
       afterSalesLogger.error('Error al crear la postventa', error);
@@ -81,25 +96,49 @@ export function NewAfterSaleDialog() {
         </span>
       </Button>
 
-      <ModalLayout
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        title="Nueva Postventa"
-        showDefaultButtons={true}
-        formRef={formRef}
-        isSubmitting={createAfterSaleMutation.isPending}
-        submitButtonText="Crear Postventa"
-        className="w-full max-w-xl"
-      >
-        <div className="space-y-4 py-2">
-          <AfterSaleForm
-            formRef={formRef}
-            onSubmit={handleFormSubmit}
-            showDefaultButtons={false}
-            isSubmitting={createAfterSaleMutation.isPending}
-          />
-        </div>
-      </ModalLayout>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Nueva Postventa</DialogTitle>
+            <DialogDescription className="sr-only">
+              Formulario para crear una nueva postventa
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="px-6 py-4">
+            <AfterSaleForm
+              formId="new-aftersale-form"
+              onSubmit={handleFormSubmit}
+              showDefaultButtons={false}
+              isSubmitting={createAfterSaleMutation.isPending}
+            />
+          </div>
+
+          <DialogFooter className="px-6 py-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setIsOpen(false)}
+              disabled={createAfterSaleMutation.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form="new-aftersale-form"
+              disabled={createAfterSaleMutation.isPending}
+            >
+              {createAfterSaleMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Procesando
+                </>
+              ) : (
+                'Crear Postventa'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

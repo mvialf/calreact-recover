@@ -1,16 +1,24 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { VisitForm, VisitFormValues } from '@/components/forms/VisitForm';
 import { Button } from '@/components/ui/button';
-import { ModalLayout } from '@/components/modals/modalLayout';
 import { toast } from 'sonner';
 import { updateVisit } from '@/services/visitService';
 import type { Visit, VisitStatus } from '@/types/visit';
 import { DEFAULT_VISIT_STATUS } from '@/types/visit';
 import { DialogErrorBoundary } from '@/components/error-boundary/DialogErrorBoundary';
 import { visitLogger } from '@/lib/logger';
+import { Loader2 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 interface EditVisitDialogProps {
   visit: Visit;
@@ -20,10 +28,9 @@ interface EditVisitDialogProps {
 
 export function EditVisitDialog({ visit, children, onSuccess }: EditVisitDialogProps) {
   // 🔥 TODOS LOS HOOKS AL INICIO - ANTES DE CUALQUIER EARLY RETURN
-  
+
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
-  const formRef = useRef<HTMLFormElement>(null);
 
   // Hook useMutation siempre debe ejecutarse
   const { mutate, isPending } = useMutation({
@@ -52,15 +59,26 @@ export function EditVisitDialog({ visit, children, onSuccess }: EditVisitDialogP
     },
     onSuccess: () => {
       try {
-        // Invalidar queries relacionadas
-        queryClient.invalidateQueries({ queryKey: ['visits'] });
-        if (visit?.id) {
-          queryClient.invalidateQueries({ queryKey: ['visits', visit.id] });
-        }
-        
-        toast.success('Visita actualizada correctamente.');
+        // IMPORTANTE: Cerrar dialog ANTES de invalidar queries para evitar race condition
+        // que deja pointer-events: none en el body (bug conocido de Radix UI Dialog)
+        // Referencias: https://github.com/radix-ui/primitives/issues/1241
         setIsOpen(false);
-        onSuccess?.();
+
+        // Workaround: Esperar a que Radix UI complete el cleanup del dialog
+        setTimeout(() => {
+          document.body.style.removeProperty('pointer-events');
+
+          // Invalidar queries relacionadas
+          queryClient.invalidateQueries({ queryKey: ['visits'] });
+          if (visit?.id) {
+            queryClient.invalidateQueries({ queryKey: ['visits', visit.id] });
+          }
+
+          toast.success('Visita actualizada correctamente.');
+
+          // Callback externo onSuccess
+          onSuccess?.();
+        }, 100);
       } catch (error) {
         visitLogger.error('Error en onSuccess', error);
       }
@@ -241,22 +259,49 @@ export function EditVisitDialog({ visit, children, onSuccess }: EditVisitDialogP
         {children}
       </div>
 
-      <ModalLayout
-        isOpen={isOpen}
-        onClose={handleClose}
-        title="Editar Visita"
-        className="w-full max-w-xl"
-        showDefaultButtons={true}
-        formRef={formRef}
-        isSubmitting={isPending}
-        submitButtonText={isPending ? "Actualizando..." : "Actualizar Visita"}
-      >
-        <VisitForm
-          onSubmit={handleSubmit}
-          initialData={initialData}
-          showDefaultButtons={false}
-        />
-      </ModalLayout>
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Editar Visita</DialogTitle>
+            <DialogDescription className="sr-only">
+              Formulario para editar visita existente
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="px-6 py-4">
+            <VisitForm
+              formId="edit-visit-form"
+              onSubmit={handleSubmit}
+              initialData={initialData}
+              showDefaultButtons={false}
+            />
+          </div>
+
+          <DialogFooter className="px-6 py-4 border-t">
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              disabled={isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form="edit-visit-form"
+              disabled={isPending}
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Actualizando
+                </>
+              ) : (
+                'Actualizar Visita'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DialogErrorBoundary>
   );
 }

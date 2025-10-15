@@ -60,6 +60,7 @@ export type NewProjectEventFormValues = z.infer<typeof formSchema> & {
 
 export interface NewProjectEventFormProps {
   formRef?: React.RefObject<HTMLFormElement>;
+  formId?: string;
   formInstanceRef?: React.MutableRefObject<UseFormReturn<NewProjectEventFormValues> | null>;
   onSubmit: (data: NewProjectEventFormValues) => void;
   initialData?: Partial<NewProjectEventFormValues>;
@@ -72,6 +73,7 @@ export interface NewProjectEventFormProps {
 
 export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
   formRef,
+  formId,
   formInstanceRef,
   onSubmit,
   initialData,
@@ -258,6 +260,7 @@ export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
     <Form {...form}>
       <form
         ref={formRef}
+        id={formId}
         onSubmit={form.handleSubmit(handleFormSubmit, handleValidationError)}
         className="space-y-6"
       >

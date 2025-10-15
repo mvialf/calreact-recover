@@ -1,15 +1,24 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ProjectForm, ProjectFormData as ProjectFormValues } from '@/components/forms/ProjectForm';
-import { ModalLayout } from '@/components/modals/modalLayout';
 import { toast } from 'sonner';
 import { updateProject } from '@/services/projectService';
 import type { ProjectType, ProjectStatus } from '@/types/project';
 import { DialogErrorBoundary } from '@/components/error-boundary/DialogErrorBoundary';
 import { DEFAULT_TAX_RATE } from '@/constants/defaults';
 import { projectLogger } from '@/lib/logger';
+import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 interface EditProjectDialogProps {
   project: ProjectType;
@@ -32,7 +41,6 @@ export function EditProjectDialog({
 
   const [isOpenInternal, setIsOpenInternal] = useState(false);
   const queryClient = useQueryClient();
-  const formRef = useRef<HTMLFormElement | null>(null);
 
   // Determinar si está controlado externamente o internamente
   const isControlled = isOpenControlled !== undefined;
@@ -59,13 +67,9 @@ export function EditProjectDialog({
     },
     onSuccess: () => {
       try {
-        queryClient.invalidateQueries({ queryKey: ['projects'] });
-        toast.success('Proyecto actualizado correctamente.');
-
-        // NUEVO: Callback onSuccess externo
-        if (onSuccess) {
-          onSuccess();
-        }
+        // IMPORTANTE: Cerrar dialog ANTES de invalidar queries para evitar race condition
+        // que deja pointer-events: none en el body (bug conocido de Radix UI Dialog)
+        // Referencias: https://github.com/radix-ui/primitives/issues/1241
 
         // Cerrar modal (modo controlado o interno)
         if (isControlled && onCloseControlled) {
@@ -73,6 +77,20 @@ export function EditProjectDialog({
         } else {
           setIsOpenInternal(false);
         }
+
+        // Workaround: Esperar a que Radix UI complete el cleanup del dialog
+        setTimeout(() => {
+          document.body.style.removeProperty('pointer-events');
+
+          queryClient.invalidateQueries({ queryKey: ['projects'] });
+
+          toast.success('Proyecto actualizado correctamente.');
+
+          // Callback onSuccess externo
+          if (onSuccess) {
+            onSuccess();
+          }
+        }, 100);
       } catch (error) {
         projectLogger.error('Error en onSuccess', error);
       }
@@ -230,47 +248,50 @@ export function EditProjectDialog({
         </div>
       )}
 
-      <ModalLayout
-        isOpen={isOpen}
-        onClose={handleClose}
-        title="Editar Proyecto"
-        className="w-full max-w-xl"
-        showDefaultButtons={true}
-        onSubmit={() => {
-          if (formRef.current) {
-            formRef.current.requestSubmit();
-          } else {
-            // Fallback: intentar buscar por ID
-            const formById = document.getElementById('edit-project-form') as HTMLFormElement;
-            if (formById) {
-              formById.requestSubmit();
-            } else {
-              toast.error('Error', {
-                description: 'No se pudo encontrar el formulario.',
-              });
-            }
-          }
-        }}
-        isSubmitting={isPending}
-        submitButtonText={isPending ? "Actualizando..." : "Actualizar Proyecto"}
-      >
-        <div ref={(el) => {
-          if (el) {
-            const form = el.querySelector('form');
-            if (form) {
-              formRef.current = form;
-            }
-          }
-        }}>
-          <ProjectForm
-            onSubmit={handleSubmit}
-            defaultValues={initialData}
-            showDefaultButtons={false}
-            variant="modal"
-            formId="edit-project-form"
-          />
-        </div>
-      </ModalLayout>
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Editar Proyecto</DialogTitle>
+            <DialogDescription className="sr-only">
+              Formulario para editar proyecto existente
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="px-6 py-4">
+            <ProjectForm
+              formId="edit-project-form"
+              onSubmit={handleSubmit}
+              defaultValues={initialData}
+              showDefaultButtons={false}
+              variant="modal"
+            />
+          </div>
+
+          <DialogFooter className="px-6 py-4 border-t">
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              disabled={isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form="edit-project-form"
+              disabled={isPending}
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Actualizando
+                </>
+              ) : (
+                'Actualizar Proyecto'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DialogErrorBoundary>
   );
 }

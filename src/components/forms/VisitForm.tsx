@@ -59,6 +59,7 @@ interface VisitFormProps {
   initialData?: Partial<VisitFormValues>;
   isSubmitting?: boolean;
   formRef?: React.RefObject<HTMLFormElement>;
+  formId?: string;
   showDefaultButtons?: boolean;
   onCancel?: () => void;
 }
@@ -68,6 +69,7 @@ export const VisitForm: React.FC<VisitFormProps> = ({
   initialData,
   isSubmitting = false,
   formRef,
+  formId,
   showDefaultButtons = false,
   onCancel,
 }) => {
@@ -139,6 +141,7 @@ export const VisitForm: React.FC<VisitFormProps> = ({
     <Form {...form}>
       <form
         ref={formRef}
+        id={formId}
         onSubmit={form.handleSubmit(handleInternalSubmit)}
         className="space-y-2"
       >

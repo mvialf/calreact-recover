@@ -1,14 +1,22 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AfterSaleForm, AfterSaleFormValues } from '@/components/forms/AfterSaleForm';
 import { Button } from '@/components/ui/button';
-import { ModalLayout } from '@/components/modals/modalLayout';
 import { toast } from 'sonner';
 import { updateAfterSales } from '@/services/afterSalesService';
 import type { AfterSales } from '@/types/afterSales';
 import { DialogErrorBoundary } from '@/components/error-boundary/DialogErrorBoundary';
+import { Loader2 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 interface EditAfterSaleDialogProps {
   afterSale: AfterSales;
@@ -17,10 +25,9 @@ interface EditAfterSaleDialogProps {
 
 export function EditAfterSaleDialog({ afterSale, children }: EditAfterSaleDialogProps) {
   // 🔥 TODOS LOS HOOKS AL INICIO - ANTES DE CUALQUIER EARLY RETURN
-  
+
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
-  const formRef = useRef<HTMLFormElement>(null);
 
   // Hook useMutation siempre debe ejecutarse
   const { mutate, isPending } = useMutation({
@@ -49,15 +56,24 @@ export function EditAfterSaleDialog({ afterSale, children }: EditAfterSaleDialog
     },
     onSuccess: () => {
       try {
-        // Invalidar queries relacionadas
-        queryClient.invalidateQueries({ queryKey: ['afterSales'] });
-        if (afterSale?.id) {
-          queryClient.invalidateQueries({ queryKey: ['afterSales', afterSale.id] });
-          queryClient.invalidateQueries({ queryKey: ['afterSalesForProject', afterSale.projectId] });
-        }
-        
-        toast.success('Postventa actualizada correctamente.');
+        // IMPORTANTE: Cerrar dialog ANTES de invalidar queries para evitar race condition
+        // que deja pointer-events: none en el body (bug conocido de Radix UI Dialog)
+        // Referencias: https://github.com/radix-ui/primitives/issues/1241
         setIsOpen(false);
+
+        // Workaround: Esperar a que Radix UI complete el cleanup del dialog
+        setTimeout(() => {
+          document.body.style.removeProperty('pointer-events');
+
+          // Invalidar queries relacionadas
+          queryClient.invalidateQueries({ queryKey: ['afterSales'] });
+          if (afterSale?.id) {
+            queryClient.invalidateQueries({ queryKey: ['afterSales', afterSale.id] });
+            queryClient.invalidateQueries({ queryKey: ['afterSalesForProject', afterSale.projectId] });
+          }
+
+          toast.success('Postventa actualizada correctamente.');
+        }, 100);
       } catch (error) {
 
       }
@@ -160,22 +176,49 @@ export function EditAfterSaleDialog({ afterSale, children }: EditAfterSaleDialog
         {children}
       </div>
 
-      <ModalLayout
-        isOpen={isOpen}
-        onClose={handleClose}
-        title="Editar Postventa"
-        className="w-full max-w-xl"
-        showDefaultButtons={true}
-        formRef={formRef}
-        isSubmitting={isPending}
-        submitButtonText={isPending ? "Actualizando..." : "Actualizar Postventa"}
-      >
-        <AfterSaleForm
-          onSubmit={handleSubmit}
-          initialData={initialData}
-          showDefaultButtons={false}
-        />
-      </ModalLayout>
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Editar Postventa</DialogTitle>
+            <DialogDescription className="sr-only">
+              Formulario para editar postventa existente
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="px-6 py-4">
+            <AfterSaleForm
+              formId="edit-aftersale-form"
+              onSubmit={handleSubmit}
+              initialData={initialData}
+              showDefaultButtons={false}
+            />
+          </div>
+
+          <DialogFooter className="px-6 py-4 border-t">
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              disabled={isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form="edit-aftersale-form"
+              disabled={isPending}
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Actualizando
+                </>
+              ) : (
+                'Actualizar Postventa'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DialogErrorBoundary>
   );
 }

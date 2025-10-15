@@ -69,15 +69,17 @@ interface AfterSaleFormProps {
   isSubmitting?: boolean;
   onSubmitSuccess?: () => void;
   formRef?: React.RefObject<HTMLFormElement>;
+  formId?: string;
   onSubmit?: (data: AfterSaleFormValues) => void | Promise<void>;
   showDefaultButtons?: boolean;
 }
 
-export function AfterSaleForm({ 
-  initialData, 
+export function AfterSaleForm({
+  initialData,
   isSubmitting = false,
   onSubmitSuccess,
   formRef,
+  formId,
   onSubmit,
   showDefaultButtons = false
 }: AfterSaleFormProps) {
@@ -250,7 +252,7 @@ export function AfterSaleForm({
 
   return (
     <Form {...form}>
-      <form ref={formRef} onSubmit={form.handleSubmit(handleInternalSubmit)} className="space-y-6">
+      <form ref={formRef} id={formId} onSubmit={form.handleSubmit(handleInternalSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 gap-6">
           {/* Proyecto */}
           <FormField
