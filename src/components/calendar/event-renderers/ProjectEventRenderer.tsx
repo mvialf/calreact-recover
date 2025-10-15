@@ -37,6 +37,9 @@ export const ProjectEventRenderer: React.FC<EventRendererProps> = ({
   // Mostrar dropdown solo si hay al menos un handler disponible
   const showDropdown = onClick || onEdit || onDelete;
 
+  // Mostrar detalles técnicos y tags solo en vistas con más espacio
+  const showDetails = view === 'week' || view === 'day';
+
   return (
     <div className="relative group">
       {/* Botón de acciones (visible en hover en desktop, siempre en mobile) */}
@@ -52,7 +55,13 @@ export const ProjectEventRenderer: React.FC<EventRendererProps> = ({
       )}
 
       {/* Contenido reutilizable extraído */}
-      <ProjectEventContent event={event} size="sm" className="pr-6" />
+      <ProjectEventContent
+        event={event}
+        size="sm"
+        className="pr-6"
+        showTechnicalDetails={showDetails}
+        showUninstallTags={showDetails}
+      />
     </div>
   );
 };
