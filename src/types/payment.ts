@@ -86,3 +86,26 @@ export interface DeleteBatchResult {
   batchId: string;
   error?: string;
 }
+
+/**
+ * Grupo de pagos batch para visualización en tabla con row expansion
+ * Representa el pago agregado del cliente antes de distribuirse
+ */
+export interface BatchPaymentGroup {
+  id: string;                    // batchId para identificación única
+  type: 'batch-parent';          // Discriminador de tipo para TypeScript
+  batchId: string;               // UUID del batch
+  clientId: string;              // ID del cliente que realizó el pago
+  clientName?: string;           // Nombre del cliente (enriquecido)
+  totalAmount: number;           // Monto total del pago del cliente
+  paymentCount: number;          // Cantidad de pagos en los que se distribuyó
+  date: Date;                    // Fecha del pago original
+  paymentMethod?: string;        // Método de pago usado
+  subRows: Payment[];            // Pagos individuales (distribuciones)
+}
+
+/**
+ * Union type para filas de tabla de pagos
+ * Puede ser un pago individual o un grupo batch con hijos
+ */
+export type PaymentTableRow = Payment | BatchPaymentGroup;
