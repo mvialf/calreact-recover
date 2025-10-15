@@ -1,5 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Dialog,
   DialogContent,
@@ -8,10 +10,19 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { PhoneInput } from "@/components/ui/phone-input";
 import type { Client } from '@/types/client';
+import { clientSchema, type ClientFormValues } from '@/schemas/client.schema';
 import { toast } from 'sonner';
 
 interface ClientModalProps {
@@ -22,43 +33,53 @@ interface ClientModalProps {
 }
 
 const ClientModal: React.FC<ClientModalProps> = ({ isOpen, onClose, onSave, clientData }) => {
-  const [client, setClient] = useState<Client>({
-    id: '',
-    name: '',
-    email: '',
-    phone: '',
+  const form = useForm<ClientFormValues>({
+    resolver: zodResolver(clientSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+    },
   });
 
+  // Resetear formulario cuando cambia clientData o se abre el modal
   useEffect(() => {
-    if (clientData) {
-      setClient(clientData);
-    } else {
-      setClient({
-        id: '',
-        name: '',
-        email: '',
-        phone: '',
-      });
+    if (isOpen) {
+      if (clientData) {
+        form.reset({
+          name: clientData.name,
+          email: clientData.email || '',
+          phone: clientData.phone || '',
+        });
+      } else {
+        form.reset({
+          name: '',
+          email: '',
+          phone: '',
+        });
+      }
     }
-  }, [clientData, isOpen]);
+  }, [clientData, isOpen, form]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setClient((prevClient) => ({
-      ...prevClient,
-      [name]: value,
-    }));
-  };
+  const handleSubmit = (values: ClientFormValues) => {
+    const clientToSave: Client = {
+      id: clientData?.id || '',
+      name: values.name,
+      email: values.email || '',
+      phone: values.phone || '',
+    };
 
-  const handleSave = () => {
-    if (!client.name.trim()) {
-      toast.error("Validación Fallida", {
-        description: "El nombre del cliente no puede estar vacío.",
-      });
-      return;
-    }
-    onSave(client);
+    onSave(clientToSave);
     onClose();
+
+    toast.success(
+      clientData ? 'Cliente actualizado' : 'Cliente creado',
+      {
+        description: clientData
+          ? 'La información del cliente se ha actualizado correctamente.'
+          : 'El nuevo cliente se ha agregado correctamente.',
+      }
+    );
   };
 
   return (
@@ -70,30 +91,64 @@ const ClientModal: React.FC<ClientModalProps> = ({ isOpen, onClose, onSave, clie
             {clientData ? 'Modifica la información del cliente existente.' : 'Completa los campos para agregar un nuevo cliente.'}
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Nombre
-            </Label>
-            <Input id="name" name="name" value={client.name} onChange={handleChange} className="col-span-3" placeholder="Nombre del cliente" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="email" className="text-right">
-              Email
-            </Label>
-            <Input id="email" name="email" type="email" value={client.email || ''} onChange={handleChange} className="col-span-3" placeholder="correo@ejemplo.com" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="phone" className="text-right">
-              Teléfono
-            </Label>
-            <Input id="phone" name="phone" type="tel" value={client.phone || ''} onChange={handleChange} className="col-span-3" placeholder="Ej: +123456789" />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button onClick={handleSave}>Guardar</Button>
-        </DialogFooter>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nombre *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nombre del cliente" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="correo@ejemplo.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Teléfono</FormLabel>
+                  <FormControl>
+                    <PhoneInput
+                      value={field.value || ''}
+                      onChange={field.onChange}
+                      placeholder="Ej: +56912345678"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={onClose}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? 'Guardando...' : 'Guardar'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

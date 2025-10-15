@@ -119,7 +119,8 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
   const clientItems: AutocompleteItem[] = React.useMemo(() => {
     return clients.map(client => ({
       value: client.id,
-      label: client.name
+      label: client.name,
+      client // Guardamos el cliente completo para acceso posterior
     }));
   }, [clients]);
 
@@ -162,6 +163,17 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
     return subtotal * (1 + taxRate / 100);
   }, [watchSubtotal, watchTaxRate]);
 
+  // Manejar selección de cliente
+  const handleClientSelect = React.useCallback((clientId: string) => {
+    const client = clients.find(c => c.id === clientId);
+    form.setValue('clientId', clientId);
+
+    // Autocompletar teléfono del cliente si existe
+    if (client?.phone) {
+      form.setValue('phone', client.phone);
+    }
+  }, [clients, form]);
+
   return (
     <Form {...form}>
       <FormContainer>
@@ -181,7 +193,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
                     <Autocomplete
                       items={clientItems}
                       value={field.value}
-                      onSelect={field.onChange}
+                      onSelect={handleClientSelect}
                       placeholder={isLoadingClients ? "Cargando clientes..." : "Buscar cliente..."}
                       emptyText="No se encontraron clientes."
                       disabled={isSubmitting || isLoadingClients}
