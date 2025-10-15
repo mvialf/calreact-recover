@@ -24,30 +24,10 @@ import { ProjectSummary } from '@/components/summary'
 import { formatDateForTable } from '@/utils/date-helpers'
 import type { AfterSales } from '@/types/afterSales'
 import type { ProjectType } from '@/types/project'
-
-// Estados definidos para postventas
-const AFTERSALES_STATUS_OPTIONS = [
-  { value: 'Ingresada', label: 'Ingresada' },
-  { value: 'Agendada', label: 'Agendada' },
-  { value: 'Reagendar', label: 'Reagendar' },
-  { value: 'Completada', label: 'Completada' },
-]
-
-// Función para obtener la variante del badge según el estado
-const getAfterSaleStatusBadgeVariant = (status: string) => {
-  switch (status) {
-    case 'Ingresada':
-      return 'outline'
-    case 'Agendada':
-      return 'secondary'
-    case 'Reagendar':
-      return 'destructive'
-    case 'Completada':
-      return 'complete'
-    default:
-      return 'default'
-  }
-}
+import {
+  AFTERSALES_STATUS_OPTIONS,
+  getAfterSaleStatusBadgeVariant
+} from '@/constants/afterSales'
 
 // Tipo para AfterSales con información del proyecto
 interface AfterSalesWithProject extends AfterSales {
@@ -224,6 +204,3 @@ export const createAfterSalesColumns = ({
     },
   },
 ]
-
-// Exportar opciones de estado para uso en filtros
-export { AFTERSALES_STATUS_OPTIONS }

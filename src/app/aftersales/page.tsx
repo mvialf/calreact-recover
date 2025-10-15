@@ -19,7 +19,8 @@ import { afterSalesLogger } from '@/lib/logger';
 // Componentes
 import { AppLayout } from '@/components/layout';
 import { DataTable } from '@/components/custom/data-table';
-import { createAfterSalesColumns, AFTERSALES_STATUS_OPTIONS } from './columns';
+import { createAfterSalesColumns } from './columns';
+import { AFTERSALES_STATUS_OPTIONS } from '@/constants/afterSales';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { NewAfterSaleDialog, EditAfterSaleDialog } from '@/components/modals/afterSales';

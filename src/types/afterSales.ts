@@ -1,5 +1,6 @@
 // src/types/afterSales.ts
 import type { Timestamp } from 'firebase/firestore';
+import type { AfterSalesStatus } from '@/constants/afterSales';
 
 export interface TaskItem {
   id: string; // Unique ID for the task, e.g., crypto.randomUUID()
@@ -9,7 +10,8 @@ export interface TaskItem {
   completedAt?: Date;
 }
 
-export type AfterSalesStatus = 'Ingresada' | 'Agendada' | 'Reagendar' | 'Completada';
+// Re-exportar tipo desde constantes centralizadas (Single Source of Truth)
+export type { AfterSalesStatus };
 
 export interface AfterSales {
   id: string;
