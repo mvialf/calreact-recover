@@ -17,15 +17,16 @@ import {
   Trash2,
   MoreHorizontal,
   CreditCard,
-  Banknote
+  Banknote,
+  ChevronRight
 } from "lucide-react"
 
 import { DataTableColumnHeader } from "@/components/custom/data-table/data-table-column-header"
 import { formatCurrency } from '@/utils/format-utils'
 import { formatDateForTable } from '@/utils/date-helpers'
-import type { Payment } from '@/types/payment'
+import { cn } from '@/lib/utils'
+import type { Payment, PaymentTableRow, BatchPaymentGroup } from '@/types/payment'
 import type { ProjectType } from '@/types/project'
-import type { Client } from '@/types/client'
 
 // Tipos de pago con variantes de badge
 const getPaymentTypeBadgeVariant = (paymentType: string) => {
@@ -67,6 +68,11 @@ interface EnrichedPayment extends Payment {
   projectNumber?: string
 }
 
+// Type guard para verificar si una fila es un batch parent
+const isBatchParent = (row: PaymentTableRow): row is BatchPaymentGroup => {
+  return 'type' in row && row.type === 'batch-parent';
+};
+
 interface PaymentsColumnsProps {
   onEdit: (payment: EnrichedPayment) => void
   onDelete: (payment: EnrichedPayment) => void
@@ -79,7 +85,7 @@ export const createPaymentsColumns = ({
   onDelete,
   projectsMap,
   clientsMap,
-}: PaymentsColumnsProps): ColumnDef<EnrichedPayment>[] => [
+}: PaymentsColumnsProps): ColumnDef<PaymentTableRow>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -108,7 +114,27 @@ export const createPaymentsColumns = ({
       <DataTableColumnHeader column={column} title="Proyecto" />
     ),
     cell: ({ row }) => {
-      const payment = row.original
+      const rowData = row.original
+
+      // Si es batch parent, mostrar mensaje de distribución
+      if (isBatchParent(rowData)) {
+        return (
+          <div className="flex items-center space-x-2">
+            <ChevronRight
+              className={cn(
+                "h-4 w-4 transition-transform",
+                row.getIsExpanded() && "rotate-90"
+              )}
+            />
+            <span className="text-muted-foreground italic">
+              Distribuido en {rowData.paymentCount} proyecto{rowData.paymentCount !== 1 ? 's' : ''}
+            </span>
+          </div>
+        )
+      }
+
+      // Pago individual normal
+      const payment = rowData as Payment
       const project = projectsMap[payment.projectId]
 
       if (!project) {
@@ -116,7 +142,7 @@ export const createPaymentsColumns = ({
       }
 
       return (
-        <div className="space-y-1">
+        <div className={cn("space-y-1", row.depth > 0 && "pl-6")}>
           <div className="font-medium">
             {project.projectNumber}
           </div>
@@ -128,8 +154,13 @@ export const createPaymentsColumns = ({
         </div>
       )
     },
-    filterFn: (row, id, value) => {
-      const payment = row.original
+    filterFn: (row, _id, value) => {
+      const rowData = row.original
+
+      // Batch parents no se filtran por proyecto
+      if (isBatchParent(rowData)) return false
+
+      const payment = rowData as Payment
       const project = projectsMap[payment.projectId]
       if (!project) return false
 
@@ -146,7 +177,20 @@ export const createPaymentsColumns = ({
       <DataTableColumnHeader column={column} title="Cliente" />
     ),
     cell: ({ row }) => {
-      const payment = row.original
+      const rowData = row.original
+
+      // Si es batch parent, mostrar cliente directo
+      if (isBatchParent(rowData)) {
+        const clientName = clientsMap[rowData.clientId]
+        return (
+          <div className="font-medium">
+            {clientName || 'Cliente no encontrado'}
+          </div>
+        )
+      }
+
+      // Pago individual - buscar cliente via proyecto
+      const payment = rowData as Payment
       const project = projectsMap[payment.projectId]
 
       if (!project) {
@@ -160,8 +204,17 @@ export const createPaymentsColumns = ({
         </div>
       )
     },
-    filterFn: (row, id, value) => {
-      const payment = row.original
+    filterFn: (row, _id, value) => {
+      const rowData = row.original
+
+      // Batch parent - filtrar por clientId directo
+      if (isBatchParent(rowData)) {
+        const clientName = clientsMap[rowData.clientId] || ''
+        return clientName.toLowerCase().includes(value.toLowerCase())
+      }
+
+      // Pago individual - filtrar via proyecto
+      const payment = rowData as Payment
       const project = projectsMap[payment.projectId]
       if (!project) return false
 
@@ -176,12 +229,33 @@ export const createPaymentsColumns = ({
       <DataTableColumnHeader column={column} title="Monto" />
     ),
     cell: ({ row }) => {
-      const amount = row.getValue("amount") as number
-      const isAdjustment = row.original.isAdjustment
+      const rowData = row.original
+
+      // Si es batch parent, mostrar total + badge de cantidad
+      if (isBatchParent(rowData)) {
+        return (
+          <div className="flex items-center space-x-2">
+            <span className="font-bold text-primary">
+              {formatCurrency(rowData.totalAmount)}
+            </span>
+            <Badge variant="secondary" className="text-xs">
+              {rowData.paymentCount} pago{rowData.paymentCount !== 1 ? 's' : ''}
+            </Badge>
+          </div>
+        )
+      }
+
+      // Pago individual normal
+      const payment = rowData as Payment
+      const amount = payment.amount || 0
+      const isAdjustment = payment.isAdjustment
 
       return (
         <div className="flex items-center space-x-2">
-          <span className={`font-medium ${isAdjustment ? 'text-orange-600' : ''}`}>
+          <span className={cn(
+            "font-medium",
+            isAdjustment && "text-orange-600"
+          )}>
             {formatCurrency(amount)}
           </span>
           {isAdjustment && (
@@ -214,13 +288,34 @@ export const createPaymentsColumns = ({
       <DataTableColumnHeader column={column} title="Método" />
     ),
     cell: ({ row }) => {
+      const rowData = row.original
       const method = row.getValue("paymentMethod") as string
-      const installments = row.original.installments
 
       if (!method) {
         return <span className="text-muted-foreground">—</span>
       }
 
+      // Batch parents solo muestran el método, sin cuotas
+      if (isBatchParent(rowData)) {
+        const variant = getPaymentMethodBadgeVariant(method)
+        return (
+          <Badge variant={variant as any}>
+            <div className="flex items-center space-x-1">
+              {(method.toLowerCase().includes('tarjeta') || method.toLowerCase().includes('efectivo')) && (
+                <CreditCard className="h-3 w-3" />
+              )}
+              {method.toLowerCase() === 'transferencia' && (
+                <Banknote className="h-3 w-3" />
+              )}
+              <span>{method}</span>
+            </div>
+          </Badge>
+        )
+      }
+
+      // Pago individual con posibles cuotas
+      const payment = rowData as Payment
+      const installments = payment.installments
       const variant = getPaymentMethodBadgeVariant(method)
       const isCreditCard = method.toLowerCase() === 'tarjeta de crédito'
 
@@ -298,7 +393,15 @@ export const createPaymentsColumns = ({
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const payment = row.original
+      const rowData = row.original
+
+      // Batch parents no tienen acciones (solo sus hijos)
+      if (isBatchParent(rowData)) {
+        return null
+      }
+
+      // Solo pagos individuales tienen acciones
+      const payment = rowData as Payment
 
       return (
         <DropdownMenu>
@@ -312,13 +415,13 @@ export const createPaymentsColumns = ({
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => onEdit(payment)}
+              onClick={() => onEdit(payment as EnrichedPayment)}
             >
               <Edit className="mr-2 h-4 w-4" />
               Editar pago
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => onDelete(payment)}
+              onClick={() => onDelete(payment as EnrichedPayment)}
               className="text-destructive"
             >
               <Trash2 className="mr-2 h-4 w-4" />

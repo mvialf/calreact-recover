@@ -2,7 +2,7 @@
 // src/app/payments/page.tsx
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useQueryClient as useQueryClientHook, useMutation } from '@tanstack/react-query';
 import type { Payment } from '@/types/payment';
 import type { ProjectType } from '@/types/project';
@@ -11,6 +11,7 @@ import { getAllPayments, deletePayment } from '@/services/paymentService';
 import { EditPaymentDialog } from '@/components/payments/edit-payment-dialog';
 import { getProjects } from '@/services/projectService';
 import { getClients } from '@/services/clientService';
+import { useGroupedPayments } from '@/hooks/useGroupedPayments';
 
 // Componentes Layout y DataTable
 import { AppLayout } from '@/components/layout';
@@ -110,14 +111,8 @@ export default function PaymentsPage() {
     }
   };
 
-  // Los pagos con tipo EnrichedPayment para compatibilidad
-  const enrichedPayments = useMemo((): EnrichedPayment[] => {
-    if (isLoadingPayments || !payments) {
-      return [];
-    }
-    // Ya no necesitamos enriquecer aquí - las columnas lo harán dinámicamente
-    return payments as EnrichedPayment[];
-  }, [payments, isLoadingPayments]);
+  // Agrupar pagos batch en estructura jerárquica
+  const groupedPayments = useGroupedPayments(payments);
 
   // Columnas para la DataTable
   const columns = React.useMemo(() => createPaymentsColumns({
@@ -158,10 +153,10 @@ export default function PaymentsPage() {
         </Button>
       }
     >
-      {/* DataTable */}
+      {/* DataTable con row expansion para batch payments */}
       <DataTable
           columns={columns}
-          data={enrichedPayments}
+          data={groupedPayments}
           searchKey="projectId"
           searchPlaceholder="Buscar por proyecto, cliente, método..."
           filterableColumns={[
@@ -177,6 +172,14 @@ export default function PaymentsPage() {
             }
           ]}
           enableRowSelection
+          enableExpanding
+          getSubRows={(row) => {
+            // Solo batch parents tienen subRows
+            if ('type' in row && row.type === 'batch-parent') {
+              return row.subRows;
+            }
+            return undefined;
+          }}
         />
 
       {paymentToDelete && (
