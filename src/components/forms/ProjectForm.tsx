@@ -414,6 +414,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
                     onDeleteTag={deleteUninstallTag}
                     placeholder="Seleccionar tags de desinstalación..."
                     label="Desinstalación"
+                    displayMode="name"
                   />
                 </FormControl>
                 <FormMessage />

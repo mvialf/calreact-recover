@@ -26,6 +26,9 @@ export interface Tag {
   createdAt?: Date;
 }
 
+// Modo de visualización para etiquetas
+export type TagDisplayMode = 'auto' | 'name' | 'abbreviation';
+
 // Props para el componente TagSelector
 export interface TagSelectorProps {
   selectedTags: Tag[];
@@ -37,6 +40,7 @@ export interface TagSelectorProps {
   placeholder?: string;
   label?: string;
   className?: string;
+  displayMode?: TagDisplayMode; // Controla cómo se muestran los tags seleccionados
 }
 
 // Props para crear una nueva etiqueta

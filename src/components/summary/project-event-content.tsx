@@ -6,6 +6,7 @@ import { getStatusBadgeVariant } from '@/utils/badge-helpers';
 import { PROJECT_STATUS_OPTIONS } from '@/constants/project';
 import { TagBadge } from '@/components/custom/uninstall-tags';
 import { Grid2x2 } from 'lucide-react';
+import type { TagDisplayMode } from '@/types/tags';
 
 interface ProjectEventContentProps {
   event: EventType;
@@ -16,6 +17,7 @@ interface ProjectEventContentProps {
   layout?: 'stacked' | 'inline';
   size?: 'sm' | 'base' | 'lg';
   className?: string;
+  tagDisplayMode?: TagDisplayMode; // Control de visualización de tags
 }
 
 /**
@@ -84,6 +86,7 @@ export function ProjectEventContent({
   layout = 'stacked',
   size = 'sm',
   className,
+  tagDisplayMode = 'auto',
 }: ProjectEventContentProps) {
   // Solo renderiza para eventos de tipo Proyecto
   if (event.type !== 'Proyecto') return null;
@@ -97,6 +100,29 @@ export function ProjectEventContent({
   // Determinar si hay detalles técnicos
   const hasTechnicalDetails = event.windowsCount || event.squareMeters;
   const hasUninstallTags = event.uninstallTags && event.uninstallTags.length > 0;
+
+  /**
+   * Transforma un tag según el displayMode configurado
+   */
+  const transformTagForDisplay = (tag: NonNullable<typeof event.uninstallTags>[number]) => {
+    switch (tagDisplayMode) {
+      case 'name':
+        // Forzar mostrar nombre completo (sin abbreviation)
+        return { ...tag, abbreviation: undefined };
+
+      case 'abbreviation':
+        // Forzar mostrar abreviatura (generar si no existe)
+        return {
+          ...tag,
+          abbreviation: tag.abbreviation || tag.name.substring(0, 2).toUpperCase()
+        };
+
+      case 'auto':
+      default:
+        // Comportamiento por defecto: abbreviation si existe, sino name
+        return tag;
+    }
+  };
 
   // Mapeo de tamaños para comuna
   const comunaSizeClasses = {
@@ -146,7 +172,7 @@ export function ProjectEventContent({
             {showUninstallTags && hasUninstallTags && (
               <div className="flex flex-wrap gap-2">
                 {event.uninstallTags!.map((tag) => (
-                  <TagBadge key={tag.id} tag={tag} />
+                  <TagBadge key={tag.id} tag={transformTagForDisplay(tag)} />
                 ))}
               </div>
             )}

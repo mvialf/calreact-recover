@@ -22,17 +22,18 @@ import type { TagSelectorProps, Tag, TagColor, CreateTagData } from "@/types/tag
  * Permite seleccionar múltiples etiquetas y crear nuevas
  */
 export const TagSelector = React.forwardRef<HTMLDivElement, TagSelectorProps>(
-  ({ 
-    selectedTags, 
-    availableTags, 
-    onTagsChange, 
+  ({
+    selectedTags,
+    availableTags,
+    onTagsChange,
     onCreateTag,
     onEditTag,
     onDeleteTag,
     placeholder = "Seleccionar etiquetas...",
     label,
     className,
-    ...props 
+    displayMode = 'auto', // Modo de visualización por defecto
+    ...props
   }, ref) => {
     const [isOpen, setIsOpen] = React.useState(false);
     const [isCreatingTag, setIsCreatingTag] = React.useState(false);
@@ -102,6 +103,31 @@ export const TagSelector = React.forwardRef<HTMLDivElement, TagSelectorProps>(
       setTagToEdit(tag);
       setIsEditingTag(true);
     };
+
+    /**
+     * Transforma un tag según el displayMode configurado
+     * @param tag - Tag original
+     * @returns Tag transformado para visualización
+     */
+    const transformTagForDisplay = React.useCallback((tag: Tag): Tag => {
+      switch (displayMode) {
+        case 'name':
+          // Forzar mostrar nombre completo (sin abbreviation)
+          return { ...tag, abbreviation: undefined };
+
+        case 'abbreviation':
+          // Forzar mostrar abreviatura (generar si no existe)
+          return {
+            ...tag,
+            abbreviation: tag.abbreviation || tag.name.substring(0, 2).toUpperCase()
+          };
+
+        case 'auto':
+        default:
+          // Comportamiento por defecto: abbreviation si existe, sino name
+          return tag;
+      }
+    }, [displayMode]);
 
     return (
       <div ref={ref} className={cn("space-y-2", className)} {...props}>
@@ -248,7 +274,7 @@ export const TagSelector = React.forwardRef<HTMLDivElement, TagSelectorProps>(
             {selectedTags.map((tag) => (
               <TagBadge
                 key={tag.id}
-                tag={tag}
+                tag={transformTagForDisplay(tag)}
                 removable
                 onRemove={handleRemoveTag}
               />

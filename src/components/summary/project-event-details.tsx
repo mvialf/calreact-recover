@@ -5,10 +5,12 @@ import { getStatusBadgeVariant } from '@/utils/badge-helpers';
 import { PROJECT_STATUS_OPTIONS } from '@/constants/project';
 import { AddressSummary } from '@/components/summary/address-summary';
 import type { EventType } from '@/types/event';
+import type { TagDisplayMode } from '@/types/tags';
 
 interface ProjectEventDetailsProps {
   event: EventType;
   status?: string; // Status del proyecto (opcional, computado)
+  tagDisplayMode?: TagDisplayMode; // Control de visualización de tags
 }
 
 /**
@@ -27,12 +29,35 @@ interface ProjectEventDetailsProps {
  * <ProjectEventDetails event={projectEvent} />
  * ```
  */
-export function ProjectEventDetails({ event, status }: ProjectEventDetailsProps) {
+export function ProjectEventDetails({ event, status, tagDisplayMode = 'name' }: ProjectEventDetailsProps) {
   // Solo renderiza para eventos de tipo Proyecto
   if (event.type !== 'Proyecto') return null;
 
   const hasTechnicalDetails = event.windowsCount || event.squareMeters;
   const hasUninstallTags = event.uninstallTags && event.uninstallTags.length > 0;
+
+  /**
+   * Transforma un tag según el displayMode configurado
+   */
+  const transformTagForDisplay = (tag: NonNullable<typeof event.uninstallTags>[number]) => {
+    switch (tagDisplayMode) {
+      case 'name':
+        // Forzar mostrar nombre completo (sin abbreviation)
+        return { ...tag, abbreviation: undefined };
+
+      case 'abbreviation':
+        // Forzar mostrar abreviatura (generar si no existe)
+        return {
+          ...tag,
+          abbreviation: tag.abbreviation || tag.name.substring(0, 2).toUpperCase()
+        };
+
+      case 'auto':
+      default:
+        // Comportamiento por defecto: abbreviation si existe, sino name
+        return tag;
+    }
+  };
 
   // Si no hay datos para mostrar, no renderiza nada
   if (!hasTechnicalDetails && !hasUninstallTags && !event.description && !event.phone && !status && !event.fullAddress) {
@@ -83,7 +108,7 @@ export function ProjectEventDetails({ event, status }: ProjectEventDetailsProps)
               <p className="text-sm">Desinstalación</p>
               <div className="flex flex-wrap gap-2 mt-2">
                 {event.uninstallTags.map((tag) => (
-                  <TagBadge key={tag.id} tag={tag} />
+                  <TagBadge key={tag.id} tag={transformTagForDisplay(tag)} />
                 ))}
               </div>
             </div>
