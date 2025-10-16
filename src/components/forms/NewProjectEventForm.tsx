@@ -39,11 +39,18 @@ import { validateProjectForEvents } from '@/utils/eventValidation';
 // Esquemas de validación centralizados
 import { requiredSelection, optionalString } from '@/utils/validation-schemas';
 
+// Hooks personalizados
+import { useTeamTags } from '@/hooks/useTeamTags';
+
+// Componentes de tags
+import { TagSelector } from '@/components/custom/uninstall-tags/TagSelector';
+
 // ✅ Schema actualizado: incluye projectId como REQUERIDO
 const formSchema = z.object({
   projectId: requiredSelection("un proyecto"),
   eventDate: z.date().optional(),
   eventNotes: optionalString,
+  teamTags: z.array(z.any()).optional(), // Tags de equipo/participantes
 });
 
 // Tipo para los valores del formulario
@@ -95,6 +102,14 @@ export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
     warnings: []
   });
 
+  // Hook para gestionar tags de equipo/participantes
+  const {
+    availableTags: teamTags,
+    createTag: createTeamTag,
+    editTag: editTeamTag,
+    deleteTag: deleteTeamTag,
+  } = useTeamTags();
+
   // Formulario con campos actualizados
   const form = useForm<NewProjectEventFormValues>({
     resolver: zodResolver(formSchema),
@@ -102,6 +117,7 @@ export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
       projectId: initialData?.projectId || "",
       eventDate: initialData?.eventDate || new Date(),
       eventNotes: initialData?.eventNotes || "",
+      teamTags: initialData?.teamTags || [],
       checklist: Array.isArray(initialData?.checklist) ? initialData.checklist : [],
     },
   });
@@ -388,6 +404,30 @@ export const NewProjectEventForm: React.FC<NewProjectEventFormProps> = ({
                       placeholder="Notas o comentarios específicos de este evento"
                       rows={3}
                       disabled={disabled}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Participantes del Evento (Team Tags) */}
+            <FormField
+              control={form.control}
+              name="teamTags"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <TagSelector
+                      selectedTags={field.value || []}
+                      availableTags={teamTags}
+                      onTagsChange={field.onChange}
+                      onCreateTag={createTeamTag}
+                      onEditTag={editTeamTag}
+                      onDeleteTag={deleteTeamTag}
+                      placeholder="Seleccionar participantes..."
+                      label="Equipo/Participantes"
+                      displayMode="name"
                     />
                   </FormControl>
                   <FormMessage />

@@ -2,6 +2,7 @@
 import type { Timestamp } from 'firebase/firestore';
 import type { ProjectStatusConstant } from '@/constants/project';
 import type { UninstallTag } from './uninstall-tags';
+import type { Tag } from './tags';
 
 // NOTA: ProjectEventLean types eliminados - usar ProjectEventType en su lugar
 // Ver: src/types/project.ts para arquitectura actual
@@ -107,6 +108,7 @@ export interface ProjectEventType {
   windowsCount?: number;
   squareMeters?: number;
   uninstallTags?: UninstallTag[];
+  teamTags?: Tag[]; // Tags de equipo/participantes del evento
   clientName?: string; // Copiado del proyecto para facilitar consultas
   glosa?: string; // Short note or summary, similar to description but often more technical or brief
   checklist?: Array<{
