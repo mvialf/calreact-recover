@@ -18,7 +18,7 @@ import {
   MoreHorizontal,
   CreditCard,
   Banknote,
-  ChevronRight
+  Eye
 } from "lucide-react"
 
 import { DataTableColumnHeader } from "@/components/custom/data-table/data-table-column-header"
@@ -76,6 +76,7 @@ const isBatchParent = (row: PaymentTableRow): row is BatchPaymentGroup => {
 interface PaymentsColumnsProps {
   onEdit: (payment: EnrichedPayment) => void
   onDelete: (payment: EnrichedPayment) => void
+  onViewBatchDetails: (batchPayment: BatchPaymentGroup) => void
   projectsMap: Record<string, ProjectType>
   clientsMap: Record<string, string>
 }
@@ -83,6 +84,7 @@ interface PaymentsColumnsProps {
 export const createPaymentsColumns = ({
   onEdit,
   onDelete,
+  onViewBatchDetails,
   projectsMap,
   clientsMap,
 }: PaymentsColumnsProps): ColumnDef<PaymentTableRow>[] => [
@@ -120,12 +122,6 @@ export const createPaymentsColumns = ({
       if (isBatchParent(rowData)) {
         return (
           <div className="flex items-center space-x-2">
-            <ChevronRight
-              className={cn(
-                "h-4 w-4 transition-transform",
-                row.getIsExpanded() && "rotate-90"
-              )}
-            />
             <span className="text-muted-foreground italic">
               Distribuido en {rowData.paymentCount} proyecto{rowData.paymentCount !== 1 ? 's' : ''}
             </span>
@@ -142,7 +138,7 @@ export const createPaymentsColumns = ({
       }
 
       return (
-        <div className={cn("space-y-1", row.depth > 0 && "pl-6")}>
+        <div className="space-y-1">
           <div className="font-medium">
             {project.projectNumber}
           </div>
@@ -395,12 +391,22 @@ export const createPaymentsColumns = ({
     cell: ({ row }) => {
       const rowData = row.original
 
-      // Batch parents no tienen acciones (solo sus hijos)
+      // Batch parents tienen botón "Ver detalles"
       if (isBatchParent(rowData)) {
-        return null
+        return (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onViewBatchDetails(rowData)}
+            className="h-8"
+          >
+            <Eye className="mr-2 h-4 w-4" />
+            Ver detalles
+          </Button>
+        )
       }
 
-      // Solo pagos individuales tienen acciones
+      // Solo pagos individuales tienen dropdown de acciones
       const payment = rowData as Payment
 
       return (

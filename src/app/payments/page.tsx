@@ -4,11 +4,12 @@
 
 import React, { useState, useMemo } from 'react';
 import { useQuery, useQueryClient as useQueryClientHook, useMutation } from '@tanstack/react-query';
-import type { Payment } from '@/types/payment';
+import type { Payment, BatchPaymentGroup } from '@/types/payment';
 import type { ProjectType } from '@/types/project';
 import type { Client } from '@/types/client';
 import { getAllPayments, deletePayment } from '@/services/paymentService';
 import { EditPaymentDialog } from '@/components/payments/edit-payment-dialog';
+import { BatchPaymentDialog } from '@/components/modals/payments/BatchPaymentDialog';
 import { getProjects } from '@/services/projectService';
 import { getClients } from '@/services/clientService';
 import { useGroupedPayments } from '@/hooks/useGroupedPayments';
@@ -44,8 +45,10 @@ export default function PaymentsPage() {
 
   const [paymentToDelete, setPaymentToDelete] = useState<EnrichedPayment | null>(null);
   const [paymentToEdit, setPaymentToEdit] = useState<EnrichedPayment | null>(null);
+  const [batchToView, setBatchToView] = useState<BatchPaymentGroup | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isBatchDialogOpen, setIsBatchDialogOpen] = useState(false);
 
   const { data: payments = [], isLoading: isLoadingPayments, isError: isErrorPayments, error: errorPayments } = useQuery<Payment[], Error>({
     queryKey: ['payments'],
@@ -105,6 +108,11 @@ export default function PaymentsPage() {
     setIsEditDialogOpen(true);
   };
 
+  const handleViewBatchDetails = (batchPayment: BatchPaymentGroup) => {
+    setBatchToView(batchPayment);
+    setIsBatchDialogOpen(true);
+  };
+
   const confirmDeletePayment = () => {
     if (paymentToDelete) {
       deletePaymentMutation.mutate(paymentToDelete.id);
@@ -118,6 +126,7 @@ export default function PaymentsPage() {
   const columns = React.useMemo(() => createPaymentsColumns({
     onEdit: handleEditPayment,
     onDelete: handleDeletePaymentInitiate,
+    onViewBatchDetails: handleViewBatchDetails,
     projectsMap,
     clientsMap,
   }), [projectsMap, clientsMap]);
@@ -153,7 +162,7 @@ export default function PaymentsPage() {
         </Button>
       }
     >
-      {/* DataTable con row expansion para batch payments */}
+      {/* DataTable de pagos */}
       <DataTable
           columns={columns}
           data={groupedPayments}
@@ -172,14 +181,6 @@ export default function PaymentsPage() {
             }
           ]}
           enableRowSelection
-          enableExpanding
-          getSubRows={(row) => {
-            // Solo batch parents tienen subRows
-            if ('type' in row && row.type === 'batch-parent') {
-              return row.subRows;
-            }
-            return undefined;
-          }}
         />
 
       {paymentToDelete && (
@@ -215,6 +216,14 @@ export default function PaymentsPage() {
           payment={paymentToEdit}
         />
       )}
+
+      {/* Diálogo de detalles de batch payment */}
+      <BatchPaymentDialog
+        open={isBatchDialogOpen}
+        onOpenChange={setIsBatchDialogOpen}
+        batchPayment={batchToView}
+        projectsMap={projectsMap}
+      />
     </AppLayout>
   );
 }
