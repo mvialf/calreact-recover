@@ -22,6 +22,7 @@ import {
 } from "lucide-react"
 
 import { DataTableColumnHeader } from "@/components/custom/data-table/data-table-column-header"
+import { ProjectSummary } from '@/components/summary/project-summary'
 import { formatCurrency } from '@/utils/format-utils'
 import { formatDateForTable } from '@/utils/date-helpers'
 import { cn } from '@/lib/utils'
@@ -77,6 +78,7 @@ interface PaymentsColumnsProps {
   onEdit: (payment: EnrichedPayment) => void
   onDelete: (payment: EnrichedPayment) => void
   onViewBatchDetails: (batchPayment: BatchPaymentGroup) => void
+  onDeleteBatch: (batchPayment: BatchPaymentGroup) => void
   projectsMap: Record<string, ProjectType>
   clientsMap: Record<string, string>
 }
@@ -85,6 +87,7 @@ export const createPaymentsColumns = ({
   onEdit,
   onDelete,
   onViewBatchDetails,
+  onDeleteBatch,
   projectsMap,
   clientsMap,
 }: PaymentsColumnsProps): ColumnDef<PaymentTableRow>[] => [
@@ -111,63 +114,6 @@ export const createPaymentsColumns = ({
     enableHiding: false,
   },
   {
-    accessorKey: "projectId",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Proyecto" />
-    ),
-    cell: ({ row }) => {
-      const rowData = row.original
-
-      // Si es batch parent, mostrar mensaje de distribución
-      if (isBatchParent(rowData)) {
-        return (
-          <div className="flex items-center space-x-2">
-            <span className="text-muted-foreground italic">
-              Distribuido en {rowData.paymentCount} proyecto{rowData.paymentCount !== 1 ? 's' : ''}
-            </span>
-          </div>
-        )
-      }
-
-      // Pago individual normal
-      const payment = rowData as Payment
-      const project = projectsMap[payment.projectId]
-
-      if (!project) {
-        return <span className="text-muted-foreground">Proyecto no encontrado</span>
-      }
-
-      return (
-        <div className="space-y-1">
-          <div className="font-medium">
-            {project.projectNumber}
-          </div>
-          {project.glosa && (
-            <div className="text-sm text-muted-foreground">
-              {project.glosa}
-            </div>
-          )}
-        </div>
-      )
-    },
-    filterFn: (row, _id, value) => {
-      const rowData = row.original
-
-      // Batch parents no se filtran por proyecto
-      if (isBatchParent(rowData)) return false
-
-      const payment = rowData as Payment
-      const project = projectsMap[payment.projectId]
-      if (!project) return false
-
-      const searchTerm = value.toLowerCase()
-      return (
-        project.projectNumber.toLowerCase().includes(searchTerm) ||
-        (project.glosa || '').toLowerCase().includes(searchTerm)
-      )
-    },
-  },
-  {
     accessorKey: "clientName",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Cliente" />
@@ -175,7 +121,7 @@ export const createPaymentsColumns = ({
     cell: ({ row }) => {
       const rowData = row.original
 
-      // Si es batch parent, mostrar cliente directo
+      // Caso 1: Batch parent - mostrar cliente directo (mantener como está)
       if (isBatchParent(rowData)) {
         const clientName = clientsMap[rowData.clientId]
         return (
@@ -185,38 +131,53 @@ export const createPaymentsColumns = ({
         )
       }
 
-      // Pago individual - buscar cliente via proyecto
+      // Caso 2: Pago individual de proyecto - usar ProjectSummary
       const payment = rowData as Payment
       const project = projectsMap[payment.projectId]
 
       if (!project) {
-        return <span className="text-muted-foreground">—</span>
+        return <span className="text-muted-foreground">Proyecto no encontrado</span>
       }
 
       const clientName = clientsMap[project.clientId]
+
       return (
-        <div className="font-medium">
-          {clientName || 'Cliente no encontrado'}
-        </div>
+        <ProjectSummary
+          project={{
+            projectNumber: project.projectNumber,
+            clientName: clientName || 'Cliente no especificado',
+            glosa: project.glosa,
+          }}
+          showProjectNumber={true}
+          showClientInfo={true}
+          layout="stacked"
+          size="sm"
+        />
       )
     },
     filterFn: (row, _id, value) => {
       const rowData = row.original
+      const searchTerm = value.toLowerCase()
 
       // Batch parent - filtrar por clientId directo
       if (isBatchParent(rowData)) {
         const clientName = clientsMap[rowData.clientId] || ''
-        return clientName.toLowerCase().includes(value.toLowerCase())
+        return clientName.toLowerCase().includes(searchTerm)
       }
 
-      // Pago individual - filtrar via proyecto
+      // Pago individual - buscar en cliente Y proyecto
       const payment = rowData as Payment
       const project = projectsMap[payment.projectId]
       if (!project) return false
 
       const clientName = clientsMap[project.clientId] || ''
-      const searchTerm = value.toLowerCase()
-      return clientName.toLowerCase().includes(searchTerm)
+
+      // Buscar en: clientName, projectNumber, glosa
+      return (
+        clientName.toLowerCase().includes(searchTerm) ||
+        project.projectNumber.toLowerCase().includes(searchTerm) ||
+        (project.glosa || '').toLowerCase().includes(searchTerm)
+      )
     },
   },
   {
@@ -391,18 +352,32 @@ export const createPaymentsColumns = ({
     cell: ({ row }) => {
       const rowData = row.original
 
-      // Batch parents tienen botón "Ver detalles"
+      // Batch parents tienen dropdown de acciones
       if (isBatchParent(rowData)) {
         return (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onViewBatchDetails(rowData)}
-            className="h-8"
-          >
-            <Eye className="mr-2 h-4 w-4" />
-            Ver detalles
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Abrir menú</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => onViewBatchDetails(rowData)}>
+                <Eye className="mr-2 h-4 w-4" />
+                Ver detalles del batch
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onDeleteBatch(rowData)}
+                className="text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Eliminar batch completo
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )
       }
 

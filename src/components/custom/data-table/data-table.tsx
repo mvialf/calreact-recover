@@ -129,14 +129,12 @@ export function DataTable<TData, TValue>({
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => {
                 const isExpandable = row.getCanExpand()
-                const isBatchParent = 'type' in (row.original as object) && (row.original as any).type === 'batch-parent'
 
                 return (
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
                     className={cn(
-                      isBatchParent && "bg-muted/50 font-medium hover:bg-muted/70",
                       isExpandable && "cursor-pointer"
                     )}
                     onClick={isExpandable ? row.getToggleExpandedHandler() : undefined}

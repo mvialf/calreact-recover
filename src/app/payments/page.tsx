@@ -7,7 +7,7 @@ import { useQuery, useQueryClient as useQueryClientHook, useMutation } from '@ta
 import type { Payment, BatchPaymentGroup } from '@/types/payment';
 import type { ProjectType } from '@/types/project';
 import type { Client } from '@/types/client';
-import { getAllPayments, deletePayment } from '@/services/paymentService';
+import { getAllPayments, deletePayment, deleteBatchPayment } from '@/services/paymentService';
 import { EditPaymentDialog } from '@/components/payments/edit-payment-dialog';
 import { BatchPaymentDialog } from '@/components/modals/payments/BatchPaymentDialog';
 import { getProjects } from '@/services/projectService';
@@ -46,9 +46,11 @@ export default function PaymentsPage() {
   const [paymentToDelete, setPaymentToDelete] = useState<EnrichedPayment | null>(null);
   const [paymentToEdit, setPaymentToEdit] = useState<EnrichedPayment | null>(null);
   const [batchToView, setBatchToView] = useState<BatchPaymentGroup | null>(null);
+  const [batchToDelete, setBatchToDelete] = useState<BatchPaymentGroup | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isBatchDialogOpen, setIsBatchDialogOpen] = useState(false);
+  const [isDeleteBatchDialogOpen, setIsDeleteBatchDialogOpen] = useState(false);
 
   const { data: payments = [], isLoading: isLoadingPayments, isError: isErrorPayments, error: errorPayments } = useQuery<Payment[], Error>({
     queryKey: ['payments'],
@@ -80,7 +82,7 @@ export default function PaymentsPage() {
     }, {} as Record<string, string>);
   }, [clients]);
 
-  // Mutation primero
+  // Mutations
   const deletePaymentMutation = useMutation({
     mutationFn: deletePayment,
     onSuccess: (_, paymentId) => {
@@ -94,6 +96,24 @@ export default function PaymentsPage() {
       toast.error('No se pudo eliminar el pago', { description: err.message });
       setPaymentToDelete(null);
       setIsDeleteDialogOpen(false);
+    }
+  });
+
+  const deleteBatchMutation = useMutation({
+    mutationFn: (batchId: string) => deleteBatchPayment(batchId),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['payments'] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] }); // Invalidate projects due to balance change
+      toast.success('Batch eliminado', {
+        description: `Se eliminaron ${result.deletedCount} pagos del batch.`
+      });
+      setBatchToDelete(null);
+      setIsDeleteBatchDialogOpen(false);
+    },
+    onError: (err: Error) => {
+      toast.error('No se pudo eliminar el batch', { description: err.message });
+      setBatchToDelete(null);
+      setIsDeleteBatchDialogOpen(false);
     }
   });
 
@@ -113,9 +133,20 @@ export default function PaymentsPage() {
     setIsBatchDialogOpen(true);
   };
 
+  const handleDeleteBatch = (batchPayment: BatchPaymentGroup) => {
+    setBatchToDelete(batchPayment);
+    setIsDeleteBatchDialogOpen(true);
+  };
+
   const confirmDeletePayment = () => {
     if (paymentToDelete) {
       deletePaymentMutation.mutate(paymentToDelete.id);
+    }
+  };
+
+  const confirmDeleteBatch = () => {
+    if (batchToDelete) {
+      deleteBatchMutation.mutate(batchToDelete.batchId);
     }
   };
 
@@ -127,6 +158,7 @@ export default function PaymentsPage() {
     onEdit: handleEditPayment,
     onDelete: handleDeletePaymentInitiate,
     onViewBatchDetails: handleViewBatchDetails,
+    onDeleteBatch: handleDeleteBatch,
     projectsMap,
     clientsMap,
   }), [projectsMap, clientsMap]);
@@ -166,8 +198,8 @@ export default function PaymentsPage() {
       <DataTable
           columns={columns}
           data={groupedPayments}
-          searchKey="projectId"
-          searchPlaceholder="Buscar por proyecto, cliente, método..."
+          searchKey="clientName"
+          searchPlaceholder="Buscar por cliente, proyecto, método..."
           filterableColumns={[
             {
               id: "paymentMethod",
@@ -202,6 +234,35 @@ export default function PaymentsPage() {
               >
                 {deletePaymentMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Sí, eliminar pago
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+
+      {/* Diálogo de eliminación de batch payment */}
+      {batchToDelete && (
+        <AlertDialog open={isDeleteBatchDialogOpen} onOpenChange={setIsDeleteBatchDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Eliminar batch completo?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta acción no se puede deshacer. Esto eliminará permanentemente el batch de pagos del cliente {clientsMap[batchToDelete.clientId]} por un monto total de {formatCurrency(batchToDelete.totalAmount)}.
+                <br /><br />
+                <strong>Se eliminarán {batchToDelete.paymentCount} pago{batchToDelete.paymentCount !== 1 ? 's' : ''} distribuido{batchToDelete.paymentCount !== 1 ? 's' : ''} en los proyectos asociados.</strong>
+                <br />
+                Los saldos de todos los proyectos afectados se actualizarán automáticamente.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => { setBatchToDelete(null); setIsDeleteBatchDialogOpen(false); }}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDeleteBatch}
+                disabled={deleteBatchMutation.isPending}
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                {deleteBatchMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Sí, eliminar batch completo
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
